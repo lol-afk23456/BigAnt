@@ -2,6 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { Prisma, PrismaClient } from '@prisma/client';
 
 const context = new AsyncLocalStorage<string>();
+const advisoryLock = new AsyncLocalStorage<boolean>();
 const client = new PrismaClient({ log: [] });
 export class TenantScopeError extends Error {}
 
@@ -26,7 +27,10 @@ export const db = client.$extends({
     async $allOperations({ model, operation, args, query }) {
       const tenantId = context.getStore();
       if (!tenantId) throw new TenantScopeError('TENANT_REQUIRED');
-      if (!model) throw new TenantScopeError('RAW_QUERY_FORBIDDEN');
+      if (!model) {
+        if (advisoryLock.getStore() && operation === '$queryRaw') return query(args);
+        throw new TenantScopeError('RAW_QUERY_FORBIDDEN');
+      }
       const input = record(args ?? {});
       const tenantKey = model === 'Tenant' ? 'id' : 'tenant_id';
       const scope = (where: unknown) => {
@@ -67,3 +71,19 @@ export async function resolveTenant(slug: string) {
   return client.tenant.findUnique({ where: { slug }, select: { id: true, status: true } });
 }
 export async function disconnectDatabase() { await client.$disconnect(); }
+
+export type TenantTransaction = Omit<typeof db, '$connect' | '$disconnect' | '$transaction' | '$extends'>;
+// Il lock copre l'intero locale: protegge anche slot diversi con permanenze sovrapposte.
+export function reservationTransaction<T>(tenantId: string, work: (tx: TenantTransaction) => Promise<T>): Promise<T> {
+  return withTenant(tenantId, () => db.$transaction(async tx => {
+    await advisoryLock.run(true, async () => {
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${tenantId}, 0))::text`;
+    });
+    return work(tx);
+  }, { isolationLevel: 'ReadCommitted', timeout: 30000, maxWait: 30000 }));
+}
+// Il token casuale è una capability; il lookup non restituisce dati personali.
+export async function resolveCancellation(token: string) {
+  if (!/^[a-f0-9]{64}$/.test(token)) return null;
+  return client.reservation.findUnique({where:{cancel_token:token},select:{tenant_id:true,id:true}});
+}

@@ -1,3 +1,6 @@
+import { DomainError } from '@bigant/core';
+import { ZodError } from 'zod';
+import { reservationRoutes } from './reservations/routes.js';
 import Fastify, { type FastifyRequest } from 'fastify';
 import cookie from '@fastify/cookie';
 import rateLimit from '@fastify/rate-limit';
@@ -53,11 +56,15 @@ export function buildApp(options: { secret: string; now?: () => Date }) {
       global: true, max: 30, timeWindow: '1 minute',
     });
     app.setErrorHandler((error, request, reply) => {
+      if (error instanceof DomainError) return reply.code(error.statusCode).send(errorBody(error.code, request.headers['accept-language']));
+      if (error instanceof ZodError) return reply.code(400).send(errorBody('INVALID_INPUT', request.headers['accept-language']));
       const status = (error as { statusCode?: number }).statusCode;
       const code = status === 429 ? 'RATE_LIMITED' : status && status >= 400 && status < 500 ? 'INVALID_INPUT' : 'INTERNAL_ERROR';
       reply.code(code === 'RATE_LIMITED' ? 429 : code === 'INVALID_INPUT' ? 400 : 500).send(errorBody(code, request.headers['accept-language']));
     });
     app.setNotFoundHandler((request, reply) => reply.code(404).send(errorBody('NOT_FOUND', request.headers['accept-language'])));
+    app.addHook('onSend', async (_request, reply, payload) => { reply.header('Cache-Control','no-store'); return payload; });
+    reservationRoutes(app, { secret: options.secret, now });
     app.get('/health', async () => ({ status: 'ok' }));
     app.post('/auth/login', {
       config: { rateLimit: { max: 5, timeWindow: '15 minutes', hook: 'preHandler', keyGenerator: request => {

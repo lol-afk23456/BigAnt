@@ -2,7 +2,7 @@
 
 ## Stato al 16 settembre 2026
 
-**M0 completata: cancello verificato da comando.** Arresto alle fondamenta. M1 e M2 non iniziate. Non proseguire senza una nuova richiesta dell'utente.
+**M0 completata. M1 in lavorazione**, autorizzata dal goal M1+M2. M2 inizierà solo dopo il cancello M1.
 
 ## Realizzato
 
@@ -62,4 +62,18 @@ Nel terminale di questa sessione il Node di sistema era 12 e mancava pnpm: verif
 - Nessuna disponibilità: proporre le due date alternative con tono invitante e possibilità di continuare.
 - Test frontend leggeri, concentrati sui flussi essenziali.
 
-Queste scelte sono registrate, non implementate. La prossima missione resta M1, solo quando richiesta.
+Goal attivo: completare M1 e M2, testing locale Mac, repository pronto per GitHub senza pubblicazione, report servizi esterni. Tema esclusivamente scuro con accenti arancioni.
+
+## M1 — cancello superato
+
+M1 implementata il 16 settembre 2026. `pnpm typecheck`, `pnpm lint`, `pnpm test` (53 test), `pnpm build` e `pnpm test:e2e` (smoke M0) tutti con esito 0. M2 ora autorizzata dal goal.
+
+- Motore puro in `packages/core/src/availability.ts`: aperture, limiti temporali, capienza/override, pacing, tavoli, blackout totali/parziali, servizi oltre mezzanotte. Date civili nel fuso del tenant; UTC nel database. Luxon distingue entrambe le occorrenze dell'ora ripetuta e salta l'ora inesistente; libphonenumber-js/max normalizza e valida E.164.
+- Creazione e modifica sotto advisory lock PostgreSQL per tenant, transazione Read Committed: copre anche fasce distinte ma permanenze sovrapposte. 20 richieste concorrenti sull'ultimo posto: 1 risposta 201, 19 risposte 409.
+- L'extension continua a vietare SQL raw alle app. Il solo helper interno di transazione apre una capability temporanea privata per eseguire il lock parametrizzato. Lookup pre-contesto del cancel token restituisce solo id/tenant, non dati personali.
+- API vetrina/disponibilità/prenotazione/disdetta e CRUD staff; form token firmato per verificare almeno 2 secondi di compilazione e honeypot, rate limit pubblici. Nessuna email inviata.
+- Query di disponibilità restituisce le prime due date successive utili entro la finestra del locale quando non ci sono posti. Non restituisce ID tavoli o ragioni interne dei blackout.
+- Stato cancellato/completato non riapribile; disdetta cliente soggetta al termine; disdetta staff con audit. Modifiche conservano la durata storica e rivalidano tavolo/capienza. Conteggi visite/no-show aggiornati una volta tramite transizione serializzata.
+- Ambiguità SPEC §4: prevalgono i cinque controlli e il criterio esplicito M1. Con assegnazione automatica e nessun tavolo compatibile lo slot non è prenotabile; senza assegnazione automatica può esserlo in base alla capienza. Assegnazione sceglie il tavolo libero più piccolo.
+- Il 26 ottobre è cambio ora nel 2025; nel 2026 è il 25 ottobre. Test coprono entrambi, più 29/30 marzo e il giorno successivo al cambio autunnale.
+- Nessuna ricerca di dati personali in query string: il filtro testuale staff sarà locale ai risultati della giornata in M2.

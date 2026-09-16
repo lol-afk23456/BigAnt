@@ -1,5 +1,12 @@
 export const messages = {
   it: {
+    INVALID_PHONE: 'Inserisci un numero di telefono valido, includendo il prefisso internazionale se non italiano.',
+    INVALID_TRANSITION: 'Lo stato è cambiato o questa azione non è disponibile. Aggiorna la pagina.',
+    SLOT_UNAVAILABLE: 'Questo orario non è più disponibile. Scegli uno degli altri orari proposti.',
+    PACING_LIMIT: 'Per questo orario abbiamo raggiunto il numero di arrivi. Prova una fascia vicina.',
+    TABLE_UNAVAILABLE: 'Il tavolo non è disponibile per questo gruppo o orario. Scegline un altro.',
+    CANCELLATION_CLOSED: 'Per modificare questa prenotazione chiama direttamente il locale.',
+    FORBIDDEN: 'Questa operazione richiede un accesso da titolare.',
     INVALID_INPUT: 'Controlla i dati inseriti e riprova.',
     UNAUTHORIZED: 'Accedi nuovamente per continuare.',
     INVALID_CREDENTIALS: 'Locale, email o password non corretti. Controlla e riprova.',
@@ -8,6 +15,13 @@ export const messages = {
     INTERNAL_ERROR: 'Operazione non riuscita. Riprova più tardi.',
   },
   en: {
+    INVALID_PHONE: 'Enter a valid phone number, including the country code for numbers outside Italy.',
+    INVALID_TRANSITION: 'The status has changed or this action is unavailable. Refresh the page.',
+    SLOT_UNAVAILABLE: 'This time is no longer available. Choose another suggested time.',
+    PACING_LIMIT: 'We have reached our arrival limit for this time. Try a nearby slot.',
+    TABLE_UNAVAILABLE: 'This table is unavailable for this group or time. Choose another one.',
+    CANCELLATION_CLOSED: 'Please call the venue directly to change this booking.',
+    FORBIDDEN: 'This action requires an owner account.',
     INVALID_INPUT: 'Check your details and try again.',
     UNAUTHORIZED: 'Sign in again to continue.',
     INVALID_CREDENTIALS: 'Incorrect venue, email or password. Check and try again.',
