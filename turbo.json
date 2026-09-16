@@ -12,7 +12,8 @@
       "env": [
         "DATABASE_URL",
         "JWT_SECRET",
-        "NEXT_TELEMETRY_DISABLED"
+        "NEXT_TELEMETRY_DISABLED",
+        "API_INTERNAL_URL"
       ]
     },
     "typecheck": {
@@ -54,5 +55,9 @@
       ],
       "outputs": []
     }
-  }
+  },
+  "globalPassThroughEnv": [
+    "NEXT_TELEMETRY_DISABLED",
+    "TURBO_TELEMETRY_DISABLED"
+  ]
 }

@@ -1,56 +1,68 @@
-# BigAnt Book — M0
+# BigAnt Book
 
-Fondamenta del monorepo. Nessuna schermata di prodotto e nessun motore di prenotazione.
+Prototipo multi-tenant per prenotazioni di ristoranti e lidi. Next.js + Fastify + PostgreSQL 16, TypeScript, Prisma, pnpm/Turborepo. Interfaccia scura con accenti arancioni, italiano e inglese. Stato dei cancelli e decisioni: [PROGRESS](docs/PROGRESS.md).
 
-## Avvio locale
+## Avvio sul Mac
 
-Richiede Node 22 (vedi `.nvmrc`) e pnpm 10.32.1. Con nvm: `nvm install && nvm use`, poi `corepack enable`.
+Su questo Mac: doppio clic su **Avvia BigAnt.command**, attendi l'avvio, poi apri **http://localhost:3000** in Chrome. Il runtime isolato è in `.local`: non modifica Node di sistema e non viene incluso in Git.
+
+Su un checkout nuovo servono **Node 22** (`.nvmrc`) e **pnpm 10.32.1**. Con nvm: `nvm install && nvm use`, poi `corepack enable`.
 
 ```sh
 pnpm install --frozen-lockfile
-cp .env.example .env
-pnpm db:local
+pnpm local
 ```
 
-Lasciare PostgreSQL in quel terminale; Ctrl+C lo ferma senza cancellare i dati in `.local/postgres`. Il database ascolta solo su loopback. In alternativa utilizzare PostgreSQL 16 già disponibile e impostare `DATABASE_URL` e `TEST_DATABASE_URL`.
+`pnpm local` crea `.env` se assente con un JWT secret casuale, avvia PostgreSQL su loopback:55432, applica migrazioni e seed, ricompila solo se il codice è cambiato e avvia web:3000 e API:3001. Lascia aperto il terminale; Ctrl+C ferma i processi avviati dal launcher. I dati persistono in `.local/postgres`. Se PostgreSQL era già avviato separatamente, resta attivo.
 
-In un secondo terminale, dalla radice:
+I due locali demo:
+
+| Locale | Email staff | Password |
+| --- | --- | --- |
+| Trattoria Santa Lucia | owner@santalucia.test | bigant2026 |
+| Lido Miseno | owner@lidomiseno.test | bigant2026 |
+
+Santa Lucia conferma automaticamente; Lido richiede conferma dello staff. La home propone percorso cliente e pannello. Non vengono spediti messaggi. [Guida di prova in 15–20 minuti](docs/PROVA_LOCALE.md).
+
+Il seed è idempotente: conserva le prove precedenti. Per ricreare intenzionalmente i **soli due locali demo cancellandone tutte le prove**: `pnpm demo:reset --confirm`, ad app ferme. Funziona soltanto su database locali chiamati `bigant` o `bigant_test`; vietato in produzione. Le prenotazioni ricreate hanno date relative a oggi.
+
+## Sviluppo e verifiche
+
+In alternativa al launcher, prepara `.env` da `.env.example`, genera un `JWT_SECRET` casuale e avvia `pnpm db:local` in un terminale. Nel secondo:
 
 ```sh
-pnpm db:migrate
 pnpm generate
+pnpm db:migrate
 pnpm seed
+pnpm dev
+```
+
+Con PostgreSQL attivo:
+
+```sh
 pnpm typecheck
 pnpm lint
 pnpm test
-pnpm build
+NEXT_TELEMETRY_DISABLED=1 TURBO_TELEMETRY_DISABLED=1 pnpm build
 pnpm test:e2e
 ```
 
-`pnpm test` applica le migrazioni a un database separato con nome terminante in `_test` (default `bigant_test`). Non esegue reset o cancellazioni sul database di sviluppo. I test usano PostgreSQL reale.
+Unit e integrazione usano PostgreSQL reale in `bigant_test`. Playwright ricrea i due tenant demo **solo nel database di test**, avvia API:3001 e web:3100 e verifica i percorsi browser a 375 px. Ferma il launcher prima degli E2E per liberare 3001; non eseguire Vitest e Playwright contemporaneamente sullo stesso DB.
 
-Per sviluppo: `pnpm dev`. API su 3001 e web su 3000. Per API compilata: `pnpm --filter @bigant/api start`; per web compilato: `pnpm --filter @bigant/web start`.
+Su macOS Playwright usa Chrome installato (compatibile anche con questo Mac macOS 13). Su Linux/CI: `pnpm exec playwright install --with-deps chromium`. Screenshot in `test-results/visual`, trace e schermate di errore in `test-results`, esclusi da Git. GitHub Actions è predisposto; non è stato eseguito sul remoto.
 
-## Autenticazione
+`API_INTERNAL_URL` deve essere impostato **alla build** per la destinazione delle rewrite Next. Default locale: `http://127.0.0.1:3001`. Nessuna chiave segreta nel frontend. Il launcher locale fissa porte e loopback; non è un comando di deploy.
 
-`POST /auth/login` con JSON `{ "slug": "trattoria-santa-lucia", "email": "owner@santalucia.test", "password": "bigant2026" }`. Secondo locale: slug `lido-miseno`, email `owner@lidomiseno.test`, stessa password demo. Gli account demo non sono destinati alla produzione; il seed si rifiuta di partire con `NODE_ENV=production`.
+## Autenticazione e dati
 
-Access JWT di 15 minuti nella risposta; refresh JWT nel cookie `__Secure-bigant_refresh`, HttpOnly, Secure, SameSite=Lax, durata massima della sessione 30 giorni. `POST /auth/refresh` ruota il refresh atomicamente, `POST /auth/logout` revoca la sessione. Conservare l'access token solo in memoria. Per utilizzare il cookie nel browser serve HTTPS anche nell'ambiente di sviluppo. Nessun pannello di accesso è previsto in M0.
+`POST /auth/login` richiede slug, email, password. JWT access di 15 minuti tenuto in memoria; refresh HttpOnly/Secure/SameSite=Lax in `/auth`, rotazione atomica e revoca persistente. Cinque tentativi per email ogni 15 minuti. Il percorso browser locale usa `localhost`; cookie Secure non allentati. Per un link di rete serve HTTPS.
 
-Il login richiede lo slug perché l'email è unica per tenant. Cinque tentativi per email normalizzata ogni 15 minuti. Il rate limit M0 è in memoria e richiede una singola istanza; lo store condiviso prima di più repliche è nel backlog.
+Il data layer impone contesto tenant su tutte le operazioni. `db` va usato dentro `withTenant`, con claim autenticati o tenant risolto dallo slug pubblico; senza contesto fallisce. FK composte impediscono relazioni fra tenant. Raw SQL, cambi tenant/identità e scritture relazionali annidate sono vietati. La transazione prenotazioni applica un advisory lock parametrizzato interno per tenant: capienza e disponibilità sono rivalidate prima di scrivere.
 
-## Confine del data layer
+Migrazioni/seed e lookup minimali pre-contesto sono privilegiati. Il client Prisma senza filtro non è esportato alle app. Non è RLS: l'accesso diretto alle credenziali DB resta privilegiato. Nessun dato personale nei log applicativi; ricerca staff eseguita localmente sui risultati della giornata.
 
-Le applicazioni importano soltanto `@bigant/database`. `db` richiede `withTenant(tenantId, callback)` e impone il filtro su letture, scritture, aggregati e transazioni. Senza contesto la query fallisce. `Tenant` è filtrato sul suo `id`; tutte le altre tabelle su `tenant_id`.
+## Perimetro e condivisione
 
-Il contesto deriva dai claim verificati con `app.authenticateStaff(request)`, mai da un tenant inviato nel body. SQL raw, cambi di identità e scritture relazionali annidate sono rifiutati. Le relazioni si scrivono usando FK scalari: i vincoli composti PostgreSQL impediscono riferimenti tra tenant. Letture con `include` sono ammesse attraverso queste relazioni vincolate.
+M0: fondamenta. M1: motore. M2: cliente/staff, impostazioni e tavoli. Nessun menu, recensioni, notifica reale, PWA o deploy anticipato. [Missioni](docs/MISSIONS.md), [specifica](docs/SPEC.md), [backlog](docs/BACKLOG.md). Gli originali ricevuti sono in `files/`.
 
-Le sole operazioni privilegiate sono migrazione, seed e risoluzione pre-login dello slug (restituisce id e stato, non dati di dominio). Il client Prisma non filtrato non è esportato. Non è RLS PostgreSQL: codice con accesso diretto alle credenziali DB resta privilegiato. ESLint vieta import diretti di Prisma nelle app.
-
-## Documenti e perimetro
-
-`AGENTS.md`, `docs/SPEC.md`, `docs/MISSIONS.md` sono i documenti operativi; gli originali ricevuti sono conservati in `files/`. Stato e decisioni utente sono in `docs/PROGRESS.md`, rinvii in `docs/BACKLOG.md`.
-
-La SPEC enumera 14 modelli di dominio, non 12. Sono tutti presenti, più `StaffSession` per rotazione e revoca persistente dei refresh. Il telefono cliente è nullable per l'anonimizzazione prevista da SPEC §8; email e telefono saranno entrambi obbligatori nell'input pubblico, come richiesto dall'utente.
-
-Nessun servizio remoto, invio email/SMS, storage o telemetria applicativa configurato. La residenza EU dell'ambiente di produzione va verificata in M6.
+Il repository è locale: **nessuna pubblicazione GitHub**. Condividerlo permetterà ai soci di clonare il codice; per una prova via link servirà un ambiente ospitato. `.env`, database, runtime, dipendenze e artefatti sono esclusi da Git. [Report servizi da collegare](docs/SERVIZI_ESTERNI.md).

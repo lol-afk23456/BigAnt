@@ -34,3 +34,5 @@ export type ErrorCode = keyof typeof messages.it;
 export function errorBody(code: ErrorCode, language?: string) {
   return { error: { code, message: messages[language?.startsWith('en') ? 'en' : 'it'][code], details: {} } };
 }
+
+export * from './ui';

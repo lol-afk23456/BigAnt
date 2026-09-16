@@ -1,6 +1,7 @@
+import { DateTime } from 'luxon';
 import { parsePhoneNumberFromString } from 'libphonenumber-js/max';
 import type { ReservationStatus } from './availability.js';
-export * from './availability.js';
+export * from './availability';
 export class DomainError extends Error {
   constructor(public code: 'INVALID_PHONE' | 'INVALID_TRANSITION' | 'SLOT_UNAVAILABLE' | 'PACING_LIMIT' | 'TABLE_UNAVAILABLE' | 'CANCELLATION_CLOSED' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'FORBIDDEN' | 'INVALID_INPUT', public statusCode = 409) { super(code); }
 }
@@ -14,4 +15,14 @@ const transitions: Record<ReservationStatus,ReservationStatus[]> = {
 };
 export function assertTransition(from: ReservationStatus,to: ReservationStatus) {
   if (!transitions[from].includes(to)) throw new DomainError('INVALID_TRANSITION');
+}
+
+// Conversioni al bordo UI: mai dipendere dal fuso del browser.
+export function dateTimeInZone(instant:string, zone:string):string {
+  return DateTime.fromISO(instant,{zone}).toFormat("yyyy-MM-dd'T'HH:mm");
+}
+export function dateTimeToUTC(value:string, zone:string):string|null {
+  const parsed=DateTime.fromISO(value,{zone});
+  if (!parsed.isValid || parsed.toFormat("yyyy-MM-dd'T'HH:mm")!==value) return null;
+  return parsed.getPossibleOffsets().sort((a,b)=>a.toMillis()-b.toMillis())[0]!.toUTC().toISO();
 }

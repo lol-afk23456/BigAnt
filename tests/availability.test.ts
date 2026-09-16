@@ -71,3 +71,11 @@ test('telefono E.164, prefisso italiano e zero significativo dei fissi',()=>{
 test('macchina a stati rifiuta riapertura e salto di stato',()=>{
  expect(()=>assertTransition('pending','confirmed')).not.toThrow();expect(()=>assertTransition('pending','completed')).toThrow();expect(()=>assertTransition('cancelled','confirmed')).toThrow();expect(()=>assertTransition('seated','completed')).not.toThrow();
 });
+
+test('conversioni UI nel fuso del locale: ora inesistente rifiutata e ambiguità deterministica',async()=>{
+ const {dateTimeInZone,dateTimeToUTC}=await import('../packages/core/src/index.js');
+ expect(dateTimeInZone('2026-09-20T17:00:00Z','Europe/Rome')).toBe('2026-09-20T19:00');
+ expect(dateTimeToUTC('2026-09-20T19:00','Europe/Rome')).toBe('2026-09-20T17:00:00.000Z');
+ expect(dateTimeToUTC('2026-03-29T02:30','Europe/Rome')).toBeNull();
+ expect(dateTimeToUTC('2026-10-25T02:30','Europe/Rome')).toBe('2026-10-25T00:30:00.000Z');
+});

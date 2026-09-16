@@ -1,5 +1,6 @@
 import { DomainError } from '@bigant/core';
 import { ZodError } from 'zod';
+import { settingsRoutes } from './settings.js';
 import { reservationRoutes } from './reservations/routes.js';
 import Fastify, { type FastifyRequest } from 'fastify';
 import cookie from '@fastify/cookie';
@@ -65,6 +66,7 @@ export function buildApp(options: { secret: string; now?: () => Date }) {
     app.setNotFoundHandler((request, reply) => reply.code(404).send(errorBody('NOT_FOUND', request.headers['accept-language'])));
     app.addHook('onSend', async (_request, reply, payload) => { reply.header('Cache-Control','no-store'); return payload; });
     reservationRoutes(app, { secret: options.secret, now });
+    settingsRoutes(app);
     app.get('/health', async () => ({ status: 'ok' }));
     app.post('/auth/login', {
       config: { rateLimit: { max: 5, timeWindow: '15 minutes', hook: 'preHandler', keyGenerator: request => {

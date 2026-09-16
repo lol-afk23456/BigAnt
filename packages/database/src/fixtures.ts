@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { PrismaClient, type ReservationStatus } from '@prisma/client';
 import argon2 from 'argon2';
+import { DateTime } from 'luxon';
 
 export const demos = [
   { slug: 'trattoria-santa-lucia', name: 'Trattoria Santa Lucia', email: 'owner@santalucia.test', type: 'restaurant' as const, capacity: 40, tables: 12, duration: 90, pacing: 12, auto: true, categories: 5, items: 28, customers: 40, reservations: 80, reviews: 25 },
@@ -11,6 +12,7 @@ const time = (hours: number, minutes = 0) => new Date(Date.UTC(1970, 0, 1, hours
 export async function seedDemo(client: PrismaClient) {
   const password_hash = await argon2.hash('bigant2026', { type: argon2.argon2id });
   const tenants = [];
+  const today = DateTime.now().setZone('Europe/Rome').startOf('day');
   for (const [index, demo] of demos.entries()) {
     const existing = await client.tenant.findUnique({ where: { slug: demo.slug } });
     if (existing) { tenants.push(existing); continue; }
@@ -23,7 +25,7 @@ export async function seedDemo(client: PrismaClient) {
         await tx.openingHours.create({ data: { tenant_id, weekday, start_time: time(index ? 11 : 12), end_time: time(index ? 23 : 15), label: index ? 'Servizio continuato' : 'Pranzo' } });
         if (!index) await tx.openingHours.create({ data: { tenant_id, weekday, start_time: time(19), end_time: time(23,30), label: 'Cena' } });
       }
-      await tx.blackoutDate.create({ data: { tenant_id, date: new Date('2026-12-25T00:00:00Z'), reason: `Chiusura demo ${demo.name}` } });
+      await tx.blackoutDate.create({ data: { tenant_id, date: new Date(`${today.plus({days:14}).toISODate()}T00:00:00Z`), reason: `Chiusura demo ${demo.name}` } });
       const tables = [];
       for (let n = 0; n < demo.tables; n++) tables.push(await tx.restaurantTable.create({ data: { tenant_id, name: `Tavolo ${n + 1}`, max_capacity: index ? 4 : n < 4 ? 2 : 4, zone: index ? 'Terrazza' : 'Sala' } }));
       const customers = [];
@@ -33,7 +35,7 @@ export async function seedDemo(client: PrismaClient) {
       for (let n = 0; n < demo.items; n++) await tx.menuItem.create({ data: { tenant_id, category_id: categories[n % categories.length]!.id, name_it: `Piatto demo ${index + 1}-${n + 1}`, name_en: `Demo dish ${index + 1}-${n + 1}`, price_cents: 800 + n * 50, sort_order: n, allergens: ['1'], is_available: n % 9 !== 0 } });
       const statuses: ReservationStatus[] = ['pending','confirmed','seated','completed','cancelled','no_show'];
       const reservations = [];
-      for (let n = 0; n < demo.reservations; n++) reservations.push(await tx.reservation.create({ data: { tenant_id, customer_id: customers[n % customers.length]!.id, table_id: tables[n % tables.length]!.id, reserved_at: new Date(Date.UTC(2026,8,1 + n % 30, 17 + n % 4)), duration_min: demo.duration, party_size: 2, status: statuses[n % statuses.length]!, source: 'direct', cancel_token: randomBytes(32).toString('hex') } }));
+      for (let n = 0; n < demo.reservations; n++) reservations.push(await tx.reservation.create({ data: { tenant_id, customer_id: customers[n % customers.length]!.id, table_id: tables[n % tables.length]!.id, reserved_at: today.plus({days:Math.floor(n / 6)-4,hours:19,minutes:(n%6)*15}).toJSDate(), duration_min: demo.duration, party_size: 2, status: statuses[n % statuses.length]!, source: 'direct', cancel_token: randomBytes(32).toString('hex') } }));
       const card = await tx.nFCCard.create({ data: { tenant_id, card_uid: `demo-${demo.slug}`, label: 'Cassa' } });
       for (let n = 0; n < demo.reviews; n++) await tx.review.create({ data: { tenant_id, customer_id: customers[n % customers.length]!.id, nfc_card_id: card.id, channel: n % 3 ? 'private' : 'google_redirect', rating: n % 3 ? n % 5 + 1 : null, comment: n % 3 ? 'Feedback dimostrativo' : null } });
       await tx.notificationLog.create({ data: { tenant_id, reservation_id: reservations[0]!.id, type: 'confirmation', channel: 'email', recipient: demo.email, status: 'failed' } });

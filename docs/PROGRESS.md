@@ -2,7 +2,7 @@
 
 ## Stato al 16 settembre 2026
 
-**M0 completata. M1 in lavorazione**, autorizzata dal goal M1+M2. M2 inizierà solo dopo il cancello M1.
+**M0, M1 e M2 completate.** Il cancello M1 è stato superato prima di iniziare le schermate; il cancello M2 è verde. Launcher locale verificato; lavoro pronto per la prima prova sul Mac.
 
 ## Realizzato
 
@@ -77,3 +77,46 @@ M1 implementata il 16 settembre 2026. `pnpm typecheck`, `pnpm lint`, `pnpm test`
 - Ambiguità SPEC §4: prevalgono i cinque controlli e il criterio esplicito M1. Con assegnazione automatica e nessun tavolo compatibile lo slot non è prenotabile; senza assegnazione automatica può esserlo in base alla capienza. Assegnazione sceglie il tavolo libero più piccolo.
 - Il 26 ottobre è cambio ora nel 2025; nel 2026 è il 25 ottobre. Test coprono entrambi, più 29/30 marzo e il giorno successivo al cambio autunnale.
 - Nessuna ricerca di dati personali in query string: il filtro testuale staff sarà locale ai risultati della giornata in M2.
+
+
+## M2 — cancello superato
+
+- UI esclusivamente scura/arancione, catalogo IT/EN: homepage demo, pagina prenotazione progressiva, ricezione/conferma, link gestione e disdetta, login e dashboard staff, lista/orari, prenotazione telefonica, stati/tavoli/note, impostazioni/orari/chiusure e gestione tavoli.
+- Saltare oggi se pieno/chiuso; persone tramite pulsanti; email e telefono richiesti; richieste facoltative collassate. I contatti digitati restano in memoria anche se occorre cambiare fascia.
+- Access token solo in memoria; refresh coordinato; proxy Next same-origin. Cookie Secure invariato; login, refresh al reload e logout verificati in Chrome su localhost.
+- Route impostazioni autenticate: mutazioni owner, isolamento tenant imposto, orari validati anche oltre mezzanotte, audit e lock per modifiche che influenzano la disponibilità.
+- Orari modificati nel fuso del tenant, anche con browser in America/New_York; ora DST inesistente rifiutata, ambigua risolta alla prima occorrenza (se invariata conserva l'istante originale).
+- Avvio `pnpm local`, launcher Mac e runtime isolato in `.local`; seed relativo a oggi e reset demo esplicito, solo locale. Nessuna pubblicazione GitHub.
+- Guide `PROVA_LOCALE.md` e `SERVIZI_ESTERNI.md`, con verifica fonti ufficiali EU e distinzione servizi M5–M6. Resend Irlanda non significa archiviazione EU; annotato nel report.
+- Test backend: **57/57 passati** su PostgreSQL reale, inclusi tre nuovi scenari impostazioni/permessi/isolamento e conversione fusi/DST. Typecheck, lint, build e flussi browser completati con esito 0.
+
+- Reset del database demo di sviluppo **non eseguito**: la revisione automatica ha rifiutato la cancellazione dei due tenant perché potrebbe eliminare prove dell'utente. Alternativa adottata: dati esistenti conservati; nuovo seed relativo a oggi verificato soltanto nel database di test. Il comando di reset resta un'operazione esplicita per l'utente, non parte dell'avvio ordinario.
+
+
+### Verifiche finali M2
+
+| Comando/verifica | Esito |
+| --- | --- |
+| `pnpm typecheck` | Verde: pacchetti, web, API e test |
+| `pnpm lint` | Verde, zero warning |
+| `pnpm test` | 57/57, sei file, PostgreSQL reale |
+| `pnpm build` | Verde: sette pacchetti/app, Next produzione |
+| `pnpm test:e2e` | 3/3, Chrome su questo Mac; ultima esecuzione circa 1,5 minuti |
+| QA visiva | Cliente e staff a 375 px, staff a 1440 px; screenshot ispezionati, nessun overflow orizzontale |
+
+I due scenari browser provano campi progressivi/obbligatori, salto di oggi chiuso, due alternative, conferma immediata, disdetta dopo finestra undo, lingua EN, richiesta Lido, login/refresh al reload, conferma, assegnazione tavolo, impostazioni, creazione tavolo e logout. Browser in America/New_York, locali Europe/Rome. Un terzo smoke HTTP controlla la home. Nessuna suite frontend estesa.
+
+Correzioni emerse durante la verifica: import dei pacchetti TS risolvibili da Next; header JSON solo quando c'è un body (refresh/disdetta/logout senza body); fixture E2E elimina prima i riferimenti NotificationLog; selettori dei test basati sul nome accessibile effettivo. Limite scenario 120 s e azione 15 s, senza rimuovere asserzioni. Le prime esecuzioni fallite non sono conteggiate come passate.
+
+La build iniziale sul Mac è stata lenta (circa 17 minuti per Turbo nell'ultima ricompilazione completa). Il launcher confronta un'impronta dei sorgenti/configurazione, versione Node e origine API: riusa gli artefatti se invariati, ricompila se necessario. Non dipende da un runtime temporaneo in `/tmp`: Node e pnpm locali sono in `.local`, esclusi da Git.
+
+Decisione calendario M2: agenda del giorno selezionato, con lista che porta in cima le richieste pendenti e vista Orari ordinata cronologicamente. Nessuna vista multi-sede o gestione turni aggiunta. Disdette cliente/staff e rimozioni prevedono undo di cinque secondi.
+
+**Confine:** fermato a M2. M3–M6 non iniziate. Nessuna email/SMS/push reale, nessun deploy, nessun remote GitHub e nessun invito. Guide di prova e servizi esterni consegnate. Dati demo preesistenti conservati; seed relativo a oggi disponibile per nuove installazioni e verificato nel DB di test.
+
+
+### Avvio locale e punto di arresto
+
+`pnpm local` verificato sul database di sviluppo esistente: migrazioni senza modifiche pendenti, seed idempotente (due tenant conservati), impronta build invariata e nessuna ricompilazione. Web su 3000 e API su 3001, esplicitamente separati. HTTP 200 su home e vetrina pubblica di entrambi i locali tramite proxy Next. Arresto con Ctrl+C completato con esito 0; i processi web/API sono stati fermati per permettere il riavvio dell'app. PostgreSQL locale preesistente e dati conservati.
+
+Dopo il riavvio di ChatGPT/Codex: aprire `Avvia BigAnt.command` da Finder, quindi `http://localhost:3000` in Chrome. Accessi e checklist in `docs/PROVA_LOCALE.md`; dipendenze esterne in `docs/SERVIZI_ESTERNI.md`. Il goal si ferma qui, prima di qualsiasi pubblicazione o missione M3.

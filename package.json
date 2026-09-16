@@ -8,14 +8,16 @@
   "scripts": {
     "dev": "turbo dev",
     "generate": "pnpm --filter @bigant/database generate",
-    "typecheck": "pnpm generate && turbo typecheck && tsc --noEmit",
+    "typecheck": "pnpm generate && NEXT_TELEMETRY_DISABLED=1 TURBO_TELEMETRY_DISABLED=1 turbo typecheck --concurrency=2 && tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "build": "pnpm generate && turbo build",
+    "build": "pnpm generate && NEXT_TELEMETRY_DISABLED=1 TURBO_TELEMETRY_DISABLED=1 turbo build --concurrency=2 && node scripts/build-state.mjs --record",
     "seed": "tsx packages/database/src/seed.ts",
     "db:migrate": "pnpm --filter @bigant/database migrate",
-    "db:local": "node scripts/local-db.mjs"
+    "db:local": "node scripts/local-db.mjs",
+    "local": "node scripts/local.mjs",
+    "demo:reset": "tsx packages/database/src/reset-demo.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",
