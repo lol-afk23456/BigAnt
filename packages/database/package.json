@@ -1,0 +1,22 @@
+{
+  "name": "@bigant/database",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "generate": "prisma generate",
+    "migrate": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.2",
+    "argon2": "^0.44.0",
+    "dotenv": "^17.3.1"
+  },
+  "devDependencies": {
+    "prisma": "6.19.2"
+  }
+}

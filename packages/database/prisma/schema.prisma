@@ -1,0 +1,378 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TenantType {
+  restaurant
+  bar
+  hotel
+  beach_club
+}
+
+enum Locale {
+  it
+  en
+}
+
+enum Plan {
+  trial
+  base
+  pro
+  full
+}
+
+enum TenantStatus {
+  active
+  suspended
+  cancelled
+}
+
+enum StaffRole {
+  owner
+  staff
+}
+
+enum StaffStatus {
+  active
+  disabled
+}
+
+enum ReservationStatus {
+  pending
+  confirmed
+  seated
+  completed
+  cancelled
+  no_show
+}
+
+enum ReservationSource {
+  direct
+  staff
+  phone
+}
+
+enum CancelledBy {
+  customer
+  staff
+}
+
+enum ReviewChannel {
+  google_redirect
+  private
+}
+
+enum NotificationType {
+  confirmation
+  reminder
+  cancellation
+  low_review_alert
+}
+
+enum NotificationChannel {
+  email
+  sms
+  push
+}
+
+enum NotificationStatus {
+  queued
+  sent
+  failed
+}
+
+model Tenant {
+  staffUser       StaffUser[]
+  tenantSettings  TenantSettings?
+  openingHours    OpeningHours[]
+  blackoutDate    BlackoutDate[]
+  restaurantTable RestaurantTable[]
+  customer        Customer[]
+  reservation     Reservation[]
+  menuCategory    MenuCategory[]
+  menuItem        MenuItem[]
+  review          Review[]
+  nFCCard         NFCCard[]
+  notificationLog NotificationLog[]
+  auditLog        AuditLog[]
+  staffSession    StaffSession[]
+  id              String            @id @default(uuid(7)) @db.Uuid
+  name            String
+  slug            String            @unique
+  type            TenantType
+  timezone        String            @default("Europe/Rome")
+  locale_default  Locale            @default(it)
+  logo_url        String?
+  primary_color   String            @default("#0E2B2F")
+  address         String?
+  phone           String?
+  google_place_id String?
+  plan            Plan              @default(trial)
+  status          TenantStatus      @default(active)
+  created_at      DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime          @updatedAt @db.Timestamptz(6)
+}
+
+model StaffUser {
+  id            String         @id @default(uuid(7)) @db.Uuid
+  tenant_id     String         @db.Uuid
+  tenant        Tenant         @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  email         String         @db.Citext
+  password_hash String
+  full_name     String
+  role          StaffRole
+  last_login_at DateTime?      @db.Timestamptz(6)
+  status        StaffStatus    @default(active)
+  created_at    DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime       @updatedAt @db.Timestamptz(6)
+  audits        AuditLog[]
+  sessions      StaffSession[]
+
+  @@unique([tenant_id, email])
+  @@unique([tenant_id, id])
+}
+
+model TenantSettings {
+  tenant_id                   String   @id @db.Uuid
+  tenant                      Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  slot_granularity_min        Int      @default(15)
+  turn_duration_min           Int      @default(90)
+  max_covers_per_slot         Int      @default(12)
+  total_capacity              Int      @default(40)
+  min_lead_time_min           Int      @default(60)
+  max_advance_days            Int      @default(60)
+  auto_confirm                Boolean  @default(true)
+  cancellation_deadline_hours Int      @default(2)
+  auto_assign_tables          Boolean  @default(false)
+  reminder_hours_before       Int      @default(4)
+  sms_enabled                 Boolean  @default(false)
+  sms_monthly_cap             Int      @default(300)
+  created_at                  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at                  DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model OpeningHours {
+  id                String   @id @default(uuid(7)) @db.Uuid
+  tenant_id         String   @db.Uuid
+  tenant            Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  weekday           Int
+  start_time        DateTime @db.Time(0)
+  end_time          DateTime @db.Time(0)
+  capacity_override Int?
+  label             String?
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([tenant_id, id])
+  @@index([tenant_id, weekday])
+}
+
+model BlackoutDate {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  tenant_id  String    @db.Uuid
+  tenant     Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  date       DateTime  @db.Date
+  start_time DateTime? @db.Time(0)
+  end_time   DateTime? @db.Time(0)
+  reason     String?
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at DateTime  @updatedAt @db.Timestamptz(6)
+
+  @@unique([tenant_id, id])
+  @@index([tenant_id, date])
+}
+
+model RestaurantTable {
+  id           String        @id @default(uuid(7)) @db.Uuid
+  tenant_id    String        @db.Uuid
+  tenant       Tenant        @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  name         String
+  min_capacity Int           @default(1)
+  max_capacity Int
+  zone         String?
+  active       Boolean       @default(true)
+  created_at   DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime      @updatedAt @db.Timestamptz(6)
+  reservations Reservation[]
+
+  @@unique([tenant_id, id])
+}
+
+model Customer {
+  id                   String        @id @default(uuid(7)) @db.Uuid
+  tenant_id            String        @db.Uuid
+  tenant               Tenant        @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  full_name            String
+  phone_e164           String?
+  email                String?       @db.Citext
+  notes                String        @default("")
+  allergies            String?
+  marketing_consent    Boolean       @default(false)
+  marketing_consent_at DateTime?     @db.Timestamptz(6)
+  total_visits         Int           @default(0)
+  no_show_count        Int           @default(0)
+  last_visit_at        DateTime?     @db.Timestamptz(6)
+  created_at           DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime      @updatedAt @db.Timestamptz(6)
+  reservations         Reservation[]
+  reviews              Review[]
+
+  @@unique([tenant_id, phone_e164])
+  @@unique([tenant_id, id])
+}
+
+model Reservation {
+  id             String            @id @default(uuid(7)) @db.Uuid
+  tenant_id      String            @db.Uuid
+  tenant         Tenant            @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  customer_id    String            @db.Uuid
+  table_id       String?           @db.Uuid
+  reserved_at    DateTime          @db.Timestamptz(6)
+  duration_min   Int
+  party_size     Int
+  status         ReservationStatus
+  source         ReservationSource
+  notes          String            @default("")
+  internal_notes String            @default("")
+  cancel_token   String            @unique
+  cancelled_by   CancelledBy?
+  created_at     DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime          @updatedAt @db.Timestamptz(6)
+  customer       Customer          @relation(fields: [tenant_id, customer_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+  table          RestaurantTable?  @relation(fields: [tenant_id, table_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+  notifications  NotificationLog[]
+
+  @@unique([tenant_id, id])
+  @@index([tenant_id, reserved_at])
+  @@index([tenant_id, status])
+}
+
+model MenuCategory {
+  id         String     @id @default(uuid(7)) @db.Uuid
+  tenant_id  String     @db.Uuid
+  tenant     Tenant     @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  name_it    String
+  name_en    String
+  sort_order Int        @default(0)
+  active     Boolean    @default(true)
+  created_at DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at DateTime   @updatedAt @db.Timestamptz(6)
+  items      MenuItem[]
+
+  @@unique([tenant_id, id])
+}
+
+model MenuItem {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  tenant_id      String       @db.Uuid
+  tenant         Tenant       @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  category_id    String       @db.Uuid
+  name_it        String
+  name_en        String
+  description_it String?
+  description_en String?
+  price_cents    Int
+  image_url      String?
+  allergens      String[]     @default([])
+  dietary        String[]     @default([])
+  is_available   Boolean      @default(true)
+  is_featured    Boolean      @default(false)
+  sort_order     Int          @default(0)
+  created_at     DateTime     @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime     @updatedAt @db.Timestamptz(6)
+  category       MenuCategory @relation(fields: [tenant_id, category_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([tenant_id, id])
+  @@index([tenant_id, category_id])
+}
+
+model Review {
+  id             String        @id @default(uuid(7)) @db.Uuid
+  tenant_id      String        @db.Uuid
+  tenant         Tenant        @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  customer_id    String?       @db.Uuid
+  nfc_card_id    String?       @db.Uuid
+  rating         Int?
+  comment        String?
+  channel        ReviewChannel
+  staff_seen_at  DateTime?     @db.Timestamptz(6)
+  staff_response String?
+  created_at     DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime      @updatedAt @db.Timestamptz(6)
+  customer       Customer?     @relation(fields: [tenant_id, customer_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+  nfc_card       NFCCard?      @relation(fields: [tenant_id, nfc_card_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([tenant_id, id])
+}
+
+model NFCCard {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  tenant_id      String    @db.Uuid
+  tenant         Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  card_uid       String    @unique
+  label          String
+  active         Boolean   @default(true)
+  last_tapped_at DateTime? @db.Timestamptz(6)
+  tap_count      Int       @default(0)
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime  @updatedAt @db.Timestamptz(6)
+  reviews        Review[]
+
+  @@unique([tenant_id, id])
+}
+
+model NotificationLog {
+  id             String              @id @default(uuid(7)) @db.Uuid
+  tenant_id      String              @db.Uuid
+  tenant         Tenant              @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  reservation_id String?             @db.Uuid
+  type           NotificationType
+  channel        NotificationChannel
+  recipient      String
+  status         NotificationStatus  @default(queued)
+  provider_id    String?
+  sent_at        DateTime?           @db.Timestamptz(6)
+  created_at     DateTime            @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime            @updatedAt @db.Timestamptz(6)
+  reservation    Reservation?        @relation(fields: [tenant_id, reservation_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([tenant_id, id])
+}
+
+model AuditLog {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  tenant_id     String    @db.Uuid
+  tenant        Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  staff_user_id String    @db.Uuid
+  action        String
+  entity_type   String
+  entity_id     String    @db.Uuid
+  metadata      Json      @default("{}") @db.JsonB
+  ip            String?
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime  @updatedAt @db.Timestamptz(6)
+  staff_user    StaffUser @relation(fields: [tenant_id, staff_user_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([tenant_id, id])
+}
+
+model StaffSession {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  tenant_id     String    @db.Uuid
+  tenant        Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  staff_user_id String    @db.Uuid
+  refresh_hash  String    @unique
+  expires_at    DateTime  @db.Timestamptz(6)
+  revoked_at    DateTime? @db.Timestamptz(6)
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime  @updatedAt @db.Timestamptz(6)
+  staff_user    StaffUser @relation(fields: [tenant_id, staff_user_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([tenant_id, id])
+  @@index([tenant_id, staff_user_id])
+}
