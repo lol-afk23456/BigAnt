@@ -1,6 +1,6 @@
 # BigAnt Book
 
-Prototipo multi-tenant per prenotazioni di ristoranti e lidi. Next.js + Fastify + PostgreSQL 16, TypeScript, Prisma, pnpm/Turborepo. Interfaccia scura con accenti arancioni, italiano e inglese. Stato dei cancelli e decisioni: [PROGRESS](docs/PROGRESS.md).
+Prototipo multi-tenant per prenotazioni e menu di ristoranti e lidi. Next.js + Fastify + PostgreSQL 16, TypeScript, Prisma, pnpm/Turborepo. Interfaccia scura con accenti arancioni, italiano e inglese. Stato dei cancelli e decisioni: [PROGRESS](docs/PROGRESS.md).
 
 ## Avvio sul Mac
 
@@ -66,3 +66,11 @@ Migrazioni/seed e lookup minimali pre-contesto sono privilegiati. Il client Pris
 M0: fondamenta. M1: motore. M2: cliente/staff, impostazioni e tavoli. Nessun menu, recensioni, notifica reale, PWA o deploy anticipato. [Missioni](docs/MISSIONS.md), [specifica](docs/SPEC.md), [backlog](docs/BACKLOG.md). Gli originali ricevuti sono in `files/`.
 
 Il repository è locale: **nessuna pubblicazione GitHub**. Condividerlo permetterà ai soci di clonare il codice; per una prova via link servirà un ambiente ospitato. `.env`, database, runtime, dipendenze e artefatti sono esclusi da Git. [Report servizi da collegare](docs/SERVIZI_ESTERNI.md).
+
+## Menu digitale (M3)
+
+Dal pannello, voce **Menu**: categorie/piatti IT/EN, riordino, prezzi in centesimi, allergeni, foto e disponibilità. Il titolare sceglie quattro template scuri, colore e copertina in **Aspetto del menu**. Il comando occhio nasconde un piatto dalla risposta pubblica senza marcarlo esaurito; esaurito resta visibile in grigio. Le pagine pubbliche sono `/r/:slug/menu`, renderizzate sul server e aggiornate anche ogni 30 secondi quando aperte.
+
+Upload JPEG/PNG/WebP fino a 5 MB, validazione del formato reale, ricompressione e rimozione metadati con Sharp. File in `.local/menu-images` o `MENU_IMAGE_DIR` (percorso assoluto): includerli nei backup, non in Git. Nessun bucket cloud necessario per la prova locale. La migrazione M3 aggiunge solo colonne e vincoli, senza reset.
+
+`pnpm test:e2e` include un solo scenario browser aggiuntivo per tutto il menu, con quattro screenshot mobile e Lighthouse. Il test usa immagini sintetiche nel database separato. `pnpm test:menu-performance [URL-locale]` permette di ripetere il cancello sulla pagina avviata: performance ≥ 90 e LCP < 2 s, profilo mobile con throttling DevTools applicato da Chrome: download 750 Kbps, upload 250 Kbps, latenza 150 ms e CPU 4×. Report in `test-results/menu-lighthouse.json`. Lighthouse usa Chrome installato; in CI il test indica esplicitamente il Chromium di Playwright.

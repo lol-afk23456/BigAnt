@@ -1,4 +1,4 @@
-# Prova BigAnt Book sul Mac — 15–20 minuti
+# Prova BigAnt Book sul Mac — 20–25 minuti
 
 ## Avvio
 
@@ -40,4 +40,18 @@ Non eseguire il reset mentre altri stanno provando. Per i test automatici il dat
 
 ## Risultato atteso
 
-Il cliente può richiedere/prenotare e disdire; lo staff può gestire giorno, stati, tavoli, orari e chiusure. La homepage demo e le guide facilitano una prima prova; hosting, notifiche reali, privacy/retention completa, PWA, menu e recensioni appartengono alle missioni successive.
+Il cliente può richiedere/prenotare e disdire; lo staff può gestire giorno, stati, tavoli, orari e chiusure. La homepage demo e le guide facilitano una prima prova; hosting, notifiche reali, privacy/retention completa, PWA e recensioni appartengono alle missioni successive.
+
+
+## Menu digitale — prova M3
+
+Nel pannello apri **Menu**. Aggiungi una categoria con nome IT/EN e un piatto con prezzo, descrizioni, allergeni e foto. Le frecce riordinano categorie e piatti; la rimozione offre cinque secondi per annullare. Una categoria va svuotata prima di eliminarla.
+
+- **Aspetto del menu**: scegli Essenziale, Pop, Elegante o Pub; cambia colore e aggiungi una copertina. Premi Salva modifiche. Tutti gli stili restano scuri.
+- **Esaurito**: il piatto resta pubblico in grigio e con etichetta.
+- **Occhio**: nasconde il piatto dal menu pubblico, conservando tutti i dati. Toccalo di nuovo per ripubblicarlo. Le API cambiano al salvataggio; una pagina già aperta si aggiorna ogni 30 secondi quando visibile, oppure al ritorno sulla scheda.
+- **Apri il menu pubblico**: verifica lingua, foto, prezzi e allergeni. Prova anche a 375 px. Nessun altro locale è proposto nella pagina del menu.
+
+Link diretti: http://localhost:3000/r/trattoria-santa-lucia/menu e http://localhost:3000/r/lido-miseno/menu.
+
+Foto ammesse: JPEG, PNG e WebP fino a 5 MB. Il server produce tre varianti WebP. Le foto sono sul Mac in `.local/menu-images` (o `MENU_IMAGE_DIR`), **non sono incluse in GitHub**. Per trasferire i dati della demo occorre anche trasferire database e immagini.

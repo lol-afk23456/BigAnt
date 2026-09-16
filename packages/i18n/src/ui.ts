@@ -1,5 +1,7 @@
+import { menuMessages } from './menu';
 export const uiMessages = {
   "it": {
+    ...menuMessages.it,
     "brand": "BigAnt Book",
     "tagline": "Ogni ospite, al posto giusto.",
     "demo": "Ambiente di prova",
@@ -172,6 +174,7 @@ export const uiMessages = {
     "bookingError": "Questo orario potrebbe essere cambiato. Scegli una nuova disponibilità."
   },
   "en": {
+    ...menuMessages.en,
     "brand": "BigAnt Book",
     "tagline": "Every guest, in the right place.",
     "demo": "Test environment",

@@ -1,5 +1,7 @@
 export const messages = {
   it: {
+    INVALID_IMAGE: 'Scegli una foto JPEG, PNG o WebP valida fino a 5 MB e riprova.',
+    CATEGORY_NOT_EMPTY: 'Sposta o rimuovi i piatti prima di eliminare questa categoria.',
     INVALID_PHONE: 'Inserisci un numero di telefono valido, includendo il prefisso internazionale se non italiano.',
     INVALID_TRANSITION: 'Lo stato è cambiato o questa azione non è disponibile. Aggiorna la pagina.',
     SLOT_UNAVAILABLE: 'Questo orario non è più disponibile. Scegli uno degli altri orari proposti.',
@@ -15,6 +17,8 @@ export const messages = {
     INTERNAL_ERROR: 'Operazione non riuscita. Riprova più tardi.',
   },
   en: {
+    INVALID_IMAGE: 'Choose a valid JPEG, PNG or WebP photo up to 5 MB and try again.',
+    CATEGORY_NOT_EMPTY: 'Move or remove the dishes before deleting this category.',
     INVALID_PHONE: 'Enter a valid phone number, including the country code for numbers outside Italy.',
     INVALID_TRANSITION: 'The status has changed or this action is unavailable. Refresh the page.',
     SLOT_UNAVAILABLE: 'This time is no longer available. Choose another suggested time.',
@@ -36,3 +40,5 @@ export function errorBody(code: ErrorCode, language?: string) {
 }
 
 export * from './ui';
+
+export * from './menu';

@@ -1,10 +1,10 @@
 # Servizi esterni — dalla prova locale all'attivazione
 
-Verifica documentale: 16 settembre 2026. Nessun account acquistato, nessun servizio attivato, nessun deploy o invito GitHub eseguito. M1–M2 funzionano sul Mac con PostgreSQL locale; email, SMS, push, menu e recensioni non sono ancora funzionalità attive.
+Verifica documentale: 16 settembre 2026. Nessun account acquistato, nessun servizio attivato, nessun deploy o invito GitHub eseguito. Prenotazioni e menu funzionano sul Mac con PostgreSQL e immagini locali; email, SMS, push e recensioni non sono ancora funzionalità attive.
 
 ## 1. Per provare adesso sul Mac
 
-Nessun servizio cloud necessario. Il launcher avvia web, API e PostgreSQL locale. Gli accessi demo sono nella guida di prova. Usare dati inventati: questo è il prototipo M2, non il completamento privacy/notifiche/produzione di M5–M6.
+Nessun servizio cloud necessario. Il launcher avvia web, API e PostgreSQL locale. Gli accessi demo sono nella guida di prova. Usare dati inventati: questo è il prototipo locale, non il completamento privacy/notifiche/produzione di M5–M6.
 
 ## 2. Per condividere una demo via link con i soci
 
@@ -34,7 +34,7 @@ Configurazione applicativa già usata: `DATABASE_URL`, `JWT_SECRET` casuale, `HO
 | Email transazionali | M5: conferma, attesa, disdetta; indispensabili per il flusso operativo completo | Dominio mittente, indirizzo From/reply-to, API key, SPF/DKIM/DMARC, webhook con firma, retention | Valutare Scaleway TEM con regione e contratto EU; nessuna integrazione scritta |
 | SMS | M5: promemoria con tetto per tenant e fallback email | Account, mittente/numerazione, credenziali regionali, webhook, budget e limite mensile | Twilio IE1 ha supporto SMS EU, con limiti su operatori e supporto esterno: richiede verifica contrattuale |
 | Coda e worker | M5: promemoria affidabili e tentativi idempotenti | Worker persistente, connessione DB oppure Redis EU, pianificazione e retention | Può usare PostgreSQL; Redis è una scelta tecnica da fare in M5, non un requisito attuale |
-| Storage immagini | M3: foto menu e asset dei locali | Bucket, endpoint, chiavi limitate, CORS, dominio asset, policy upload | R2 con **jurisdiction `eu`**, non semplice location hint; controllare anche distribuzione/log |
+| Storage immagini | Foto menu e copertine già locali in M3; storage remoto prima del deploy | Bucket, endpoint, chiavi limitate, CORS, dominio asset, policy upload | R2 con **jurisdiction `eu`**, non semplice location hint; controllare anche distribuzione/log |
 | Google Place ID | M4: link alla scheda recensioni | Place ID verificato per ogni locale | Il visitatore viene inviato a Google; non è archiviazione BigAnt. Valutazione dei dati condivisi prima di M4 |
 | Web Push | M5: nuove prenotazioni sul dispositivo staff | Chiavi VAPID, contatto tecnico, HTTPS e permesso notifiche | Provider del browser e trattamento endpoint da verificare; niente PII nel payload |
 | Error tracking | M6: diagnosi errori | DSN/progetto, regione, filtri PII, nessun replay con dati ospiti | Sentry EU conserva eventi/backups in EU ma alcuni metadati account in US. Non dichiararlo compatibile con “tutto EU” senza risolvere il vincolo; valutare hosting proprio EU |
@@ -60,3 +60,7 @@ Per continuare dopo il test: scegliere nome dominio e intestatario account, defi
 ## 5. Punto di attivazione
 
 Prima della demo ai soci: ambiente di prova EU, accessi separati e dati inventati. Prima di clienti reali: completare almeno i requisiti pertinenti M5–M6, notifiche idempotenti, privacy/retention, HTTPS, account reali e backup con ripristino verificato. M2 consegna una prova funzionale completa del flusso prenotazioni, non una dichiarazione di produzione pronta.
+
+## Storage menu già predisposto in M3
+
+La prova usa il filesystem del Mac, con `MENU_IMAGE_DIR` opzionale e default `.local/menu-images`. Nessun account cloud serve per caricare foto o copertine. Al deploy occorre un volume persistente EU oppure collegare lo storage oggetti scelto e verificato: l’adattatore R2 non è ancora implementato. Database e immagini devono essere inclusi nei backup; il solo clone GitHub non trasporta i file caricati.

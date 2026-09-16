@@ -1,3 +1,4 @@
+import { menuRoutes } from './menu.js';
 import { DomainError } from '@bigant/core';
 import { ZodError } from 'zod';
 import { settingsRoutes } from './settings.js';
@@ -19,7 +20,7 @@ const cookieName = '__Secure-bigant_refresh';
 const cookieOptions = { httpOnly: true, secure: true, sameSite: 'lax' as const, path: '/auth' };
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
 
-export function buildApp(options: { secret: string; now?: () => Date }) {
+export function buildApp(options: { secret: string; now?: () => Date; menuImageDir?: string }) {
   if (Buffer.byteLength(options.secret) < 32) throw new Error('JWT_SECRET_TOO_SHORT');
   const app = Fastify({ logger: false, bodyLimit: 16_384, trustProxy: false });
   const key = new TextEncoder().encode(options.secret);
@@ -67,6 +68,7 @@ export function buildApp(options: { secret: string; now?: () => Date }) {
     app.addHook('onSend', async (_request, reply, payload) => { reply.header('Cache-Control','no-store'); return payload; });
     reservationRoutes(app, { secret: options.secret, now });
     settingsRoutes(app);
+    menuRoutes(app, options.menuImageDir);
     app.get('/health', async () => ({ status: 'ok' }));
     app.post('/auth/login', {
       config: { rateLimit: { max: 5, timeWindow: '15 minutes', hook: 'preHandler', keyGenerator: request => {

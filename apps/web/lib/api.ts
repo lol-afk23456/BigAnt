@@ -5,7 +5,7 @@ export class ApiError extends Error { constructor(message:string,public code:str
 export async function api<T>(path:string,options:RequestInit={},token?:string):Promise<T> {
  const language:Language=typeof document!=='undefined'&&document.documentElement.lang==='en'?'en':'it';
  let response:Response;
- try { response=await fetch(path.startsWith('/auth/')?path:`/api${path}`,{...options,cache:'no-store',credentials:'same-origin',headers:{...(options.body?{'Content-Type':'application/json'}:{}),'Accept-Language':language,...(token?{Authorization:`Bearer ${token}`} : {}),...options.headers}}); }
+ try { response=await fetch(path.startsWith('/auth/')?path:`/api${path}`,{...options,cache:'no-store',credentials:'same-origin',headers:{...(options.body&&!(options.body instanceof Blob)?{'Content-Type':'application/json'}:{}),'Accept-Language':language,...(token?{Authorization:`Bearer ${token}`} : {}),...options.headers}}); }
  catch {throw new ApiError(uiMessages[language].network,'NETWORK',0);}
  if(!response.ok){let error:{error?:{message:string;code:string}}={};try{error=await response.json();}catch{/* Risposta non JSON: usare il messaggio di rete tradotto. */}throw new ApiError(error.error?.message??uiMessages[language].network,error.error?.code??'UNKNOWN',response.status);}
  if(response.status===204)return undefined as T;

@@ -60,3 +60,5 @@ export interface CancellationDetails {reserved_at:string;party_size:number;statu
 export interface StaffProfile {id:string;full_name:string;role:'owner'|'staff';tenant:{id:string;name:string;slug:string;timezone:string;locale_default:'it'|'en'}}
 export interface TableRecord extends TableInput {id:string}
 export interface ReservationRecord extends BookingReceipt {duration_min:number;table_id:string|null;notes:string;internal_notes:string;source:'direct'|'phone'|'staff';customer:{id:string;full_name:string;phone_e164:string|null;email:string|null};table:TableRecord|null}
+
+export * from './menu';

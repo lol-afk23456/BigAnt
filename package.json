@@ -17,21 +17,23 @@
     "db:migrate": "pnpm --filter @bigant/database migrate",
     "db:local": "node scripts/local-db.mjs",
     "local": "node scripts/local.mjs",
-    "demo:reset": "tsx packages/database/src/reset-demo.ts"
+    "demo:reset": "tsx packages/database/src/reset-demo.ts",
+    "test:menu-performance": "node scripts/menu-performance.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",
-    "eslint": "^9.39.0",
-    "typescript-eslint": "^8.57.0",
-    "typescript": "^5.9.3",
-    "@types/node": "^22.19.0",
-    "vitest": "^3.2.4",
-    "tsx": "^4.21.0",
-    "turbo": "^2.8.0",
     "@playwright/test": "^1.58.2",
+    "@prisma/client": "6.19.2",
+    "@types/node": "^22.19.0",
     "dotenv": "^17.3.1",
     "embedded-postgres": "16.14.0-beta.17",
-    "@prisma/client": "6.19.2"
+    "eslint": "^9.39.0",
+    "lighthouse": "^13.4.1",
+    "tsx": "^4.21.0",
+    "turbo": "^2.8.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.0",
+    "vitest": "^3.2.4"
   },
   "type": "module"
 }

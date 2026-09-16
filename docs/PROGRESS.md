@@ -2,7 +2,7 @@
 
 ## Stato al 16 settembre 2026
 
-**M0, M1 e M2 completate.** Il cancello M1 è stato superato prima di iniziare le schermate; il cancello M2 è verde. Launcher locale verificato; lavoro pronto per la prima prova sul Mac.
+**M0–M3 completate.** M3 include i quattro template e il comando occhio approvati dall’utente. Cancelli automatici verdi; M4–M6 non iniziate.
 
 ## Realizzato
 
@@ -62,7 +62,7 @@ Nel terminale di questa sessione il Node di sistema era 12 e mancava pnpm: verif
 - Nessuna disponibilità: proporre le due date alternative con tono invitante e possibilità di continuare.
 - Test frontend leggeri, concentrati sui flussi essenziali.
 
-Goal attivo: completare M1 e M2, testing locale Mac, repository pronto per GitHub senza pubblicazione, report servizi esterni. Tema esclusivamente scuro con accenti arancioni.
+Goal precedente, concluso: completare M1 e M2, testing locale Mac, repository pronto per GitHub senza pubblicazione, report servizi esterni. Tema esclusivamente scuro con accenti arancioni.
 
 ## M1 — cancello superato
 
@@ -120,3 +120,51 @@ Decisione calendario M2: agenda del giorno selezionato, con lista che porta in c
 `pnpm local` verificato sul database di sviluppo esistente: migrazioni senza modifiche pendenti, seed idempotente (due tenant conservati), impronta build invariata e nessuna ricompilazione. Web su 3000 e API su 3001, esplicitamente separati. HTTP 200 su home e vetrina pubblica di entrambi i locali tramite proxy Next. Arresto con Ctrl+C completato con esito 0; i processi web/API sono stati fermati per permettere il riavvio dell'app. PostgreSQL locale preesistente e dati conservati.
 
 Dopo il riavvio di ChatGPT/Codex: aprire `Avvia BigAnt.command` da Finder, quindi `http://localhost:3000` in Chrome. Accessi e checklist in `docs/PROVA_LOCALE.md`; dipendenze esterne in `docs/SERVIZI_ESTERNI.md`. Il goal si ferma qui, prima di qualsiasi pubblicazione o missione M3.
+
+
+## M3 — estensione approvata dall’utente
+
+Il 16 settembre, dopo la prova M2, l’utente ha chiesto di continuare. M3 avviata con cancello M2 già verde. Ha poi approvato esplicitamente di includere subito quattro template e il comando occhio, estendendo il branding limitato della SPEC.
+
+- Quattro stili scuri: Essenziale (bistrot/trattoria), Pop (pizzeria/informale), Elegante (ristorazione ricercata), Pub (birreria/burger bar). Un colore principale e una copertina per locale; arancione iniziale. I contenuti sono gli stessi per tutti gli stili.
+- Visibilità `is_visible` indipendente da `is_available`: occhio esclude il piatto dalla risposta pubblica; esaurito lo lascia visibile in grigio. Salvataggio immediato sul DB, risposte senza cache; pagina aperta aggiornata ogni 30 secondi se visibile e al ritorno sulla scheda.
+- Nuova migrazione additiva `202609160002_m3_menu`, senza modificare M0 né azzerare i dati. Applicata prima al database dei test e, dopo il cancello verde, al database di sviluppo tramite launcher.
+- API CRUD/riordino atomico con contesto tenant; gestione menu consentita allo staff, aspetto/copertina al titolare con audit. Categorie non vuote non eliminabili; rimozioni con undo di cinque secondi nel pannello.
+- Upload binario autenticato, JPEG/PNG/WebP fino a 5 MB, formato reale verificato con Sharp, limite pixel, niente immagini animate. Ricompressione in tre misure WebP 320/640/960 e rimozione metadati. Nomi UUID, percorso per tenant; foto locali in `.local/menu-images`, variabile `MENU_IMAGE_DIR` opzionale.
+- Foto e storage cloud non ancora collegati. Immagini precedenti non più referenziate non servite; pulizia fisica degli orfani rimandata alla gestione storage M6.
+- SSR del menu dedicato al locale, IT/EN via URL, immagini responsive, categorie, evidenza, allergeni e dieta; form staff con prezzi convertiti da stringa decimale a centesimi senza arrotondamenti.
+
+64 test backend verdi, inclusi 7 nuovi scenari menu. Build, flusso browser con quattro template e misura Lighthouse mobile completati: risultati nel cancello finale sotto.
+
+
+### Verifica prestazioni M3
+
+Il fallback di caricamento della route menu nascondeva il contenuto SSR in attesa degli script: rimosso. Il menu non importa più il router client per aggiornarsi: uno script minimo confronta ogni 30 secondi l’impronta dei dati pubblici e ricarica soltanto quando cambiano. Il rate limit dei dati menu è separato da quello delle immagini (entrambi 30/min per IP), per non far consumare alle foto il budget della lettura.
+
+Lighthouse 13.4.1 viene eseguito **con throttling DevTools applicato da Chrome**, mobile, download 750 Kbps, upload 250 Kbps, latenza 150 ms e CPU 4×. Prima verifica dopo la correzione: **98/100, LCP 832 ms**, con copertina e foto sintetiche del test; non è una misura dell’infrastruttura di produzione né di foto reali. La proiezione alternativa Lantern aveva dato 89/100 e LCP circa 3,6 s dopo la correzione: è un metodo diverso e non va confuso con il risultato misurato con rete limitata. Il comando fissa esplicitamente il profilo e fallisce sotto 90 o con LCP ≥ 2 s; nessuna soglia ridotta.
+
+Verifica generale e riavvio completati; dati preesistenti conservati.
+
+
+### Cancello finale M3 — superato
+
+| Verifica | Esito |
+| --- | --- |
+| `pnpm typecheck` | Verde, app/pacchetti e test |
+| `pnpm lint` | Verde, zero warning |
+| `pnpm test` | 64/64, sette file, PostgreSQL reale |
+| `pnpm build` | Verde, web/API produzione |
+| `pnpm test:e2e` | 4/4, inclusi i tre scenari M2 e un solo scenario menu completo |
+| Lighthouse nel test menu | 97/100; LCP 915 ms, profilo DevTools sopra descritto |
+| QA visiva | Quattro template ispezionati a 375 px, nessun overflow orizzontale |
+
+L’ultima esecuzione completa del browser è terminata con esito 0 in circa 1,6 minuti. Le esecuzioni precedenti fallite sono state usate per correggere import del test, contatori delle API, fallback SSR e dipendenza dal router durante il primo rendering; non conteggiate come verdi. La misura 98/832 ms precedeva l’ultimo alleggerimento; il risultato finale è 97/915 ms. Immagini sintetiche, rete e CPU limitate localmente: verificare nuovamente immagini e infrastruttura reali prima di M6.
+
+Il test menu prova categoria/piatto con foto, copertina, allergeni, prezzi, quattro stili, cambio lingua, esaurimento, occhio, aggiornamento di una pagina già aperta e separazione dal secondo locale. I test backend verificano anche riordino atomico, ID di un altro tenant, limite upload, formato reale, varianti WebP, foto nascoste accessibili solo allo staff, impostazioni owner e conservazione degli altri campi nelle PATCH.
+
+**Confine:** M3 conclusa; M4 non avviata. Nessuna pubblicazione GitHub, nessun servizio cloud, email/SMS/push o dato reale aggiunto. Guide di prova e servizi esterni aggiornate. Foto locali e database restano fuori dal repository.
+
+
+### Demo M3 riavviata
+
+`pnpm local` ha applicato `202609160002_m3_menu` a `bigant`, conservato i due tenant con seed idempotente e riusato la build verificata. Web:3000 e API:3001 attivi. HTTP 200 sui menu di Santa Lucia e Lido, API del menu e pannello staff. Il progetto viene lasciato in esecuzione per la prova; nessun reset eseguito.

@@ -140,6 +140,9 @@ model StaffUser {
 model TenantSettings {
   tenant_id                   String   @id @db.Uuid
   tenant                      Tenant   @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  menu_template               String   @default("essential")
+  menu_primary_color          String   @default("#ff914d")
+  menu_cover_url              String?
   slot_granularity_min        Int      @default(15)
   turn_duration_min           Int      @default(90)
   max_covers_per_slot         Int      @default(12)
@@ -280,6 +283,7 @@ model MenuItem {
   image_url      String?
   allergens      String[]     @default([])
   dietary        String[]     @default([])
+  is_visible     Boolean      @default(true)
   is_available   Boolean      @default(true)
   is_featured    Boolean      @default(false)
   sort_order     Int          @default(0)
