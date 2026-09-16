@@ -1,6 +1,8 @@
-# MISSIONS.md — le sei missioni
+# MISSIONS.md — missioni M0–M6
 
-Sei blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con criteri di accettazione verificabili da comando.
+Sette blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con criteri di accettazione verificabili da comando.
+
+**Stato al 16 settembre 2026:** M0–M3 e consolidamento M3C completati, con verifiche in [PROGRESS.md](PROGRESS.md). M4–M6 non avviate. Le checkbox dei criteri originali restano requisiti: lo stato corrente è questa sintesi e i cancelli documentati, non una spunta implicita su ogni funzione futura.
 
 **Regola:** nessuna missione inizia prima che la precedente abbia il cancello verde. Se una missione non entra in una sessione, fermati a un punto coerente (test verdi, commit pulito), aggiorna `PROGRESS.md` e riprendi da lì.
 
@@ -13,7 +15,7 @@ Sei blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con cr
 **Da fare**
 - Monorepo pnpm + Turborepo con la struttura di AGENTS.md
 - `apps/api` Fastify con healthcheck, `apps/web` Next.js con pagina vuota
-- Schema Prisma completo: tutte e 12 le entità di SPEC §3, con indici e vincoli
+- Schema Prisma completo: tutti i 14 modelli di SPEC §3, più StaffSession per revoca/rotazione, con indici e vincoli
 - Prima migrazione applicata
 - Prisma client extension che **inietta e impone `tenant_id`** su ogni operazione
 - Autenticazione staff: login, refresh, logout, argon2id, rate limit sul login
@@ -25,7 +27,7 @@ Sei blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con cr
 - [ ] `pnpm typecheck && pnpm lint && pnpm test && pnpm build` tutti verdi
 - [ ] `pnpm seed` crea due tenant con dati completi e distinti
 - [ ] `tenant-isolation.test.ts`: per ogni modello, una query con token del tenant A non restituisce mai righe del tenant B
-- [ ] Una query scritta di proposito senza `tenant_id` **fallisce**, non restituisce dati altrui
+- [ ] Una query scritta di proposito senza contesto tenant **fallisce**; nel contesto il filtro tenant è imposto anche se omesso dal chiamante
 - [ ] Login funziona, token scade, refresh funziona, 6° tentativo di login bloccato
 
 **Non fare.** Nessuna interfaccia, nessuna logica di prenotazione, nessun menu.
@@ -87,7 +89,8 @@ Sei blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con cr
 - Pagina pubblica `/r/:slug/menu`, generata lato server, immagini WebP con `srcset`
 - Categorie e piatti dal pannello, con riordino
 - Prezzo in centesimi, allergeni (i 14 UE), etichette dietetiche
-- `is_available` = piatto mostrato in grigio, **mai nascosto**
+- `is_available` = esaurito visibile in grigio; `is_visible` separato = comando occhio
+- Quattro template scuri, colore e copertina, come approvato dall’utente
 - `is_featured` in cima
 - Upload immagini: whitelist MIME, max 5 MB, ricompressione server, nome randomizzato
 - Multilingua it/en con selettore
@@ -97,6 +100,28 @@ Sei blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con cr
 - [ ] Un piatto segnato esaurito appare in grigio con etichetta, non sparisce
 - [ ] Lighthouse mobile sulla pagina menu: performance ≥ 90, LCP < 2s
 - [ ] Il cambio lingua non ricarica dati sbagliati
+
+---
+
+## M3C — Consolidamento della demo, approvato dall’utente
+
+**Obiettivo.** Demo dedicata al locale e documentazione coerente, prima di aggiungere M4.
+
+**Da fare**
+- Ingresso pubblico e login staff dedicati al locale; compatibilità dell’ingresso demo precedente
+- Sezione staff conservata al reload e avanti/indietro
+- Avviso per sessione di un altro locale prima di caricare l’agenda
+- Aggiornamento menu senza reload del documento, mantenendo il punto di lettura
+- Contenuti seed bilingui dimostrativi, aggiornamento dei soli placeholder originali mai modificati
+- Indice documenti, registro decisioni, SPEC/README/stato corrente allineati
+
+**Criteri di accettazione**
+- [x] Cancello generale verde
+- [x] Scenari browser esistenti estesi a ingresso dedicato, reload/back staff e sessione di un altro locale
+- [x] Occhio su pagina già aperta: documento e punto di lettura conservati
+- [x] Test seed: piatti modificati e identità esistenti conservati, aggiornamento ripetibile
+
+**Confine.** Prova su Chrome/Mac e viewport mobile; installazione/push su telefoni fisici e misure con foto reali restano successive. Nessun servizio acquistato, invio reale o deploy.
 
 ---
 
@@ -131,7 +156,7 @@ Sei blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con cr
 - Astrazione `NotificationChannel` con implementazioni email, SMS, push — **il fornitore SMS deve essere sostituibile cambiando una sola classe**
 - Email transazionali: conferma, attesa di conferma, disdetta
 - SMS promemoria con job schedulato ogni 5 minuti (mai `setTimeout`)
-- Idempotenza: insert in `NotificationLog` prima dell'invio, unique constraint `(reservation_id, type)`
+- Idempotenza: nuova migrazione per evento stabile e consegna evento/canale/destinatario; insert in `NotificationLog` prima dell’invio, gestione dei tentativi e degli esiti incerti
 - Tetto SMS mensile per tenant → oltre il tetto, degrada a email e segnala nel pannello
 - PWA: manifest, service worker, installabile, Web Push per nuova prenotazione e nuova recensione privata
 - Export CSV clienti e cancellazione cliente con anonimizzazione, entrambi con `AuditLog`
@@ -153,10 +178,10 @@ Sei blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con cr
 **Obiettivo.** Un locale vero, in EU, con i backup attivi.
 
 **Da fare**
-- Deploy: Vercel (web) e Railway o Fly (api, database, redis), **tutti in regione EU**
+- Deploy: configurazione scelta e verificata in EU per web, API, database, worker/storage/log/backup; candidati e vincoli in SERVIZI_ESTERNI.md
 - Variabili d'ambiente documentate in `.env.example`
 - Backup automatici del database, con un ripristino provato davvero almeno una volta
-- Sentry con filtro che esclude i dati personali
+- Monitoraggio errori verificato EU con filtro dei dati personali; Sentry SaaS EU non è una scelta già approvata
 - Dominio, HTTPS, header di sicurezza (CSP, HSTS, X-Content-Type-Options)
 - Onboarding guidato del primo tenant reale
 - Pagina di stato o almeno un alert quando l'API non risponde

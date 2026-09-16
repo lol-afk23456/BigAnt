@@ -2,9 +2,20 @@
 
 ## Stato al 16 settembre 2026
 
-**M0–M3 completate.** M3 include i quattro template e il comando occhio approvati dall’utente. Cancelli automatici verdi; M4–M6 non iniziate.
+**M0–M3 e consolidamento M3C completati.** M3 include i quattro template e il comando occhio approvati dall’utente. Cancelli automatici verdi; M4–M6 non iniziate.
 
-## Realizzato
+## Stato corrente della demo
+
+- M0–M3 e M3C (consolidamento richiesto dall’utente) conclusi. Prossima missione: M4.
+- Cliente: prenotazione progressiva e disdetta; staff: agenda, stati, tavoli, impostazioni e menu.
+- Menu: quattro template scuri, colore/copertina, allergeni, IT/EN, occhio separato da esaurito.
+- Ambiente locale Mac; dati demo persistenti. Servizi esterni, account reali e GitHub non attivati.
+- Ultimo cancello: 65/65 test backend, 4/4 scenari browser, build/typecheck/lint verdi. Lighthouse locale 99/100, LCP 788 ms; dettagli e limiti nel blocco M3C in fondo.
+- Documenti operativi: [indice](README.md), [decisioni](DECISIONS.md), [prova locale](PROVA_LOCALE.md), [servizi esterni](SERVIZI_ESTERNI.md).
+
+Le sezioni seguenti sono lo storico dei blocchi: riferimenti a una pagina vuota o a missioni non ancora avviate descrivono quel momento, non lo stato attuale.
+
+## Storico M0 — realizzato
 
 - Repository Git e monorepo pnpm 10.32.1 + Turborepo; Node 22.23.2, TypeScript strict.
 - API Fastify con healthcheck e autenticazione staff; Next.js App Router + Tailwind con pagina vuota. Nessuna schermata o logica di prodotto.
@@ -16,7 +27,7 @@
 - Vitest con PostgreSQL reale, Playwright minimale, ESLint senza warning e workflow GitHub Actions. Workflow predisposto, non eseguito su GitHub perché non è stato pubblicato alcun repository remoto.
 - README, `.env.example`, PROGRESS e BACKLOG.
 
-## Decisioni tecniche
+### Decisioni tecniche M0
 
 1. La dicitura «12 entità» nei documenti non corrisponde alla lista: SPEC §3 enumera 14 modelli contando separatamente MenuCategory/MenuItem e includendo AuditLog. Implementati tutti, più StaffSession, necessaria a revoca e rotazione dei refresh.
 2. Tenant è l'entità radice: il suo `id` è il confine; ogni altra tabella ha `tenant_id`. Non introdotta una colonna tenant_id autoreferenziale.
@@ -30,7 +41,7 @@
 10. Pacchetti condivisi consumati come TypeScript e controllati con tsc; API compilata in JavaScript con esbuild e dipendenze runtime esterne, web con build Next.js. Typegen precede il typecheck web anche su checkout pulito.
 11. Rate limit M0 in memoria per una sola istanza. Store condiviso e configurazione proxy/TLS prima della distribuzione sono annotati nel backlog.
 
-## Verifiche eseguite
+### Verifiche M0
 
 Tutti con esito 0 su Node 22.23.2 e PostgreSQL 16.14:
 
@@ -168,3 +179,46 @@ Il test menu prova categoria/piatto con foto, copertina, allergeni, prezzi, quat
 ### Demo M3 riavviata
 
 `pnpm local` ha applicato `202609160002_m3_menu` a `bigant`, conservato i due tenant con seed idempotente e riusato la build verificata. Web:3000 e API:3001 attivi. HTTP 200 sui menu di Santa Lucia e Lido, API del menu e pannello staff. Il progetto viene lasciato in esecuzione per la prova; nessun reset eseguito.
+
+### Documentazione servizi esterni — 16 settembre 2026
+
+Su richiesta dell’utente, riscritto `SERVIZI_ESTERNI.md` come guida dedicata per Riccardo e soci: prova sul Mac, demo via link, attivazione reale, matrice dei servizi, email transazionali/caselle Reply-To, SMS, infrastruttura, backup, push e Google/QR/NFC. Include informazioni mancanti, responsabilità, prezzi verificati e sequenza delle integrazioni.
+
+Ricontrollate fonti ufficiali Scaleway, Hetzner, Twilio, Resend, Cloudflare, Sentry, Google e WebKit. Scaleway TEM Essential resta candidato email; hosting Hetzner EU confrontato con Scaleway/PostgreSQL gestito. Nessuna scelta contrattuale definitiva: EU di log/metadati, filiera SMS/push, budget e intestatario account restano da verificare prima dell’attivazione. Aggiornato BACKLOG sulla deduplicazione NotificationLog da rivedere prima di M5, senza modificare migrazioni applicate.
+
+Verifica di questo blocco limitata a documenti, coerenza e link: nessun nuovo cancello applicativo eseguito. Nessun codice, dipendenza, account, invio reale, deploy o pubblicazione GitHub modificato/attivato. **Confine invariato: M0–M3 concluse, M4–M6 da iniziare.** Le proposte della guida non equivalgono a una missione implementata.
+
+## M3C — consolidamento della demo, cancello superato
+
+Il «continua» dell’utente è stato applicato al consolidamento della prova M0–M3 e della documentazione prima di M4.
+
+- Ingresso `/r/[slug]` dedicato al locale, con prenotazione, menu e accesso staff. Brand e ritorni cliente conducono all’ingresso del proprio locale. La home `/` resta un selettore dichiaratamente demo.
+- Pannello `/r/[slug]/staff`: login con locale fisso; sezione in `?view=` conservata al reload e con avanti/indietro. L’ingresso staff precedente rimane compatibile e viene ricondotto al percorso del locale autenticato.
+- Una sessione di un altro locale mostra l’account attivo prima di caricare l’agenda, con accesso al suo pannello oppure cambio account. Il filtro tenant nel data layer resta obbligatorio e verificato.
+- Menu ancora renderizzato sul server; aggiornamento pubblico ogni 30 secondi se visibile e al ritorno sulla scheda. Un asset esterno confronta i dati e sostituisce il contenuto mantenendo documento, piatti invariati, focus e punto di lettura. Un errore temporaneo conserva il menu leggibile e riprova.
+- Il codice del pannello è caricato solo entrando nell’area staff. Nessuna nuova dipendenza o migrazione.
+- Contenuti menu seed IT/EN dimostrativi per entrambi i locali. L’aggiornamento conserva ID, prove, foto e piatti modificati: interviene solo sulle firme dei placeholder originali con timestamp mai modificato, anche in caso di modifiche concorrenti. Ricette/prezzi/allergeni richiedono conferma del locale prima dell’uso reale.
+- Aggiunti indice documenti e registro decisioni. SPEC, MISSIONS, README, prova locale e BACKLOG allineati; stato corrente separato dallo storico. La guida servizi esterni rimane dedicata alle integrazioni future e ai dati necessari per attivarle.
+
+### Verifiche finali M3C
+
+| Comando/verifica | Esito |
+| --- | --- |
+| `pnpm typecheck` | Verde: sette app/pacchetti e test |
+| `pnpm lint` | Verde, zero warning |
+| `pnpm test` | 65/65, sette file, PostgreSQL reale separato |
+| `pnpm build` | Verde, build produzione finale |
+| `pnpm test:e2e` | 4/4; ultima esecuzione circa 1,7 minuti |
+| Lighthouse nel test menu | 99/100; LCP 788 ms |
+| QA visiva ingressi/login | Chrome a 375 e 1440 px, screenshot ispezionati, nessun overflow orizzontale |
+| Coerenza documenti | Link locali validi e `git diff --check` verde |
+
+Gli scenari browser esistenti sono stati estesi senza aggiungere una suite frontend: ingresso dedicato Lido, ritorno alla sezione menu, refresh, avanti/indietro, avviso account diverso e cambio account. Il comando occhio su una pagina aperta verifica che restino lo stesso documento e il punto di lettura (scarto inferiore a 3 px). Un nuovo test backend significativo verifica l’aggiornamento ripetibile dei placeholder e la conservazione dei piatti modificati.
+
+Il valore Lighthouse finale usa il profilo DevTools mobile documentato in M3 (750/250 Kbps, latenza 150 ms, CPU 4×) e immagini sintetiche nel database di test. Non misura foto reali o infrastruttura remota. Gli screenshot dei template Essenziale e Pub sono stati ispezionati a 375 px; i quattro stili restano coperti dallo scenario browser.
+
+### Riavvio e punto di ripresa M3C
+
+`pnpm local` riavviato sul database di sviluppo `bigant`: nessuna migrazione pendente, due tenant conservati, seed conservativo e build verificata riutilizzata. Web su 3000, API su 3001; PostgreSQL locale preesistente conservato. HTTP 200 su home, ingressi dedicati, login, menu e vetrine API di entrambi i locali. La demo viene lasciata in esecuzione. Prova da `/r/trattoria-santa-lucia` oppure `/r/lido-miseno`; accessi nella guida locale.
+
+**Confine:** M3C concluso; M4 recensioni è il prossimo blocco e non è iniziato. Successivamente M5 notifiche/PWA/privacy e M6 attivazione EU. Prove su telefoni fisici, foto reali, rate limit dietro proxy e fornitori/account reali restano nel BACKLOG. Nessun invio reale, servizio cloud, deploy o pubblicazione GitHub eseguito.

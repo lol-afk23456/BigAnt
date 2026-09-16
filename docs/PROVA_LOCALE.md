@@ -11,22 +11,22 @@ Su un altro Mac: installa Node 22 e pnpm 10, poi dalla cartella del repository e
 | Trattoria Santa Lucia | owner@santalucia.test | bigant2026 |
 | Lido Miseno | owner@lidomiseno.test | bigant2026 |
 
-La homepage offre entrambi i percorsi. Sono accessi dimostrativi, da non usare in produzione. Nessuna email o SMS viene spedito. Conserva il link mostrato dopo la prenotazione.
+La homepage è il selettore dei due demo. Apri il locale: il suo ingresso `/r/:slug` offre prenotazione, menu e pannello staff dedicato. Link diretti: [Santa Lucia](http://localhost:3000/r/trattoria-santa-lucia) e [Lido Miseno](http://localhost:3000/r/lido-miseno). Sono accessi dimostrativi, da non usare in produzione. Nessuna email o SMS viene spedito. Conserva il link mostrato dopo la prenotazione.
 
 ## Percorso da provare
 
-1. **Cliente Santa Lucia, 3 minuti.** Dalla home scegli “Prenota come ospite”. Tocca il numero di persone, seleziona una data tra domani e dopodomani e un orario. I contatti appaiono solo dopo la scelta. Inserisci nome, email e telefono inventati ma formalmente validi (per esempio `prova@example.test` e `3331234567`). Apri “Aggiungi una richiesta”, prenota e controlla la conferma immediata. Copia/apri il link di gestione.
+1. **Cliente Santa Lucia, 3 minuti.** Dalla home scegli “Apri il locale” per Santa Lucia, poi “Prenota il tavolo”. Tocca il numero di persone, seleziona una data tra domani e dopodomani e un orario. I contatti appaiono solo dopo la scelta. Inserisci nome, email e telefono inventati ma formalmente validi (per esempio `prova@example.test` e `3331234567`). Apri “Aggiungi una richiesta”, prenota e controlla la conferma immediata. Copia/apri il link di gestione.
 2. **Disdetta, 1 minuto.** Dalla gestione annulla la prenotazione. Lo stato deve diventare “Prenotazione disdetta”. Per evitare il termine di disdetta, usa un appuntamento almeno due giorni nel futuro.
-3. **Lido e staff, 4 minuti.** Prenota come ospite al Lido: deve apparire “Richiesta ricevuta”. Accedi al suo pannello, scegli lo stesso giorno: trova la richiesta in cima, confermala, apri il dettaglio e assegna un tavolo. Ricarica la pagina: la sessione deve restare attiva. Prova anche ricerca nome/telefono e vista “Orari”.
+3. **Lido e staff, 4 minuti.** Prenota come ospite al Lido: deve apparire “Richiesta ricevuta”. Accedi al suo pannello, scegli lo stesso giorno: trova la richiesta in cima, confermala, apri il dettaglio e assegna un tavolo. Ricarica la pagina: la sessione e la sezione aperta devono restare attive. Cambia sezione e prova Indietro/Avanti del browser. Prova anche ricerca nome/telefono e vista “Orari”.
 4. **Telefonata, 2 minuti.** Nel pannello crea una prenotazione manuale. Scegli uno slot libero, inserisci contatti e salva. Apri il dettaglio per correggere note o numero di persone: una modifica incompatibile deve essere rifiutata senza sovraprenotare.
 5. **Impostazioni, 3 minuti.** Apri Impostazioni, modifica ritmo o termine di disdetta e salva. Inserisci una chiusura completa per oggi; apri la pagina ospiti in un'altra scheda: deve saltare al primo giorno utile. Seleziona nuovamente oggi: devono comparire le due date alternative più vicine, se esistono nella finestra prenotabile. Rimuovi la chiusura; prova “Annulla azione” entro 5 secondi.
 6. **Tavoli, 2 minuti.** Aggiungi un tavolo, cambia zona/capienza e disattivalo. I tavoli disattivati restano visibili allo staff ma non sono proposti per nuove assegnazioni automatiche.
 7. **Lingua e mobile, 2 minuti.** Cambia IT/EN su cliente e pannello. Riduci la finestra o usa la vista dispositivo di Chrome a 375 px: niente scorrimento orizzontale, pulsanti persone toccabili e form leggibile.
-8. **Isolamento, 1 minuto.** Esci dal Lido ed entra in Santa Lucia. Le prenotazioni create al Lido non devono esserci. Usa logout prima di cambiare locale: aprire un link con `?locale=` non sostituisce una sessione già attiva.
+8. **Isolamento, 1 minuto.** Esci dal Lido ed entra in Santa Lucia. Le prenotazioni create al Lido non devono esserci. Apri l’ingresso staff di Santa Lucia mentre sei ancora nel Lido: compare l’avviso di sessione attiva, senza agenda. Scegli “Esci e accedi a questo locale” per cambiare account. Il parametro legacy `?locale=` non cambia una sessione già attiva.
 
 ## Dati e ripartenza
 
-Il seed iniziale crea due locali completi con prenotazioni distribuite attorno al giorno dell'installazione. Avvii successivi conservano tutte le prove. Se vuoi ripartire da zero, ferma le app e usa `pnpm demo:reset --confirm`: **cancella tutti i dati dei due locali demo e li ricrea con date aggiornate**. Il comando rifiuta ambienti di produzione e database remoti. Gli altri tenant non vengono eliminati.
+Il seed iniziale crea due locali completi con prenotazioni distribuite attorno al giorno dell'installazione. Avvii successivi conservano tutte le prove. Il menu ha nomi, descrizioni e prezzi dimostrativi IT/EN: ingredienti e allergeni vanno verificati dal titolare prima di un uso reale. I soli vecchi placeholder originali mai modificati vengono aggiornati, senza reset. Se vuoi ripartire da zero, ferma le app e usa `pnpm demo:reset --confirm`: **cancella tutti i dati dei due locali demo e li ricrea con date aggiornate**. Il comando rifiuta ambienti di produzione e database remoti. Gli altri tenant non vengono eliminati.
 
 Non eseguire il reset mentre altri stanno provando. Per i test automatici il database separato `bigant_test` è ricreato per gli scenari browser: non usare quel database per le tue prove manuali.
 
@@ -49,7 +49,7 @@ Nel pannello apri **Menu**. Aggiungi una categoria con nome IT/EN e un piatto co
 
 - **Aspetto del menu**: scegli Essenziale, Pop, Elegante o Pub; cambia colore e aggiungi una copertina. Premi Salva modifiche. Tutti gli stili restano scuri.
 - **Esaurito**: il piatto resta pubblico in grigio e con etichetta.
-- **Occhio**: nasconde il piatto dal menu pubblico, conservando tutti i dati. Toccalo di nuovo per ripubblicarlo. Le API cambiano al salvataggio; una pagina già aperta si aggiorna ogni 30 secondi quando visibile, oppure al ritorno sulla scheda.
+- **Occhio**: nasconde il piatto dal menu pubblico, conservando tutti i dati. Toccalo di nuovo per ripubblicarlo. Le API cambiano al salvataggio; una pagina già aperta si aggiorna ogni 30 secondi quando visibile, oppure al ritorno sulla scheda, senza reload del documento. Scorri fino a un piatto più in basso, modifica un piatto sopra di lui e verifica che il punto di lettura venga mantenuto.
 - **Apri il menu pubblico**: verifica lingua, foto, prezzi e allergeni. Prova anche a 375 px. Nessun altro locale è proposto nella pagina del menu.
 
 Link diretti: http://localhost:3000/r/trattoria-santa-lucia/menu e http://localhost:3000/r/lido-miseno/menu.

@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, expect, test } from 'vitest';
 import { admin, fixtures } from './helpers.js';
-import { demos } from '../packages/database/src/fixtures.js';
+import { demos,seedDemo } from '../packages/database/src/fixtures.js';
 import { loginInput } from '../packages/types/src/index.js';
 import { messages } from '../packages/i18n/src/index.js';
 beforeAll(async () => { await fixtures(); });
@@ -44,4 +44,24 @@ test('vincoli SQL: prezzo, rating, identità tenant e idempotenza notifiche', as
 test('validazione condivisa e cataloghi lingue coerenti', () => {
  expect(loginInput.safeParse({slug:'../no',email:'invalid',password:''}).success).toBe(false);
  expect(Object.keys(messages.it)).toEqual(Object.keys(messages.en));
+});
+
+test('aggiornamento menu demo conserva piatti modificati e identità esistenti',async()=>{
+ const tenant=await admin.tenant.findUniqueOrThrow({where:{slug:demos[0]!.slug}});
+ const category=await admin.menuCategory.findFirstOrThrow({where:{tenant_id:tenant.id,sort_order:0}});
+ const first=await admin.menuItem.findFirstOrThrow({where:{category_id:category.id,sort_order:0}});
+ const edited=await admin.menuItem.findFirstOrThrow({where:{category_id:category.id,sort_order:5}});
+ try{
+  await admin.menuCategory.update({where:{id:category.id},data:{name_it:'Categoria demo 1',name_en:'Demo category 1',updated_at:category.created_at}});
+  for(const [row,n] of [[first,0],[edited,5]] as const)await admin.menuItem.update({where:{id:row.id},data:{name_it:`Piatto demo 1-${n+1}`,name_en:`Demo dish 1-${n+1}`,description_it:n===5?'Ricetta modificata durante la prova':null,description_en:null,price_cents:800+n*50,allergens:['1'],dietary:[],updated_at:row.created_at}});
+  await seedDemo(admin);
+  expect(await admin.menuItem.findUniqueOrThrow({where:{id:first.id}})).toMatchObject({name_it:'Bruschette al pomodoro',name_en:'Tomato bruschetta',price_cents:600,category_id:category.id});
+  expect(await admin.menuItem.findUniqueOrThrow({where:{id:edited.id}})).toMatchObject({name_it:'Piatto demo 1-6',description_it:'Ricetta modificata durante la prova',price_cents:1050});
+  const before=await admin.menuItem.findUniqueOrThrow({where:{id:first.id}});await seedDemo(admin);
+  expect(await admin.menuItem.findUniqueOrThrow({where:{id:first.id}})).toEqual(before);
+ }finally{
+  await admin.menuCategory.update({where:{id:category.id},data:category});
+  await admin.menuItem.update({where:{id:first.id},data:first});
+  await admin.menuItem.update({where:{id:edited.id},data:edited});
+ }
 });

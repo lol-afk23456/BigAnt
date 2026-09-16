@@ -22,9 +22,9 @@ I due locali demo:
 | Trattoria Santa Lucia | owner@santalucia.test | bigant2026 |
 | Lido Miseno | owner@lidomiseno.test | bigant2026 |
 
-Santa Lucia conferma automaticamente; Lido richiede conferma dello staff. La home propone percorso cliente e pannello. Non vengono spediti messaggi. [Guida di prova in 15–20 minuti](docs/PROVA_LOCALE.md).
+Santa Lucia conferma automaticamente; Lido richiede conferma dello staff. La home seleziona i demo; ogni locale ha un ingresso dedicato `/r/:slug` con prenotazione, menu e accesso staff `/r/:slug/staff`. Nel login dedicato non si sceglie un altro locale. Non vengono spediti messaggi. [Guida di prova in 20–25 minuti](docs/PROVA_LOCALE.md).
 
-Il seed è idempotente: conserva le prove precedenti. Per ricreare intenzionalmente i **soli due locali demo cancellandone tutte le prove**: `pnpm demo:reset --confirm`, ad app ferme. Funziona soltanto su database locali chiamati `bigant` o `bigant_test`; vietato in produzione. Le prenotazioni ricreate hanno date relative a oggi.
+Il seed conserva le prove precedenti. I vecchi placeholder del menu mai modificati vengono aggiornati a contenuti IT/EN dimostrativi; piatti modificati, foto e prenotazioni vengono conservati. Ricette/prezzi/allergeni seed non sono un menu reale verificato. Per ricreare intenzionalmente i **soli due locali demo cancellandone tutte le prove**: `pnpm demo:reset --confirm`, ad app ferme. Funziona soltanto su database locali chiamati `bigant` o `bigant_test`; vietato in produzione. Le prenotazioni ricreate hanno date relative a oggi.
 
 ## Sviluppo e verifiche
 
@@ -63,13 +63,13 @@ Migrazioni/seed e lookup minimali pre-contesto sono privilegiati. Il client Pris
 
 ## Perimetro e condivisione
 
-M0: fondamenta. M1: motore. M2: cliente/staff, impostazioni e tavoli. Nessun menu, recensioni, notifica reale, PWA o deploy anticipato. [Missioni](docs/MISSIONS.md), [specifica](docs/SPEC.md), [backlog](docs/BACKLOG.md). Gli originali ricevuti sono in `files/`.
+M0–M3 implementate: fondamenta, motore prenotazioni, cliente/staff, impostazioni/tavoli e menu digitale. Consolidamento M3C concluso e cancello verde. M4 recensioni, M5 notifiche/PWA/privacy e M6 produzione restano da costruire. [Missioni](docs/MISSIONS.md), [specifica](docs/SPEC.md), [backlog](docs/BACKLOG.md). Gli originali ricevuti sono archiviati in `files/`; i documenti operativi correnti sono in `docs/`. [Indice documentazione](docs/README.md), [decisioni approvate](docs/DECISIONS.md).
 
 Il repository è locale: **nessuna pubblicazione GitHub**. Condividerlo permetterà ai soci di clonare il codice; per una prova via link servirà un ambiente ospitato. `.env`, database, runtime, dipendenze e artefatti sono esclusi da Git. [Report servizi da collegare](docs/SERVIZI_ESTERNI.md).
 
 ## Menu digitale (M3)
 
-Dal pannello, voce **Menu**: categorie/piatti IT/EN, riordino, prezzi in centesimi, allergeni, foto e disponibilità. Il titolare sceglie quattro template scuri, colore e copertina in **Aspetto del menu**. Il comando occhio nasconde un piatto dalla risposta pubblica senza marcarlo esaurito; esaurito resta visibile in grigio. Le pagine pubbliche sono `/r/:slug/menu`, renderizzate sul server e aggiornate anche ogni 30 secondi quando aperte.
+Dal pannello, voce **Menu**: categorie/piatti IT/EN, riordino, prezzi in centesimi, allergeni, foto e disponibilità. Il titolare sceglie quattro template scuri, colore e copertina in **Aspetto del menu**. Il comando occhio nasconde un piatto dalla risposta pubblica senza marcarlo esaurito; esaurito resta visibile in grigio. Le pagine pubbliche sono `/r/:slug/menu`, renderizzate sul server e aggiornate ogni 30 secondi quando visibili, anche al ritorno sulla scheda, senza reload del documento e conservando il punto di lettura.
 
 Upload JPEG/PNG/WebP fino a 5 MB, validazione del formato reale, ricompressione e rimozione metadati con Sharp. File in `.local/menu-images` o `MENU_IMAGE_DIR` (percorso assoluto): includerli nei backup, non in Git. Nessun bucket cloud necessario per la prova locale. La migrazione M3 aggiunge solo colonne e vincoli, senza reset.
 

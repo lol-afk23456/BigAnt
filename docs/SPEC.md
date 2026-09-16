@@ -1,6 +1,7 @@
 # BigAnt Book — Specifica tecnica operativa
 
-**Versione:** 3.0 — settembre 2026
+**Versione:** 3.1 — settembre 2026, allineata alle decisioni approvate
+**Stato:** M0–M3 e consolidamento M3C implementati e verificati; M4–M6 da costruire. I requisiti dei moduli successivi descrivono il prodotto atteso, non funzionalità già attive. Vedi [indice documenti](README.md), [stato e verifiche](PROGRESS.md) e [decisioni](DECISIONS.md).
 **Destinatario:** agente di sviluppo / sviluppatore
 **Documento correlato:** `BigAnt_Book_Sintesi.html` (strategia, mercato, modello di business)
 
@@ -35,12 +36,14 @@ Da rileggere prima di ogni sessione di lavoro.
 | Auth staff | JWT access (15 min) + refresh token httpOnly (30 gg) |
 | Validazione | Zod, schemi condivisi in `packages/types` |
 | Code queue | BullMQ + Redis (o pg-boss se si vuole evitare Redis in MVP) |
-| Email | Resend |
-| SMS | Twilio |
-| Storage immagini | Cloudflare R2 + trasformazione on-the-fly |
-| Hosting | Vercel (web), Railway o Fly.io (api + db + redis) |
-| Errori | Sentry |
+| Email | Adattatore M5 da implementare; candidato Scaleway TEM, verifica prima dell’attivazione |
+| SMS | Fornitore sostituibile da verificare, candidato Twilio IE1 non ancora approvato per residenza EU |
+| Storage immagini | M3: filesystem persistente e tre varianti WebP; storage EU remoto da scegliere in M6 |
+| Hosting | Da scegliere dopo la prova locale e la verifica EU; candidati nel report servizi |
+| Errori | Monitoraggio/log EU da verificare; Sentry SaaS EU non approvato con il vincolo attuale |
 | Test | Vitest (unit), Playwright (e2e sui 3 flussi pubblici) |
+
+Scelte, fonti e informazioni per attivare i fornitori: [SERVIZI_ESTERNI.md](SERVIZI_ESTERNI.md). Nessun account remoto o invio reale configurato.
 
 ### Struttura repository
 
@@ -52,7 +55,7 @@ bigant-book/
 ├── packages/
 │   ├── database/     schema.prisma, migrazioni, seed
 │   ├── types/        tipi + schemi Zod condivisi
-│   ├── core/         logica di dominio pura (availability, review routing)
+│   ├── core/         logica di dominio pura (disponibilità, prenotazioni)
 │   └── ui/           componenti condivisi web
 └── docs/
     ├── SPEC.md       questo file
@@ -69,7 +72,7 @@ bigant-book/
 - Gestione capienza, ritmo di servizio (pacing), orari, chiusure straordinarie
 - Tavoli e assegnazione (automatica opzionale, manuale sempre disponibile)
 - Menu digitale pubblico via QR, multilingua it/en
-- Recensioni con card NFC e instradamento per voto
+- Recensioni con card NFC: scelta Google o feedback privato offerta a tutti prima del voto
 - Scheda cliente condivisa fra moduli, deduplicata per telefono
 - Pannello web per staff
 - PWA installabile per il titolare: lettura + conferma/disdetta + push
@@ -85,7 +88,7 @@ Ordinazione al tavolo · pagamento del conto · fidelity digitale · sincronizza
 
 ## 3. Modello dati
 
-Convenzioni: PK `id` UUID v7. Ogni tabella (tranne `StaffUser` a livello globale? no — anche quella) ha `tenant_id`. Timestamp `created_at`, `updated_at`. Soft delete solo dove indicato.
+Convenzioni: PK `id` UUID v7. Tenant è la radice; ogni altra tabella ha `tenant_id`, incluso StaffUser. Timestamp `created_at`, `updated_at`. Soft delete solo dove indicato. SPEC §3 enumera 14 modelli, contando MenuCategory e MenuItem separatamente; M0 aggiunge StaffSession per revoca e rotazione delle sessioni.
 
 ### 3.1 Tenant
 
@@ -142,6 +145,9 @@ Riga singola per tenant. Tutti i parametri che il locale regola da solo.
 | reminder_hours_before | int | 4 | quando parte il promemoria |
 | sms_enabled | boolean | false | solo piani pro/full |
 | sms_monthly_cap | int | 300 | tetto oltre il quale si degrada a email |
+| menu_template | text | `essential` | valori ammessi: `essential`, `pop`, `elegant`, `pub` |
+| menu_primary_color | text | `#ff914d` | colore del menu, hex validato |
+| menu_cover_url | text | null | copertina caricata dal titolare |
 
 ### 3.4 OpeningHours
 
@@ -188,7 +194,7 @@ Nome `RestaurantTable` e non `Table`: `table` è parola riservata in SQL.
 | id | uuid | PK |
 | tenant_id | uuid | FK — **il cliente appartiene al locale, mai condiviso fra tenant** |
 | full_name | text | |
-| phone_e164 | text | normalizzato `+39...`, chiave di deduplica |
+| phone_e164 | text | nullable per anonimizzazione; normalizzato `+39...`, chiave di deduplica |
 | email | citext | nullable |
 | notes | text | note interne staff |
 | allergies | text | nullable — **dato sanitario, vedi §8** |
@@ -199,6 +205,8 @@ Nome `RestaurantTable` e non `Table`: `table` è parola riservata in SQL.
 | last_visit_at | timestamptz | nullable |
 
 Index: `(tenant_id, phone_e164)` unique.
+
+**Input prenotazione:** email e telefono obbligatori, come approvato dall’utente. La nullabilità dei recapiti nel database consente l’anonimizzazione M5 e non li rende facoltativi nel form.
 
 ### 3.8 Reservation
 
@@ -246,7 +254,8 @@ Qualsiasi altra transizione → errore 409.
 | image_url | text | nullable |
 | allergens | text[] | codici dei 14 allergeni UE |
 | dietary | text[] | `vegetarian`, `vegan`, `gluten_free`, `spicy` |
-| is_available | boolean | default true — "esaurito" |
+| is_available | boolean | default true — "esaurito", resta pubblico in grigio |
+| is_visible | boolean | default true — occhio: se false escluso dal pubblico |
 | is_featured | boolean | default false |
 | sort_order | int | |
 
@@ -282,12 +291,16 @@ id, tenant_id, card_uid (unique), label ("Tavolo 3", "Cassa"), active, last_tapp
 | provider_id | text | nullable, id del provider per debug |
 | sent_at | timestamptz | nullable |
 
-Index: `(reservation_id, type)` unique **parziale su status != 'failed'** → garantisce idempotenza.
+**Vincolo attuale M0:** `(reservation_id, type)` unique parziale su `status != 'failed'`. Prima di M5 va rivisto con una nuova migrazione: non distingue attesa e conferma né consegne su canali diversi. Il requisito di idempotenza è registrare prima dell’invio e deduplicare per evento stabile, canale e destinatario; gestione degli esiti incerti del provider nel worker. Vedi BACKLOG e SERVIZI_ESTERNI.
 
 ### 3.13 AuditLog
 
 id, tenant_id, staff_user_id, action, entity_type, entity_id, metadata (jsonb), ip, created_at.
 Obbligatorio su: export clienti, cancellazione cliente, modifica impostazioni, cancellazione prenotazione.
+
+### 3.14 StaffSession — aggiunta M0
+
+Sessione persistente per revoca e rotazione del refresh: id, tenant_id, staff_user_id, refresh_hash unique, expires_at, revoked_at nullable, created_at e updated_at. Il token in chiaro non è archiviato. FK composta tenant/staff e indice tenant/staff; logout, replay e scadenza verificati nei test di autenticazione.
 
 ---
 
@@ -334,7 +347,7 @@ computeAvailability(input: {
 
 ### Assegnazione automatica del tavolo
 
-Quando attiva: scegliere il tavolo **libero con `max_capacity` minima fra quelli che soddisfano `min_capacity <= partySize <= max_capacity`**. Questo evita di bruciare il tavolo da 8 per una coppia. Se nessuno soddisfa, la prenotazione si crea comunque senza tavolo e lo staff assegna a mano.
+Quando attiva: scegliere il tavolo **libero con `max_capacity` minima fra quelli che soddisfano `min_capacity <= partySize <= max_capacity`**. Questo evita di bruciare il tavolo da 8 per una coppia. Se non esiste un tavolo libero compatibile e l’assegnazione automatica è attiva, lo slot non è prenotabile, come richiesto da M1. Senza assegnazione automatica può essere prenotabile in base a capienza e ritmo, lasciando il tavolo allo staff.
 
 ### Casi limite da testare (scrivere i test prima del codice)
 
@@ -402,7 +415,8 @@ Il valore per il ristoratore non cambia molto: chi è scontento tende comunque a
 | POST | `/public/:slug/reservations` | crea prenotazione |
 | GET | `/public/reservations/:cancelToken` | dettaglio per pagina di disdetta |
 | POST | `/public/reservations/:cancelToken/cancel` | disdetta dal cliente |
-| GET | `/public/:slug/menu?lang=it` | menu completo |
+| GET | `/public/:slug/menu?lang=it` | menu pubblico: categorie attive e piatti visibili |
+| GET | `/public/:slug/menu-images/:file` | foto/copertine WebP referenziate dal pubblico; nome validato |
 | POST | `/public/:slug/reviews` | invio voto/recensione |
 
 Rate limit: 30 req/min per IP sugli endpoint di lettura, 5 req/min sulle POST.
@@ -411,6 +425,7 @@ Anti-bot sul POST prenotazione: honeypot field + verifica tempo di compilazione 
 ### Autenticate — JWT, tenant dal token
 
 ```
+GET    /auth/me                          (profilo e tenant della sessione)
 POST   /auth/login
 POST   /auth/refresh
 POST   /auth/logout
@@ -427,6 +442,12 @@ DELETE /customers/:id                     (GDPR — audit obbligatorio)
 GET    /customers/export                  (CSV — audit obbligatorio)
 
 GET    /menu
+GET    /menu/settings
+PATCH  /menu/settings                    (aspetto, solo owner)
+POST   /menu/cover                       (copertina, solo owner)
+PUT    /menu/categories/order            (lista completa degli ID)
+PUT    /menu/categories/:id/order         (piatti della categoria)
+GET    /menu/items/:id/image              (anteprima staff anche se nascosto)
 POST   /menu/categories
 PATCH  /menu/categories/:id
 DELETE /menu/categories/:id
@@ -472,9 +493,9 @@ Il campo `message` è già in lingua e mostrabile all'utente. Mai esporre stack 
 | Prenotazione confermata dallo staff | email + SMS al cliente | immediato |
 | Promemoria | SMS se abilitato, altrimenti email | `reminder_hours_before` prima |
 | Disdetta dal cliente | push + email allo staff | immediato |
-| Recensione ≤ soglia | push + email al titolare | immediato |
+| Nuovo feedback privato | push + email al titolare | immediato, indipendente dal voto |
 
-**Idempotenza.** Prima di inviare, inserire in `NotificationLog`. Se la insert viola l'unique `(reservation_id, type)`, l'invio è già avvenuto: non rispedire. Un promemoria mandato due volte è peggio di uno non mandato.
+**Idempotenza M5.** Registrare la consegna prima dell’invio, distinguendo evento, canale e destinatario. Un duplicato non genera una seconda consegna; non interpretare la sola presenza di una riga queued come prova di avvenuto recapito. Il worker deve gestire tentativi, riavvii ed esiti incerti del provider, senza reinvii ciechi. Nuova migrazione richiesta per superare il limite del vincolo M0.
 
 **Tetto SMS.** Contatore mensile per tenant. Superato `sms_monthly_cap`, degrada silenziosamente a email e segnala nel pannello.
 
@@ -519,22 +540,27 @@ Fuori codice ma prima del primo cliente pagante: atto di nomina a responsabile a
 ## 10. UX — vincoli implementativi
 
 ### Pagine pubbliche
+- Ogni locale ha un ingresso `/r/:slug`, prenotazioni `/r/:slug/prenota`, menu `/r/:slug/menu` e accesso staff `/r/:slug/staff`. `/` è soltanto il selettore dei demo.
+- Prenotazione a pagina unica progressiva: contatti dopo la fascia; email e telefono obbligatori. Persone con pulsanti toccabili. Se oggi è pieno/chiuso, salto automatico al primo giorno utile. Richieste facoltative collassate.
+- Menu già aperto: controllo ogni 30 secondi quando visibile e al ritorno sulla scheda; aggiornamento SSR senza ricaricare il documento, conservando il punto di lettura.
 - Mobile-first, colonna singola, un solo CTA primario visibile senza scroll.
 - Il verbo del bottone resta coerente: "Prenota il tavolo" → toast "Prenotato".
 - Target di tocco ≥ 44×44px.
 - Menu: render lato server, immagini in WebP con `srcset`, LCP < 2s su 3G simulata.
-- Piatti esauriti: mostrati in grigio con etichetta, **mai nascosti**.
+- Piatti esauriti: mostrati in grigio con etichetta. Il comando occhio controlla separatamente la visibilità; un piatto nascosto non compare nel pubblico.
 - **Nessuna registrazione richiesta**, mai.
 - Nessuna disponibilità → non un errore: proporre le 2 date più vicine con posto.
 
 ### Pannello staff
+- Sezione selezionata nel parametro `view`, conservata al reload e con avanti/indietro del browser. Nessun dato personale salvato nell’URL.
+- Una sessione di un altro locale mostra un avviso con scelta esplicita dell’accesso; non carica l’agenda dentro l’ingresso del locale richiesto.
 - Home = solo oggi, in cima ciò che richiede decisione (da confermare, recensioni negative non viste).
 - Azioni distruttive: undo per 5 secondi invece di dialog di conferma.
 - Empty state = istruzione ("Nessuna prenotazione oggi. Aggiungine una se arriva una telefonata."), non illustrazione.
 - Errori: cosa è successo + cosa fare. Mai codici, mai scuse.
 
 ### Branding
-Il tenant controlla solo `logo_url` e `primary_color`. Tutto il resto è identico fra i clienti: coerenza = assistenza più semplice.
+Tema esclusivamente scuro, accenti arancioni iniziali. Il menu offre quattro template approvati: Essenziale (trattoria/bistrot), Pop (pizzeria/informale), Elegante (cucina di ricerca), Pub (birreria/burger bar), un colore e una copertina per locale. Visibilità indipendente dall’esaurimento. Nessun layout personalizzato oltre questi controlli. Logo/colore del tenant restano distinti dalle impostazioni del menu.
 
 ### Accessibilità
 Contrasto ≥ 4.5:1, focus visibile, label vere nei form (non solo placeholder), `prefers-reduced-motion` rispettato.
@@ -560,7 +586,9 @@ Tenant B — "Lido Miseno" (beach_club)
   150 prenotazioni, 60 clienti, 40 recensioni
 ```
 
-Utenti: `owner@tenant-a.test` / `owner@tenant-b.test`, password `bigant2026`.
+Utenti: `owner@santalucia.test` / `owner@lidomiseno.test`, password `bigant2026`, come da AGENTS.md.
+
+Il menu seed ha contenuti IT/EN dimostrativi: ricette, prezzi e allergeni non sono quelli verificati di un locale reale. Gli avvii conservano le prove. L’aggiornamento dei vecchi menu interviene soltanto sui placeholder con firma originale e timestamp mai modificato; non ricrea piatti, prenotazioni o tenant.
 
 ---
 

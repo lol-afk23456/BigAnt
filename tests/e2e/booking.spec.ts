@@ -26,9 +26,9 @@ test('ospite a 375px: campi progressivi, salto del giorno chiuso, alternative e 
  await expect(page.getByRole('heading',{name:'Booking cancelled'})).toBeVisible();
 });
 test('Lido: richiesta, login persistente, conferma, tavolo e impostazioni',async({page})=>{
- await page.goto('/r/lido-miseno/prenota');await pickDay(page,3);await contacts(page,'Ospite Lido browser');
+ await page.goto('/r/lido-miseno');await expect(page.getByRole('heading',{name:'Lido Miseno',exact:true})).toBeVisible();await expect(page.getByText('Trattoria Santa Lucia')).toHaveCount(0);await page.getByRole('link',{name:'Prenota il tavolo',exact:false}).click();await pickDay(page,3);await contacts(page,'Ospite Lido browser');
  await expect(page.getByRole('heading',{name:'Richiesta ricevuta.'})).toBeVisible();
- await page.goto('/staff?locale=lido-miseno');await page.getByLabel('Password',{exact:true}).fill('bigant2026');await page.getByRole('button',{name:/Accedi al pannello/}).click();
+ await page.goto('/r/lido-miseno/staff');await expect(page.getByLabel('Email',{exact:true})).toHaveValue('owner@lidomiseno.test');await page.getByLabel('Password',{exact:true}).fill('bigant2026');await page.getByRole('button',{name:/Accedi al pannello/}).click();
  await expect(page.getByRole('heading',{name:'Una bella giornata, insieme.'})).toBeVisible();
  await page.reload();await expect(page.getByRole('heading',{name:'Una bella giornata, insieme.'})).toBeVisible();
  await page.locator('#staff-date').fill(plusDay(3));
@@ -41,5 +41,6 @@ test('Lido: richiesta, login persistente, conferma, tavolo e impostazioni',async
  await page.getByRole('button',{name:'Impostazioni',exact:false}).click();await expect(page.getByLabel('Coperti totali')).toHaveValue('120');
  await page.getByLabel('Arrivi massimi per fascia').fill('24');await page.locator('.settings-panel').first().getByRole('button',{name:'Salva modifiche'}).click();await expect(page.getByText('Modifiche salvate')).toBeVisible();
  await page.getByRole('button',{name:'Tavoli',exact:false}).click();await page.getByRole('button',{name:'Aggiungi tavolo'}).click();await page.getByLabel('Nome tavolo').fill('Tavolo browser');await page.getByRole('button',{name:'Salva modifiche'}).click();await expect(page.getByRole('heading',{name:'Tavolo browser',exact:true})).toBeVisible();
+ await page.goto('/r/trattoria-santa-lucia/staff');await expect(page.getByRole('heading',{name:'Hai già un accesso attivo.'})).toBeVisible();await expect(page.locator('.reservation-row')).toHaveCount(0);await expect(page.getByRole('link',{name:'Apri il pannello del mio locale'})).toHaveAttribute('href','/r/lido-miseno/staff');await page.getByRole('button',{name:'Esci e accedi a questo locale'}).click();await expect(page.getByLabel('Email',{exact:true})).toHaveValue('owner@santalucia.test');await page.getByLabel('Password',{exact:true}).fill('bigant2026');await page.getByRole('button',{name:/Accedi al pannello/}).click();await expect(page.locator('.venue-identity')).toContainText('Trattoria Santa Lucia');
  await page.getByRole('button',{name:'Esci',exact:true}).click();await expect(page.getByRole('heading',{name:'Accedi al pannello'})).toBeVisible();
 });

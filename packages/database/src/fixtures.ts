@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { PrismaClient, type ReservationStatus } from '@prisma/client';
 import argon2 from 'argon2';
 import { DateTime } from 'luxon';
+import { demoMenus,demoDish } from './demo-menu.js';
 
 export const demos = [
   { slug: 'trattoria-santa-lucia', name: 'Trattoria Santa Lucia', email: 'owner@santalucia.test', type: 'restaurant' as const, capacity: 40, tables: 12, duration: 90, pacing: 12, auto: true, categories: 5, items: 28, customers: 40, reservations: 80, reviews: 25 },
@@ -15,7 +16,7 @@ export async function seedDemo(client: PrismaClient) {
   const today = DateTime.now().setZone('Europe/Rome').startOf('day');
   for (const [index, demo] of demos.entries()) {
     const existing = await client.tenant.findUnique({ where: { slug: demo.slug } });
-    if (existing) { tenants.push(existing); continue; }
+    if (existing) { await upgradeDemoMenu(client,existing.id,index,demo.items);tenants.push(existing); continue; }
     const tenant = await client.$transaction(async tx => {
       const tenant = await tx.tenant.create({ data: { name: demo.name, slug: demo.slug, type: demo.type, plan: 'full', google_place_id: `test-place-${index}` } });
       const tenant_id = tenant.id;
@@ -31,8 +32,8 @@ export async function seedDemo(client: PrismaClient) {
       const customers = [];
       for (let n = 0; n < demo.customers; n++) customers.push(await tx.customer.create({ data: { tenant_id, full_name: `Cliente demo ${index + 1}-${n + 1}`, phone_e164: `+393${index}${String(n).padStart(8,'0')}`, email: `cliente${n}@tenant${index}.test` } }));
       const categories = [];
-      for (let n = 0; n < demo.categories; n++) categories.push(await tx.menuCategory.create({ data: { tenant_id, name_it: `Categoria demo ${n + 1}`, name_en: `Demo category ${n + 1}`, sort_order: n } }));
-      for (let n = 0; n < demo.items; n++) await tx.menuItem.create({ data: { tenant_id, category_id: categories[n % categories.length]!.id, name_it: `Piatto demo ${index + 1}-${n + 1}`, name_en: `Demo dish ${index + 1}-${n + 1}`, price_cents: 800 + n * 50, sort_order: n, allergens: ['1'], is_available: n % 9 !== 0 } });
+      for (const [sort_order,category] of demoMenus[index]!.entries()) categories.push(await tx.menuCategory.create({ data: { tenant_id, name_it:category.name_it,name_en:category.name_en,sort_order } }));
+      for (let n = 0; n < demo.items; n++) {const {category,dish}=demoDish(index,n);await tx.menuItem.create({ data: { tenant_id, category_id:categories[category]!.id,...dish,sort_order:n,is_available:n%9!==0 } });}
       const statuses: ReservationStatus[] = ['pending','confirmed','seated','completed','cancelled','no_show'];
       const reservations = [];
       for (let n = 0; n < demo.reservations; n++) reservations.push(await tx.reservation.create({ data: { tenant_id, customer_id: customers[n % customers.length]!.id, table_id: tables[n % tables.length]!.id, reserved_at: today.plus({days:Math.floor(n / 6)-4,hours:19,minutes:(n%6)*15}).toJSDate(), duration_min: demo.duration, party_size: 2, status: statuses[n % statuses.length]!, source: 'direct', cancel_token: randomBytes(32).toString('hex') } }));
@@ -47,4 +48,20 @@ export async function seedDemo(client: PrismaClient) {
     tenants.push(tenant);
   }
   return tenants;
+}
+
+async function upgradeDemoMenu(client:PrismaClient,tenant_id:string,index:number,count:number){
+ // Aggiornamento conservativo dei soli placeholder originali mai modificati.
+ // Il confronto sulle colonne avviene nella scrittura, anche in caso di edit
+ // concorrente; né prenotazioni né piatti dell’utente vengono ricreati.
+ await client.$transaction(async tx=>{
+  for(const [sort_order,definition] of demoMenus[index]!.entries()){
+   const legacy={tenant_id,name_it:`Categoria demo ${sort_order+1}`,name_en:`Demo category ${sort_order+1}`,sort_order,active:true,updated_at:{equals:tx.menuCategory.fields.created_at}};
+   const category=await tx.menuCategory.findFirst({where:legacy});if(!category)continue;
+   for(let n=sort_order;n<count;n+=demoMenus[index]!.length){
+    await tx.menuItem.updateMany({where:{tenant_id,category_id:category.id,name_it:`Piatto demo ${index+1}-${n+1}`,name_en:`Demo dish ${index+1}-${n+1}`,description_it:null,description_en:null,price_cents:800+n*50,image_url:null,allergens:{equals:['1']},dietary:{equals:[]},is_visible:true,is_available:n%9!==0,is_featured:false,sort_order:n,updated_at:{equals:tx.menuItem.fields.created_at}},data:demoDish(index,n).dish});
+   }
+   await tx.menuCategory.updateMany({where:{...legacy,id:category.id},data:{name_it:definition.name_it,name_en:definition.name_en}});
+  }
+ },{timeout:30000});
 }
