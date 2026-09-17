@@ -1,6 +1,6 @@
 # Decisioni approvate
 
-Registro al 16 settembre 2026. Fonte: richieste dell’utente e risoluzioni tecniche riportate in PROGRESS. Le scelte già risolte non richiedono una nuova conferma; i fornitori restano candidati fino alla verifica/attivazione.
+Registro al 17 settembre 2026. Fonte: richieste dell’utente e risoluzioni tecniche riportate in PROGRESS. Le scelte già risolte non richiedono una nuova conferma; i fornitori restano candidati fino alla verifica/attivazione.
 
 | ID | Decisione | Implicazione |
 | --- | --- | --- |
@@ -23,6 +23,8 @@ Registro al 16 settembre 2026. Fonte: richieste dell’utente e risoluzioni tecn
 - Se assegnazione automatica attiva e nessun tavolo compatibile libero, la fascia non è prenotabile. Senza automatismo valgono capienza e ritmo.
 - Gli avvii conservano le prove. Il consolidamento può aggiornare solo placeholder seed originali mai modificati, con confronti atomici; nessun reset del database di sviluppo.
 - La pagina feedback presenta a tutti Google e privato prima del voto. Nessuna soglia per scegliere il canale o escludere alert sui nuovi feedback privati.
+- M4 usa segnalazioni interne nel pannello per tutti i privati non letti; email e push reali restano M5. Card modificabili dal titolare, consultabili dallo staff. Place ID seed dimostrativi: esito locale, niente apertura Google.
+- Gli spunti sala/attesa del 17 settembre richiedono verifica delle funzioni già presenti, come precisato dall’utente. Analisi e preferenze aperte in [SALA_E_ATTESA](SALA_E_ATTESA.md); nessuna duplicazione del motore e nessuna estensione implementata in M4.
 
 ## Scelte ancora aperte
 

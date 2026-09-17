@@ -8,7 +8,7 @@ Questo documento raccoglie soltanto ciò che serve per collegare BigAnt a email,
 
 Il lavoro tecnico può proseguire con le informazioni disponibili: esperienza dedicata al locale, prenotazioni, menu, recensioni, preparazione delle notifiche e test mirati. Restano valide le scelte approvate: tema scuro e arancione, prenotazione progressiva, email e telefono obbligatori, quattro template menu e comando occhio.
 
-M0–M3 sono concluse. Oggi prenotazioni e menu usano PostgreSQL e foto sul Mac. Email, SMS e push non sono implementati; M4–M6 restano da completare. Avere i recapiti dei clienti nel database non significa che i messaggi vengano già inviati.
+M0–M4 sono concluse. Prenotazioni, menu e feedback usano PostgreSQL e foto sul Mac. Email, SMS e push non sono implementati; M5–M6 restano da completare. Avere i recapiti dei clienti nel database non significa che i messaggi vengano già inviati.
 
 Per attivare servizi a pagamento o un locale reale serviranno dominio, intestatario degli account, budget, volumi e recapiti reali. Questi dati non sono necessari per continuare la prova locale. Per i test su dispositivi serviranno inoltre un iPhone e un Android: il solo Mac non copre il cancello PWA.
 
@@ -18,7 +18,7 @@ Per attivare servizi a pagamento o un locale reale serviranno dominio, intestata
 | --- | --- | --- |
 | **Sul Mac, adesso** | Launcher, database e foto locali; nessun servizio cloud | Prenotazioni, gestione staff, menu e isolamento dei due demo |
 | **Demo ai soci via link** | Hosting EU, database e foto persistenti, HTTPS, account di prova; database separato dalla produzione | Flussi con dati inventati; eventuali notifiche solo verso destinatari di test autorizzati |
-| **Locale operativo** | Demo consolidata, M4–M6, email e altri canali previsti, backup, alert, account reali e documenti privacy | Prenotazione vera, conferma dal telefono e feedback da card |
+| **Locale operativo** | Demo consolidata, M5–M6, email e altri canali previsti, backup, alert, account reali e documenti privacy | Prenotazione vera, conferma dal telefono e feedback da card |
 
 GitHub conserva il codice. I soci possono clonarlo e avviarlo; un link utilizzabile senza installazione richiede anche hosting. Database, foto caricate e segreti non vengono trasferiti con il repository. La pubblicazione GitHub resta alla fine della prova locale, come concordato.
 
@@ -94,7 +94,7 @@ Una copia del disco non sostituisce una strategia di backup coerente del databas
 
 Le push usano comunque l’infrastruttura del browser/dispositivo: le chiavi VAPID non la rendono interna a BigAnt. Regione e trattamento di endpoint e metadati vanno valutati prima dell’attivazione. Proposta di payload: “Hai una nuova prenotazione”, senza nome, telefono, note o allergie; i dettagli si leggono dopo l’accesso. Email e pannello devono continuare a funzionare se le notifiche sono negate o l’abbonamento scade.
 
-**Google:** per il flusso M4 previsto basta configurare un Place ID reale e verificare la scheda di destinazione; non serve collegare un’API per importare o pubblicare recensioni. La SPEC non include quella sincronizzazione. Google permette di condividere link/QR per chiedere recensioni; il cliente deve accedere al proprio account Google per pubblicarle. [Guida Google per i locali](https://support.google.com/business/answer/3474122?hl=it).
+**Google:** per attivare il flusso M4 basta configurare un Place ID reale e verificare la scheda di destinazione; non serve collegare un’API per importare o pubblicare recensioni. I Place ID seed sono dimostrativi: la demo registra il clic e mostra un esito locale, senza aprire Google. La SPEC non include quella sincronizzazione. Google permette di condividere link/QR per chiedere recensioni; il cliente deve accedere al proprio account Google per pubblicarle. [Guida Google per i locali](https://support.google.com/business/answer/3474122?hl=it).
 
 BigAnt registra l’apertura verso Google, non la prova che una recensione sia stata pubblicata. Il feedback privato resta nel database del locale. Le due opzioni vengono offerte senza chiedere prima il voto, come richiesto da M4.
 

@@ -2,7 +2,7 @@
 
 Sette blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con criteri di accettazione verificabili da comando.
 
-**Stato al 16 settembre 2026:** M0–M3 e consolidamento M3C completati, con verifiche in [PROGRESS.md](PROGRESS.md). M4–M6 non avviate. Le checkbox dei criteri originali restano requisiti: lo stato corrente è questa sintesi e i cancelli documentati, non una spunta implicita su ogni funzione futura.
+**Stato al 17 settembre 2026:** M0–M3 e consolidamento M3C completati, con verifiche in [PROGRESS.md](PROGRESS.md). M4 completata; M5–M6 non avviate. Le checkbox dei criteri originali restano requisiti: lo stato corrente è questa sintesi e i cancelli documentati, non una spunta implicita su ogni funzione futura.
 
 **Regola:** nessuna missione inizia prima che la precedente abbia il cancello verde. Se una missione non entra in una sessione, fermati a un punto coerente (test verdi, commit pulito), aggiorna `PROGRESS.md` e riprendi da lì.
 
@@ -132,17 +132,19 @@ Sette blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con 
 **Da fare**
 - `GET /public/:slug/feedback?card=:cardUid` → pagina unica con **due opzioni affiancate di pari dignità visiva**, mostrate a tutti, senza chiedere prima il voto
 - Opzione Google: redirect a `writereview`, registra `channel = google_redirect`, `rating = null`
-- Opzione privata: form voto 1–5 + commento, registra `channel = private`, notifica al titolare
+- Opzione privata: form voto 1–5 + commento, registra `channel = private`, segnalazione interna al titolare; email/push reali M5
 - Gestione card NFC dal pannello
 - Dashboard recensioni con evidenza delle private non ancora viste
 - Rate limit per `card_uid` e per IP
 
+**Prova locale:** Place ID seed dimostrativi: registra l’accesso e mostra esito sul Mac. Destinazione Google reale da configurare prima dell’attivazione; nessuna recensione pubblicata automaticamente. Gestione card owner, lettura staff; aperture link distinte da persone uniche.
+
 **Criteri di accettazione**
-- [ ] Test che verifica che **nessun endpoint** chiede o riceve il voto prima di presentare le due opzioni
-- [ ] I due pulsanti hanno le stesse dimensioni e lo stesso peso visivo (test di snapshot o assertion sui token di stile)
-- [ ] Nessun testo suggerito per la recensione, nessun incentivo, nessuna parola tipo "positiva" o "5 stelle" nella pagina
-- [ ] `google_place_id` nullo → viene mostrata solo l'opzione privata
-- [ ] Secondo invio dalla stessa card entro 10 minuti → bloccato
+- [x] Test che verifica che **nessun endpoint** chiede o riceve il voto prima di presentare le due opzioni
+- [x] I due pulsanti hanno le stesse dimensioni e lo stesso peso visivo (test di snapshot o assertion sui token di stile)
+- [x] Nessun testo suggerito per la recensione, nessun incentivo, nessuna parola tipo "positiva" o "5 stelle" nella pagina
+- [x] `google_place_id` nullo → viene mostrata solo l'opzione privata
+- [x] Secondo invio dalla stessa card entro 10 minuti → bloccato
 
 **Non fare.** Non reintrodurre `review_positive_threshold` né `routed_public`. Se li trovi nel codice o nello schema, rimuovili.
 

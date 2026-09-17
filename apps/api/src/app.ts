@@ -1,4 +1,5 @@
 import { menuRoutes } from './menu.js';
+import { reviewRoutes } from './reviews.js';
 import { DomainError } from '@bigant/core';
 import { ZodError } from 'zod';
 import { settingsRoutes } from './settings.js';
@@ -69,6 +70,7 @@ export function buildApp(options: { secret: string; now?: () => Date; menuImageD
     reservationRoutes(app, { secret: options.secret, now });
     settingsRoutes(app);
     menuRoutes(app, options.menuImageDir);
+    reviewRoutes(app, now);
     app.get('/health', async () => ({ status: 'ok' }));
     app.post('/auth/login', {
       config: { rateLimit: { max: 5, timeWindow: '15 minutes', hook: 'preHandler', keyGenerator: request => {

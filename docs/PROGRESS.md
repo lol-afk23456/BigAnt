@@ -1,16 +1,18 @@
 # Avanzamento BigAnt Book
 
-## Stato al 16 settembre 2026
+## Stato al 17 settembre 2026
 
-**M0–M3 e consolidamento M3C completati.** M3 include i quattro template e il comando occhio approvati dall’utente. Cancelli automatici verdi; M4–M6 non iniziate.
+**M0–M4 e consolidamento M3C completati.** M3 include i quattro template e il comando occhio approvati dall’utente. Cancelli automatici verdi; M5–M6 non iniziate.
 
 ## Stato corrente della demo
 
-- M0–M3 e M3C (consolidamento richiesto dall’utente) conclusi. Prossima missione: M4.
+- M0–M3 e M3C (consolidamento richiesto dall’utente) conclusi. M4 conclusa.
 - Cliente: prenotazione progressiva e disdetta; staff: agenda, stati, tavoli, impostazioni e menu.
 - Menu: quattro template scuri, colore/copertina, allergeni, IT/EN, occhio separato da esaurito.
+- Recensioni M4: due scelte pubbliche prima del voto, feedback anonimo, card e lettura/note interne. Cancello finale verde.
+- Spunti sala/attesa del 17 settembre: solo analisi e backlog, nessun codice del motore/tavoli modificato. Vedi [analisi](SALA_E_ATTESA.md).
 - Ambiente locale Mac; dati demo persistenti. Servizi esterni, account reali e GitHub non attivati.
-- Ultimo cancello: 65/65 test backend, 4/4 scenari browser, build/typecheck/lint verdi. Lighthouse locale 99/100, LCP 788 ms; dettagli e limiti nel blocco M3C in fondo.
+- Ultimo cancello: 72/72 test backend, 5/5 scenari browser, build/typecheck/lint verdi. Lighthouse locale 100/100, LCP 1338 ms; dettagli e limiti nel blocco M4 in fondo.
 - Documenti operativi: [indice](README.md), [decisioni](DECISIONS.md), [prova locale](PROVA_LOCALE.md), [servizi esterni](SERVIZI_ESTERNI.md).
 
 Le sezioni seguenti sono lo storico dei blocchi: riferimenti a una pagina vuota o a missioni non ancora avviate descrivono quel momento, non lo stato attuale.
@@ -222,3 +224,33 @@ Il valore Lighthouse finale usa il profilo DevTools mobile documentato in M3 (75
 `pnpm local` riavviato sul database di sviluppo `bigant`: nessuna migrazione pendente, due tenant conservati, seed conservativo e build verificata riutilizzata. Web su 3000, API su 3001; PostgreSQL locale preesistente conservato. HTTP 200 su home, ingressi dedicati, login, menu e vetrine API di entrambi i locali. La demo viene lasciata in esecuzione. Prova da `/r/trattoria-santa-lucia` oppure `/r/lido-miseno`; accessi nella guida locale.
 
 **Confine:** M3C concluso; M4 recensioni è il prossimo blocco e non è iniziato. Successivamente M5 notifiche/PWA/privacy e M6 attivazione EU. Prove su telefoni fisici, foto reali, rate limit dietro proxy e fornitori/account reali restano nel BACKLOG. Nessun invio reale, servizio cloud, deploy o pubblicazione GitHub eseguito.
+
+## M4 — recensioni e card, cancello superato il 17 settembre 2026
+
+Avviata su richiesta di continuare, con cancello M3C verde. Implementazione e cancello finale completati.
+
+- Pagina cliente dedicata `/r/:slug/feedback`, card facoltativa. Due pulsanti affiancati con gli stessi token e dimensioni, mostrati prima del voto; form privato progressivo, voto 1–5 e messaggio facoltativo. Link copiabile e invito a procedere con calma più tardi. IT/EN, stati caricamento/errore e link indisponibile.
+- Input pubblici stretti: voto/commento accettati solo nel canale privato; il canale Google registra rating null. Feedback anonimi, nessun recapito richiesto o Customer associato automaticamente. Le note staff non escono dai percorsi autenticati.
+- Destinazione Google costruita da Place ID, origine e percorso verificati nel client. I Place ID seed `test-place-*` producono un esito locale senza aprire Google. Il contatore misura accessi al link, non recensioni pubblicate. Policy ufficiali ricontrollate e citate in SPEC.
+- Rate limit IP 30/min letture feedback e 5/min invii. Un invio ogni dieci minuti per card, condiviso dai due canali: controllo persistente sull’ultimo invio in transazione con lock DB, Retry-After, rivalidazione card attiva e tenant. Nessun cooldown consumato dall’apertura della pagina.
+- Pannello Recensioni: filtri canale/voto/letto, paginazione 50 righe, lettura idempotente e nota interna. Segnalazioni di tutti i privati non letti in agenda e navigazione, aggiornate ogni 30 secondi quando visibile e al ritorno sulla scheda; evidenza aggiuntiva dei voti 1–2. Nessun voto condiziona i canali o esclude le segnalazioni.
+- Gestione card: UID casuale dal server, nome, link copiabile, aperture e ultima apertura, disattivazione con undo e riattivazione. Modifiche owner con audit; consultazione staff. Aperture includono reload e non sono persone uniche. Programmazione NFC e generazione fisica QR non eseguite dal progetto.
+- Migrazione additiva `202609170001_m4_reviews`: indici Review/NFCCard, nessuna modifica ai dati o alle migrazioni applicate. Nessuna dipendenza aggiunta.
+- Notifica M4 interna al pannello: email/push reali e idempotenza delle consegne rimangono M5. Nessun invio o status sent fittizio.
+
+### Verifiche M4
+
+- `pnpm test`: 72/72, otto file, PostgreSQL reale nel database separato. Sette nuovi test su scelta senza voto, Google senza Place ID, anonimi di ogni voto, note private, card inattive/esterne, rate limit, ruoli, filtri e paginazione. Venti invii paralleli sulla stessa card: uno riesce; cooldown conservato dopo riavvio e sblocco al millisecondo del limite.
+- `pnpm typecheck`, `pnpm lint` (zero warning) e `pnpm build`: verdi sulla versione finale.
+- Un solo scenario frontend aggiunto per M4. Primo tentativo fermato da selettore ambiguo dell’alert (errore card più annunciatore Next): selettore reso univoco; scenario M4 passato isolatamente. I quattro scenari preesistenti sono passati anche nel primo tentativo completo. Ultimo `pnpm test:e2e`: **5/5**, circa 2,1 minuti. Lighthouse menu: **100/100, LCP 1338 ms**, profilo DevTools mobile M3 con immagini sintetiche locali; infrastruttura/foto reali ancora da misurare.
+- Screenshot pubblico e recensioni staff a 375 px ispezionati: scelte equivalenti, nessun overflow orizzontale. Link locali della documentazione validi e diff senza errori di whitespace.
+
+### Spunti sala/lista d’attesa e precisazione dell’utente
+
+Richiesti durante M4 senza interromperla, poi precisato di evitare duplicazioni o peggioramenti. Scritta [SALA_E_ATTESA.md](SALA_E_ATTESA.md) e aggiunti B07/B08: zone, capienze, form operatore e assegnazione dei singoli tavoli sono già presenti. Combinazioni consentite e attesa per servizio sarebbero aggiunte effettive; la piantina a blocchi resta Pro futura. Preferenze chieste su ordinamento e assegnazione gruppi, non ancora ricevute. Nessun codice sala/attesa implementato: motore disponibilità, service prenotazioni ed editor tavoli invariati in questo blocco. I test di regressione coprono prenotazione, conferma, assegnazione tavolo e impostazioni.
+
+### Riavvio della demo M4
+
+`pnpm local` ha applicato la migrazione additiva M4 al database di sviluppo `bigant`, conservato i due tenant con seed idempotente e riutilizzato la build finale verificata. Web su 3000 e API su 3001 lasciati in esecuzione; PostgreSQL preesistente conservato. HTTP 200 su feedback e relativa API per entrambi i locali. Verificate anche recensioni e card con i dati persistenti a 1440 px e card a 375 px, senza overflow orizzontale. Nessuna recensione o card aggiunta dalla verifica sui dati di sviluppo.
+
+**Confine:** M4 conclusa, prima di M5 e delle estensioni sala/attesa. Nessun servizio esterno attivato, reset dati sviluppo o pubblicazione GitHub.

@@ -62,3 +62,4 @@ export interface TableRecord extends TableInput {id:string}
 export interface ReservationRecord extends BookingReceipt {duration_min:number;table_id:string|null;notes:string;internal_notes:string;source:'direct'|'phone'|'staff';customer:{id:string;full_name:string;phone_e164:string|null;email:string|null};table:TableRecord|null}
 
 export * from './menu';
+export * from './reviews';

@@ -1,5 +1,6 @@
 export const messages = {
   it: {
+    CARD_COOLDOWN: 'Questa card ha già ricevuto un invio negli ultimi dieci minuti. Puoi tornare con calma più tardi.',
     INVALID_IMAGE: 'Scegli una foto JPEG, PNG o WebP valida fino a 5 MB e riprova.',
     CATEGORY_NOT_EMPTY: 'Sposta o rimuovi i piatti prima di eliminare questa categoria.',
     INVALID_PHONE: 'Inserisci un numero di telefono valido, includendo il prefisso internazionale se non italiano.',
@@ -17,6 +18,7 @@ export const messages = {
     INTERNAL_ERROR: 'Operazione non riuscita. Riprova più tardi.',
   },
   en: {
+    CARD_COOLDOWN: 'This card has already received a submission in the last ten minutes. You can come back later at your own pace.',
     INVALID_IMAGE: 'Choose a valid JPEG, PNG or WebP photo up to 5 MB and try again.',
     CATEGORY_NOT_EMPTY: 'Move or remove the dishes before deleting this category.',
     INVALID_PHONE: 'Enter a valid phone number, including the country code for numbers outside Italy.',

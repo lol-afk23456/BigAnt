@@ -312,6 +312,8 @@ model Review {
   nfc_card       NFCCard?      @relation(fields: [tenant_id, nfc_card_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([tenant_id, id])
+  @@index([tenant_id, nfc_card_id, created_at])
+  @@index([tenant_id, channel, staff_seen_at, created_at])
 }
 
 model NFCCard {
@@ -328,6 +330,7 @@ model NFCCard {
   reviews        Review[]
 
   @@unique([tenant_id, id])
+  @@index([tenant_id, active])
 }
 
 model NotificationLog {

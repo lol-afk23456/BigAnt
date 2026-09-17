@@ -11,6 +11,8 @@ export default async function setup(){
  try{
   await db.tenant.deleteMany({where:{slug:{in:demos.map(d=>d.slug)}}});
   const tenants=await seedDemo(db);
+  // Copre anche il locale senza profilo Google, solo nel database E2E.
+  await db.tenant.update({where:{id:tenants[1]!.id},data:{google_place_id:null}});
   // Scenario browser piccolo e deterministico, senza toccare il database demo.
   await db.notificationLog.deleteMany({where:{tenant_id:{in:tenants.map(t=>t.id)}}});
   await db.reservation.deleteMany({where:{tenant_id:{in:tenants.map(t=>t.id)}}});

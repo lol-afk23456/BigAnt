@@ -1,7 +1,9 @@
 import { menuMessages } from './menu';
+import { reviewMessages } from './reviews';
 export const uiMessages = {
   "it": {
     ...menuMessages.it,
+    ...reviewMessages.it,
     "brand": "BigAnt Book",
     "tagline": "Ogni ospite, al posto giusto.",
     "demo": "Ambiente di prova",
@@ -186,6 +188,7 @@ export const uiMessages = {
   },
   "en": {
     ...menuMessages.en,
+    ...reviewMessages.en,
     "brand": "BigAnt Book",
     "tagline": "Every guest, in the right place.",
     "demo": "Test environment",

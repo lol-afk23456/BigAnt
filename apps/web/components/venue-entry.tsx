@@ -30,7 +30,7 @@ export function VenueHome({slug}:{slug:string}){
      <article className="panel venue-card"><span className="venue-symbol" aria-hidden="true">✳</span><h2>{t('book')}</h2><p className="muted">{t('bookingCardHint')}</p><a className="button primary" href={`/r/${slug}/prenota`}>{t('book')} →</a></article>
      <article className="panel venue-card"><span className="venue-symbol" aria-hidden="true">≡</span><h2>{t('menu')}</h2><p className="muted">{t('menuCardHint')}</p><a className="button secondary" href={`/r/${slug}/menu`}>{t('viewMenu')} →</a></article>
     </div>
-    <div className="venue-home-footer">{venue.phone&&<a className="text-button" href={`tel:${venue.phone}`}>{t('callVenue')}</a>}<a className="text-button" href={`/r/${slug}/staff`}>{t('staffLink')} ↗</a></div>
+    <div className="venue-home-footer"><a className="text-button" href={`/r/${slug}/feedback`}>{t('reviews')}</a>{venue.phone&&<a className="text-button" href={`tel:${venue.phone}`}>{t('callVenue')}</a>}<a className="text-button" href={`/r/${slug}/staff`}>{t('staffLink')} ↗</a></div>
     <p className="demo-label">{t('localOnly')}</p>
    </>}
   </main>

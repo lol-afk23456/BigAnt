@@ -1,4 +1,4 @@
-# Prova BigAnt Book sul Mac — 20–25 minuti
+# Prova BigAnt Book sul Mac — 25–30 minuti
 
 ## Avvio
 
@@ -40,7 +40,7 @@ Non eseguire il reset mentre altri stanno provando. Per i test automatici il dat
 
 ## Risultato atteso
 
-Il cliente può richiedere/prenotare e disdire; lo staff può gestire giorno, stati, tavoli, orari e chiusure. La homepage demo e le guide facilitano una prima prova; hosting, notifiche reali, privacy/retention completa, PWA e recensioni appartengono alle missioni successive.
+Il cliente può richiedere/prenotare, disdire e lasciare feedback privato; lo staff può gestire giorno, stati, tavoli, orari, chiusure, menu, card e lettura dei feedback. La homepage demo e le guide facilitano una prima prova; hosting, notifiche reali, privacy/retention completa e PWA appartengono alle missioni successive.
 
 
 ## Menu digitale — prova M3
@@ -55,3 +55,14 @@ Nel pannello apri **Menu**. Aggiungi una categoria con nome IT/EN e un piatto co
 Link diretti: http://localhost:3000/r/trattoria-santa-lucia/menu e http://localhost:3000/r/lido-miseno/menu.
 
 Foto ammesse: JPEG, PNG e WebP fino a 5 MB. Il server produce tre varianti WebP. Le foto sono sul Mac in `.local/menu-images` (o `MENU_IMAGE_DIR`), **non sono incluse in GitHub**. Per trasferire i dati della demo occorre anche trasferire database e immagini.
+
+## Recensioni e card — prova M4, 5 minuti
+
+1. Nel pannello del locale apri **Card NFC**, crea una card con nome «Prova cassa» e apri il suo link. Vedrai Google e privato affiancati, prima di qualsiasi voto. La card demo «Cassa» è già presente.
+2. Scegli **Scrivi a noi in privato**, tocca un voto da 1 a 5 e invia un messaggio inventato. Non servono nome, email o telefono. Google resta disponibile anche dopo aver scelto un voto, fino all’invio.
+3. Torna al pannello: l’agenda segnala i feedback privati da leggere entro 30 secondi quando visibile o al ritorno sulla scheda. In **Recensioni** trovi il messaggio; aggiungi una nota interna e segna come letto. Il messaggio esce dal filtro «Da leggere» e resta in «Letti». La nota non viene inviata né pubblicata.
+4. Ricarica il link della stessa card e prova un altro invio entro dieci minuti: deve essere bloccato con un messaggio che invita a tornare più tardi. Il limite è condiviso fra gli ospiti che usano la stessa card e fra i due canali. Per la prova simultanea usa card diverse.
+5. Apri il [feedback diretto Santa Lucia](http://localhost:3000/r/trattoria-santa-lucia/feedback) senza card e scegli Google. Con il Place ID demo il clic viene registrato e compare un esito sul Mac; Google non viene aperto. Un Place ID reale richiede la verifica della scheda prima dell’attivazione. «Accessi a Google» non significa «recensioni pubblicate».
+6. Disattiva una card e prova undo entro cinque secondi. Lasciando completare la disattivazione, il suo link deve risultare indisponibile. Riattivala per tornare a usarlo; lo storico rimane. Prova anche lingua EN e larghezza 375 px.
+
+Nessuna email o push reale parte in M4. Il link copiato può essere scritto sulla card NFC o usato per creare un QR: la programmazione fisica non viene eseguita dal progetto. Le aperture della card includono i reload e non contano persone uniche.

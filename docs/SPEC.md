@@ -1,7 +1,7 @@
 # BigAnt Book — Specifica tecnica operativa
 
 **Versione:** 3.1 — settembre 2026, allineata alle decisioni approvate
-**Stato:** M0–M3 e consolidamento M3C implementati e verificati; M4–M6 da costruire. I requisiti dei moduli successivi descrivono il prodotto atteso, non funzionalità già attive. Vedi [indice documenti](README.md), [stato e verifiche](PROGRESS.md) e [decisioni](DECISIONS.md).
+**Stato:** M0–M3 e consolidamento M3C implementati e verificati; M4 implementata e verificata; M5–M6 da costruire. I requisiti dei moduli successivi descrivono il prodotto atteso, non funzionalità già attive. Vedi [indice documenti](README.md), [stato e verifiche](PROGRESS.md) e [decisioni](DECISIONS.md).
 **Destinatario:** agente di sviluppo / sviluppatore
 **Documento correlato:** `BigAnt_Book_Sintesi.html` (strategia, mercato, modello di business)
 
@@ -402,6 +402,18 @@ Il valore per il ristoratore non cambia molto: chi è scontento tende comunque a
 
 **Anti-abuso:** rate limit per `card_uid` (max 1 invio ogni 10 minuti) e per IP.
 
+### Implementazione locale M4
+
+Pagina cliente `/r/:slug/feedback?card=:cardUid`, oppure link diretto senza card. Le opzioni vengono risolte da `GET /public/:slug/feedback`; la query rifiuta campi di voto o instradamento. `POST /public/:slug/reviews` accetta una union stretta: Google senza voto/commento, privato con voto obbligatorio 1–5 e commento facoltativo fino a 2000 caratteri. Feedback anonimo, nessun nome/recapito richiesto o associato automaticamente a Customer.
+
+Il limite card riguarda gli invii sui due canali, non l’apertura delle opzioni. Verifica sull’ultimo invio nel database dentro il lock del tenant: persiste al riavvio e copre richieste parallele. Card sconosciute, disattive o di un altro locale sono rifiutate. Aperture conteggiate al caricamento delle opzioni: includono reload e non rappresentano persone uniche.
+
+Staff: lista paginata di 50 righe, filtri voto/canale/letto, note interne e lettura idempotente. Riepilogo dei privati non visti nel pannello e nell’agenda, aggiornato ogni 30 secondi quando visibile e al ritorno sulla scheda, indipendente dal voto. Questa è la segnalazione interna M4; email e Web Push reali restano M5. Nessun invio dichiarato né riga sent fittizia.
+
+Le card hanno UID generato dal server: lettura per lo staff, creazione/modifica/attivazione per il titolare. Il link può essere copiato per programmazione NFC o QR; BigAnt non programma l’hardware. Disattivazione con undo di cinque secondi e storico conservato.
+
+I Place ID seed `test-place-*` sono dimostrativi: il clic viene registrato, la demo mostra un esito locale e non apre Google. Un Place ID reale usa il redirect previsto sopra. BigAnt misura accessi al collegamento, non recensioni pubblicate e non voti Google. Policy ricontrollata il 17 settembre: [Google Maps, rating manipulation](https://support.google.com/contributionpolicy/answer/7400114?hl=en), [guida per condividere link recensioni](https://support.google.com/business/answer/3474122?hl=en).
+
 ---
 
 ## 6. API
@@ -417,6 +429,7 @@ Il valore per il ristoratore non cambia molto: chi è scontento tende comunque a
 | POST | `/public/reservations/:cancelToken/cancel` | disdetta dal cliente |
 | GET | `/public/:slug/menu?lang=it` | menu pubblico: categorie attive e piatti visibili |
 | GET | `/public/:slug/menu-images/:file` | foto/copertine WebP referenziate dal pubblico; nome validato |
+| GET | `/public/:slug/feedback?card=` | scelta dei canali prima del voto; card facoltativa |
 | POST | `/public/:slug/reviews` | invio voto/recensione |
 
 Rate limit: 30 req/min per IP sugli endpoint di lettura, 5 req/min sulle POST.
@@ -457,6 +470,7 @@ DELETE /menu/items/:id
 POST   /menu/items/:id/image              (upload)
 
 GET    /reviews?rating=&seen=
+GET    /reviews/summary                   (privati non visti e accessi Google)
 PATCH  /reviews/:id                       (segna come vista, nota interna)
 
 GET    /tables
@@ -472,6 +486,7 @@ DELETE /blackouts/:id
 
 GET    /nfc-cards
 POST   /nfc-cards
+PATCH  /nfc-cards/:id                     (label/attivazione, solo owner)
 
 GET    /stats/today                       (dashboard)
 ```
