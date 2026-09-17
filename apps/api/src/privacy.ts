@@ -12,6 +12,7 @@ export async function anonymize(tx:TenantTransaction,tenantId:string,id:string,n
  if(current.anonymized_at)return current;
  const reservations=await tx.reservation.findMany({where:{customer_id:id},select:{id:true}});
  const reservationIds=reservations.map(r=>r.id);
+ await tx.waitlistEntry.updateMany({where:{reservation_id:{in:reservationIds}},data:{surname:notificationMessages.it.anonymizedCustomer,anonymized_at:now}});
  // Cancella anche il testo libero che può ripetere recapiti o dati sanitari.
  for(const reservation of reservations)await tx.reservation.update({where:{id:reservation.id},data:{notes:'',internal_notes:'',cancel_token:randomBytes(32).toString('hex')}});
  await tx.review.updateMany({where:{customer_id:id},data:{customer_id:null,comment:null,staff_response:null}});
@@ -22,6 +23,14 @@ export async function anonymize(tx:TenantTransaction,tenantId:string,id:string,n
  return updated;
 }
 export async function retention(tenantId:string,now:Date) {
+ // Registro separato: l’aggiunta M5S funziona anche se il job clienti del mese è già passato.
+ await reservationTransaction(tenantId,async tx=>{
+  const tenant=await tx.tenant.findFirstOrThrow();if(tenant.status!=='active')return;
+  const settings=await tx.tenantSettings.findFirstOrThrow();const {period,cutoff}=calendarPeriod(now,tenant.timezone,settings.retention_months);
+  if(await tx.auditLog.findFirst({where:{action:'retention.waitlist.month',entity_id:tenantId,metadata:{path:['period'],equals:period}}}))return;
+  const result=await tx.waitlistEntry.updateMany({where:{anonymized_at:null,service_end:{lt:cutoff}},data:{surname:notificationMessages.it.anonymizedCustomer,anonymized_at:now}});
+  await tx.auditLog.create({data:{tenant_id:tenantId,staff_user_id:null,action:'retention.waitlist.month',entity_type:'Tenant',entity_id:tenantId,metadata:{period,count:result.count}}});
+ });
  let count=0;
  for(;;){
   const batch=await reservationTransaction(tenantId,async tx=>{

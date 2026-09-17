@@ -4,13 +4,14 @@ export interface AvailabilitySettings {
   slot_granularity_min: number; turn_duration_min: number; max_covers_per_slot: number;
   total_capacity: number; min_lead_time_min: number; max_advance_days: number; auto_assign_tables: boolean;
 }
-export interface Opening { weekday: number; start_time: string; end_time: string; capacity_override?: number | null }
+export interface Opening { weekday: number; start_time: string; end_time: string; capacity_override?: number | null; label?: string | null }
 export interface Blackout { date: string; start_time: string | null; end_time: string | null }
-export interface Table { id: string; min_capacity: number; max_capacity: number; active: boolean }
+export interface Table { name?:string; id: string; min_capacity: number; max_capacity: number; active: boolean }
 export type ReservationStatus = 'pending' | 'confirmed' | 'seated' | 'completed' | 'cancelled' | 'no_show';
-export interface Occupancy { reserved_at: Date; duration_min: number; party_size: number; status: ReservationStatus; table_id: string | null }
+export interface Occupancy { reserved_at: Date; duration_min: number; party_size: number; status: ReservationStatus; table_id: string | null; table_ids?: string[] }
+export interface TableCombination {active:boolean;min_capacity:number;max_capacity:number;tables:Table[]}
 export interface AvailabilityInput {
-  date: string; timezone: string; partySize: number; now: Date; settings: AvailabilitySettings;
+  date: string; timezone: string; partySize: number; now: Date; settings: AvailabilitySettings; manualGroup?:TableCombination;
   openingHours: Opening[]; blackouts: Blackout[]; tables: Table[]; existingReservations: Occupancy[];
 }
 export type SlotReason = 'closed' | 'too_soon' | 'too_far' | 'full' | 'pacing_limit' | 'no_table';
@@ -37,8 +38,11 @@ function interval(date: string, start: string, end: string, zone: string) {
 }
 export function chooseTable(tables: Table[], reservations: Occupancy[], start: Date, duration: number, partySize: number): Table | undefined {
   const from = start.getTime(), to = from + duration * minute;
-  return tables.filter(table => table.active && table.min_capacity <= partySize && table.max_capacity >= partySize && !reservations.some(r => activeStatuses.includes(r.status) && r.table_id === table.id && overlaps(from,to,r.reserved_at.getTime(),r.reserved_at.getTime()+r.duration_min*minute)))
+  return tables.filter(table => table.active && table.min_capacity <= partySize && table.max_capacity >= partySize && !reservations.some(r => activeStatuses.includes(r.status) && (r.table_id === table.id || r.table_ids?.includes(table.id)) && overlaps(from,to,r.reserved_at.getTime(),r.reserved_at.getTime()+r.duration_min*minute)))
     .sort((a,b) => a.max_capacity-b.max_capacity || a.id.localeCompare(b.id))[0];
+}
+export function groupAvailable(group:TableCombination,reservations:Occupancy[],start:Date,duration:number,partySize:number):boolean {
+ return group.active&&group.tables.length>=2&&new Set(group.tables.map(t=>t.id)).size===group.tables.length&&partySize>=group.min_capacity&&partySize<=group.max_capacity&&group.max_capacity<=group.tables.reduce((sum,t)=>sum+t.max_capacity,0)&&group.tables.every(table=>!!chooseTable([{...table,min_capacity:1,max_capacity:500}],reservations,start,duration,1));
 }
 export function computeAvailability(input: AvailabilityInput): Slot[] {
   const {date,timezone,partySize,now,settings,openingHours,blackouts,tables,existingReservations} = input;
@@ -64,7 +68,7 @@ export function computeAvailability(input: AvailabilityInput): Slot[] {
         else if (start>now.getTime()+settings.max_advance_days*86400000) reason='too_far';
         else if (concurrent.reduce((sum,r)=>sum+r.party_size,0)+partySize>(opening.capacity_override ?? settings.total_capacity)) reason='full';
         else if (pace+partySize>settings.max_covers_per_slot) reason='pacing_limit';
-        else if (settings.auto_assign_tables && !table) reason='no_table';
+        else if ((input.manualGroup&&!groupAvailable(input.manualGroup,reservations,new Date(start),settings.turn_duration_min,partySize)) || (settings.auto_assign_tables && !table)) reason='no_table';
         const slot: Slot={starts_at:new Date(start).toISOString(),time:local.toFormat('HH:mm'),offset:local.toFormat('ZZ'),available:!reason,...(reason?{reason}:{}),...(settings.auto_assign_tables&&table&&!reason?{table_id:table.id}:{})};
         // Con orari sovrapposti prevale il servizio che può accogliere il gruppo.
         if (!slots.get(start)?.available) slots.set(start,slot);
@@ -72,4 +76,19 @@ export function computeAvailability(input: AvailabilityInput): Slot[] {
     }
   }
   return [...slots.entries()].sort(([a],[b])=>a-b).map(([,slot])=>slot);
+}
+
+// Il servizio conserva il giorno d’inizio, anche quando termina il giorno seguente.
+export function serviceWindows(date:string,zone:string,openings:Opening[]) {
+ const bounds=dayBounds(date,zone);
+ const windows=[];
+ for(const serviceDate of [addDays(date,-1),date]) {
+  const weekday=DateTime.fromISO(serviceDate,{zone}).weekday%7;
+  for(const opening of openings.filter(o=>o.weekday===weekday)) {
+   const {start,end}=interval(serviceDate,opening.start_time,opening.end_time,zone);
+   if(!overlaps(start,end,bounds.start.getTime(),bounds.end.getTime()))continue;
+   windows.push({key:`${serviceDate}:${opening.start_time}-${opening.end_time}`,date:serviceDate,label:opening.label??null,start:new Date(start).toISOString(),end:new Date(end).toISOString()});
+  }
+ }
+ return windows.sort((a,b)=>a.start.localeCompare(b.start));
 }

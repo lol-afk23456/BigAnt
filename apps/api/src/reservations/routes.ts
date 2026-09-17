@@ -2,7 +2,8 @@ import type { FastifyInstance } from 'fastify';
 import { SignJWT, jwtVerify } from 'jose';
 import { db, withTenant, resolveTenant, resolveCancellation } from '@bigant/database';
 import { DomainError } from '@bigant/core';
-import { availabilityQuery, publicBookingInput, staffBookingInput, reservationPatch, reservationQuery, idParam, slugParam, tokenParam } from '@bigant/types';
+import { availabilityQuery, staffAvailabilityQuery, publicBookingInput, staffBookingInput, reservationPatch, reservationQuery, idParam, slugParam, tokenParam } from '@bigant/types';
+import { groupInclude } from '../rooms.js';
 import { withStaff } from '../staff.js';
 import { loadAvailability, availabilityResult, createReservation, patchReservation, cancellationView, cancelPublic, listReservations } from './service.js';
 
@@ -52,6 +53,11 @@ export function reservationRoutes(app:FastifyInstance, options:{secret:string;no
   app.post('/public/reservations/:cancelToken/cancel',{config:writeLimit},async(request)=>cancel(tokenParam.parse(request.params).cancelToken));
   // Alias previsto da MISSIONS.md; SPEC usa il suffisso /cancel.
   app.post('/public/reservations/:cancelToken',{config:writeLimit},async(request)=>cancel(tokenParam.parse(request.params).cancelToken));
+  app.get('/staff/availability',{config:staffConfig},request=>withStaff(app,request,async()=>{
+    const query=staffAvailabilityQuery.parse(request.query);const input=await loadAvailability(db,query.date,query.party_size,now());
+    if(query.table_group_id){const group=await db.tableGroup.findUnique({where:{id:query.table_group_id},include:groupInclude});if(!group?.active)throw new DomainError('TABLE_UNAVAILABLE');input.settings={...input.settings,auto_assign_tables:false};input.manualGroup={...group,tables:group.members.map(m=>m.table)};}
+    return availabilityResult(input);
+  }));
   app.get('/reservations',{config:staffConfig},request=>withStaff(app,request,async()=>{
     const query=reservationQuery.parse(request.query);return listReservations(query.date,query.status);
   }));

@@ -22,7 +22,7 @@ I due locali demo:
 | Trattoria Santa Lucia | owner@santalucia.test | bigant2026 |
 | Lido Miseno | owner@lidomiseno.test | bigant2026 |
 
-Santa Lucia conferma automaticamente; Lido richiede conferma dello staff. La home seleziona i demo; ogni locale ha un ingresso dedicato `/r/:slug` con prenotazione, menu e accesso staff `/r/:slug/staff`. Nel login dedicato non si sceglie un altro locale. Non vengono spediti messaggi. [Guida di prova in 35–40 minuti](docs/PROVA_LOCALE.md).
+Santa Lucia conferma automaticamente; Lido richiede conferma dello staff. La home seleziona i demo; ogni locale ha un ingresso dedicato `/r/:slug` con prenotazione, menu e accesso staff `/r/:slug/staff`. Nel login dedicato non si sceglie un altro locale. Non vengono spediti messaggi. [Guida di prova in 40–45 minuti](docs/PROVA_LOCALE.md).
 
 Il seed conserva le prove precedenti. I vecchi placeholder del menu mai modificati vengono aggiornati a contenuti IT/EN dimostrativi; piatti modificati, foto e prenotazioni vengono conservati. Ricette/prezzi/allergeni seed non sono un menu reale verificato. Per ricreare intenzionalmente i **soli due locali demo cancellandone tutte le prove**: `pnpm demo:reset --confirm`, ad app ferme. Funziona soltanto su database locali chiamati `bigant` o `bigant_test`; vietato in produzione. Le prenotazioni ricreate hanno date relative a oggi.
 
@@ -63,7 +63,7 @@ Migrazioni/seed e lookup minimali pre-contesto sono privilegiati. Il client Pris
 
 ## Perimetro e condivisione
 
-M0–M3 implementate: fondamenta, motore prenotazioni, cliente/staff, impostazioni/tavoli e menu digitale. Consolidamento M3C concluso e cancello verde. M4 recensioni conclusa, cancello verde; M5 notifiche/PWA/privacy implementata localmente, con invii simulati e verifiche in PROGRESS; M6 produzione resta da attivare. [Missioni](docs/MISSIONS.md), [specifica](docs/SPEC.md), [backlog](docs/BACKLOG.md). Gli originali ricevuti sono archiviati in `files/`; i documenti operativi correnti sono in `docs/`. [Indice documentazione](docs/README.md), [decisioni approvate](docs/DECISIONS.md).
+M0–M3 implementate: fondamenta, motore prenotazioni, cliente/staff, impostazioni/tavoli e menu digitale. Consolidamento M3C concluso e cancello verde. M4 recensioni conclusa; M5 notifiche/PWA/privacy verificata localmente con invii simulati, M5S sala/attesa conclusa. Ultimo cancello: 97 test backend e sette scenari browser, tipi/lint/build verdi. M6 produzione e verifica push fisiche restano da attivare. [Missioni](docs/MISSIONS.md), [specifica](docs/SPEC.md), [backlog](docs/BACKLOG.md). Gli originali ricevuti sono archiviati in `files/`; i documenti operativi correnti sono in `docs/`. [Indice documentazione](docs/README.md), [decisioni approvate](docs/DECISIONS.md).
 
 Il repository è locale: **nessuna pubblicazione GitHub**. Condividerlo permetterà ai soci di clonare il codice; per una prova via link servirà un ambiente ospitato. `.env`, database, runtime, dipendenze e artefatti sono esclusi da Git. [Report servizi da collegare](docs/SERVIZI_ESTERNI.md).
 
@@ -79,10 +79,16 @@ Upload JPEG/PNG/WebP fino a 5 MB, validazione del formato reale, ricompressione 
 
 Feedback pubblico `/r/:slug/feedback?card=:cardUid`: Google e privato offerti prima del voto, con uguale peso. Il form privato richiede voto 1–5 e consente un messaggio anonimo; il pannello segnala i privati da leggere, conserva note interne e gestisce le card. Una card accetta un invio ogni dieci minuti sui due canali, con controllo nel database; il limite è condiviso fra gli ospiti. I Place ID seed sono dimostrativi e mostrano un esito locale. Accesso al link Google distinto da recensione pubblicata. Email/push reali M5. Guida in [PROVA_LOCALE](docs/PROVA_LOCALE.md).
 
-Gli spunti su sala e lista d’attesa sono analizzati in [SALA_E_ATTESA](docs/SALA_E_ATTESA.md), prima di estendere le funzioni esistenti. In M4 il motore prenotazioni e l’editor tavoli non sono modificati.
+Analisi delle sovrapposizioni e comportamento sala/attesa M5S in [SALA_E_ATTESA](docs/SALA_E_ATTESA.md). Zone e motore originali riusati, con estensione verificata senza sostituire l’assegnazione singola.
 
 ## Notifiche, PWA e privacy (M5 locale)
 
 Outbox PostgreSQL persistente e worker; messaggi registrati prima dell’invio, quota SMS per locale e fallback email. La modalità demo predefinita produce esiti **simulated**, senza inviare email/SMS/push. Pannelli Notifiche e Clienti, CSV con audit, anonimizzazione e retention a lotti; informativa pubblica bozza e marketing separato. PWA dedicata al locale e offline generico, senza cache di dati ospiti. [Guida notifiche/privacy](docs/NOTIFICHE_E_PRIVACY.md).
 
 Gli adattatori reali esistono, ma account/dominio, residenza EU, HTTPS e prove Android/iPhone sono necessari prima dell’attivazione. Il cancello locale non prova il recapito su un telefono fisico.
+
+## Sala e attesa (M5S)
+
+In **Tavoli**, filtro per zone esistenti e combinazioni consentite configurate dal titolare. Form operatore e dettaglio possono assegnarle; tutti i componenti vengono occupati sotto lo stesso lock, con nome e tavoli storici conservati. Il cliente automatico continua sui singoli tavoli.
+
+Dall’agenda, **Apri lista d’attesa**: servizio, cognome/coperti, FIFO e suggerimenti compatibili. **Accomoda** rivalida e crea la prenotazione al tavolo senza contatti inventati; **Completa** libera i componenti. Nessun SMS automatico. [Comportamento e vincoli](docs/SALA_E_ATTESA.md), [prova locale](docs/PROVA_LOCALE.md).

@@ -15,4 +15,3 @@ I documenti correnti sono qui. `files/` conserva gli originali ricevuti e non gu
 | [SALA_E_ATTESA.md](SALA_E_ATTESA.md) | Analisi delle funzioni già presenti e dell’estensione sala/lista d’attesa richiesta |
 
 Per segnalare un difetto: locale, URL/schermata, passi riproducibili, risultato atteso e risultato visto. Usare dati inventati negli esempi e negli screenshot. La viewport mobile sul Mac non equivale a una verifica su telefoni fisici.
-

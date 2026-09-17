@@ -106,6 +106,10 @@ model Tenant {
   auditLog        AuditLog[]
   staffSession    StaffSession[]
   pushSubscription PushSubscription[]
+  tableGroup TableGroup[]
+  tableGroupMember TableGroupMember[]
+  reservationTable ReservationTable[]
+  waitlistEntry WaitlistEntry[]
   id              String            @id @default(uuid(7)) @db.Uuid
   name            String
   slug            String            @unique
@@ -210,6 +214,8 @@ model RestaurantTable {
   created_at   DateTime      @default(now()) @db.Timestamptz(6)
   updated_at   DateTime      @updatedAt @db.Timestamptz(6)
   reservations Reservation[]
+  groupMembers TableGroupMember[]
+  assignments ReservationTable[]
 
   @@unique([tenant_id, id])
 }
@@ -244,6 +250,8 @@ model Reservation {
   tenant         Tenant            @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
   customer_id    String            @db.Uuid
   table_id       String?           @db.Uuid
+  table_group_id String? @db.Uuid
+  table_group_name String?
   reserved_at    DateTime          @db.Timestamptz(6)
   duration_min   Int
   party_size     Int
@@ -260,6 +268,9 @@ model Reservation {
   customer       Customer          @relation(fields: [tenant_id, customer_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
   table          RestaurantTable?  @relation(fields: [tenant_id, table_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
   notifications  NotificationLog[]
+  group TableGroup? @relation(fields: [tenant_id, table_group_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+  assignedTables ReservationTable[]
+  waitlist WaitlistEntry?
 
   @@unique([tenant_id, id])
   @@index([tenant_id, reserved_at])
@@ -422,4 +433,69 @@ model StaffSession {
 
   @@unique([tenant_id, id])
   @@index([tenant_id, staff_user_id])
+}
+
+model TableGroup {
+  id String @id @default(uuid(7)) @db.Uuid
+  tenant_id String @db.Uuid
+  tenant Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  name String
+  min_capacity Int
+  max_capacity Int
+  active Boolean @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @updatedAt @db.Timestamptz(6)
+  members TableGroupMember[]
+  reservations Reservation[]
+  @@unique([tenant_id, id])
+}
+model TableGroupMember {
+  id String @id @default(uuid(7)) @db.Uuid
+  tenant_id String @db.Uuid
+  tenant Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  group_id String @db.Uuid
+  table_id String @db.Uuid
+  group TableGroup @relation(fields: [tenant_id, group_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+  table RestaurantTable @relation(fields: [tenant_id, table_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+  @@unique([tenant_id, id])
+  @@unique([tenant_id, group_id, table_id])
+}
+model ReservationTable {
+  id String @id @default(uuid(7)) @db.Uuid
+  tenant_id String @db.Uuid
+  tenant Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  reservation_id String @db.Uuid
+  table_id String @db.Uuid
+  table_name String
+  reservation Reservation @relation(fields: [tenant_id, reservation_id], references: [tenant_id, id], onDelete: Cascade, onUpdate: NoAction)
+  table RestaurantTable @relation(fields: [tenant_id, table_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+  @@unique([tenant_id, id])
+  @@unique([tenant_id, reservation_id, table_id])
+  @@index([tenant_id, table_id])
+}
+enum WaitlistStatus {
+  waiting
+  seated
+  left
+}
+model WaitlistEntry {
+  id String @id @default(uuid(7)) @db.Uuid
+  tenant_id String @db.Uuid
+  tenant Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  surname String
+  party_size Int
+  service_date DateTime @db.Date
+  service_key String
+  service_label String?
+  service_start DateTime @db.Timestamptz(6)
+  service_end DateTime @db.Timestamptz(6)
+  status WaitlistStatus @default(waiting)
+  reservation_id String? @db.Uuid
+  reservation Reservation? @relation(fields: [tenant_id, reservation_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+  anonymized_at DateTime? @db.Timestamptz(6)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @updatedAt @db.Timestamptz(6)
+  @@unique([tenant_id, id])
+  @@unique([tenant_id, reservation_id])
+  @@index([tenant_id, service_date, status, created_at])
 }

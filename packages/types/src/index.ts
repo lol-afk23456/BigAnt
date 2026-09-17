@@ -12,6 +12,7 @@ export type StaffClaims = z.infer<typeof staffClaims>;
 
 export const dateInput = z.iso.date();
 export const availabilityQuery = z.object({ date: dateInput, party_size: z.coerce.number().int().min(1).max(500) }).strict();
+export const staffAvailabilityQuery=availabilityQuery.extend({table_group_id:z.uuid().optional()}).strict();
 export const reservationStatus = z.enum(['pending','confirmed','seated','completed','cancelled','no_show']);
 const customerInput = {
   full_name: z.string().trim().min(2).max(120), phone: z.string().trim().min(5).max(40), email: z.email().max(254),
@@ -21,10 +22,10 @@ export const bookingInput = z.object({
   locale:z.enum(['it','en']).default('it'), marketing_consent:z.boolean().default(false), privacy_accepted:z.boolean().optional(),
 }).strict();
 export const publicBookingInput = bookingInput.extend({ website: z.string().max(200).default(''), form_token: z.string().max(1500), privacy_accepted:z.literal(true) }).strict();
-export const staffBookingInput = bookingInput.extend({ source: z.enum(['staff','phone']).default('phone'), table_id: z.uuid().nullable().optional() }).strict();
+export const staffBookingInput = bookingInput.extend({ source: z.enum(['staff','phone']).default('phone'), table_id: z.uuid().nullable().optional(), table_group_id:z.uuid().nullable().optional() }).strict();
 export const reservationPatch = z.object({
   reserved_at: z.iso.datetime({offset:true}).optional(), party_size:z.number().int().min(1).max(500).optional(),
-  status:reservationStatus.optional(), table_id:z.uuid().nullable().optional(), notes:z.string().max(1000).optional(), internal_notes:z.string().max(2000).optional(),
+  status:reservationStatus.optional(), table_id:z.uuid().nullable().optional(), table_group_id:z.uuid().nullable().optional(), notes:z.string().max(1000).optional(), internal_notes:z.string().max(2000).optional(),
 }).strict().refine(value=>Object.keys(value).length>0);
 export const reservationQuery = z.object({ date:dateInput, status:reservationStatus.optional() }).strict();
 export const idParam = z.object({id:z.uuid()});
@@ -60,8 +61,10 @@ export interface BookingReceipt {id:string;status:z.infer<typeof reservationStat
 export interface CancellationDetails {reserved_at:string;party_size:number;status:z.infer<typeof reservationStatus>;can_cancel:boolean;cancellation_deadline:string;tenant:{name:string;slug:string;phone:string|null;timezone:string}}
 export interface StaffProfile {id:string;full_name:string;role:'owner'|'staff';tenant:{id:string;name:string;slug:string;timezone:string;locale_default:'it'|'en'}}
 export interface TableRecord extends TableInput {id:string}
-export interface ReservationRecord extends BookingReceipt {duration_min:number;table_id:string|null;notes:string;internal_notes:string;source:'direct'|'phone'|'staff';customer:{id:string;full_name:string;phone_e164:string|null;email:string|null};table:TableRecord|null}
+export interface ReservationRecord extends BookingReceipt {duration_min:number;table_id:string|null;notes:string;internal_notes:string;source:'direct'|'phone'|'staff';customer:{id:string;full_name:string;phone_e164:string|null;email:string|null};table:TableRecord|null;table_group_id:string|null;table_group_name:string|null;assignedTables:Array<{table_id:string;table_name:string}>}
 
 export * from './menu';
 export * from './reviews';
 export * from './notifications';
+
+export * from './rooms';

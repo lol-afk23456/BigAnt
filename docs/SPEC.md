@@ -1,7 +1,7 @@
 # BigAnt Book — Specifica tecnica operativa
 
 **Versione:** 3.1 — settembre 2026, allineata alle decisioni approvate
-**Stato:** M0–M3 e consolidamento M3C implementati e verificati; M4 implementata e verificata; M5 implementata localmente con cancello automatico verde, invii/dispositivi reali da provare; M6 da attivare. I requisiti dei moduli successivi descrivono il prodotto atteso, non funzionalità già attive. Vedi [indice documenti](README.md), [stato e verifiche](PROGRESS.md) e [decisioni](DECISIONS.md).
+**Stato:** M0–M3 e consolidamento M3C implementati e verificati; M4 implementata e verificata; M5 implementata localmente con cancello automatico verde, invii/dispositivi reali da provare; M5S sala/attesa completata e verificata; M6 da attivare. I requisiti dei moduli successivi descrivono il prodotto atteso, non funzionalità già attive. Vedi [indice documenti](README.md), [stato e verifiche](PROGRESS.md) e [decisioni](DECISIONS.md).
 **Destinatario:** agente di sviluppo / sviluppatore
 **Documento correlato:** `BigAnt_Book_Sintesi.html` (strategia, mercato, modello di business)
 
@@ -206,7 +206,7 @@ Nome `RestaurantTable` e non `Table`: `table` è parola riservata in SQL.
 
 Index: `(tenant_id, phone_e164)` unique.
 
-**Input prenotazione:** email e telefono obbligatori, come approvato dall’utente. La nullabilità dei recapiti nel database consente l’anonimizzazione M5 e non li rende facoltativi nel form.
+**Input prenotazione cliente/telefonata:** email e telefono obbligatori, come approvato dall’utente. La nullabilità consente anonimizzazione M5 e ospiti M5S accomodati dalla fila, che richiede solo cognome/coperti; non rende facoltativi i contatti nel form pubblico.
 
 ### 3.8 Reservation
 
@@ -658,3 +658,5 @@ Autorizzata dal successivo «finisci tutto» dopo la richiesta e la precisazione
 - Inserire in attesa non occupa un tavolo. L’operatore sceglie fascia e tavolo/combinazione: il backend rivalida in transazione e crea la prenotazione seated, collegando l’ingresso una sola volta. Per ospiti già fuori dal locale l’anticipo minimo è zero; apertura, chiusure, durata, capienza, ritmo e occupazioni restano vincolanti.
 - Gli ingressi restano consultabili se cambiano gli orari; ai servizi archiviati non si aggiungono nuovi ospiti. Per accomodare si rivalidano gli orari correnti. Retention rimuove il cognome dagli ingressi vecchi e preserva i conteggi.
 - UI: filtro zona nella gestione tavoli, configurazione combinazioni nello stesso pannello, lista d’attesa accessibile dall’agenda. Compatibilità è un suggerimento; nessun salto o assegnazione automatica della fila.
+
+**Esito M5S:** software locale verificato: 97 test backend e sette scenari browser, con gate completo in PROGRESS. Nessuna piantina Pro o console agenzia anticipata.

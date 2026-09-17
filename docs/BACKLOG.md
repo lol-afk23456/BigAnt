@@ -10,8 +10,8 @@
 | B04 | M5 locale verificata, prove reali pendenti | Email/SMS/push, PWA, privacy/export/anonimizzazione; verifica su iPhone e Android fisici |
 | B05 | Prima di un pilot remoto | Proxy fidati/rate limit per più clienti, budget immagini, storage persistente e prestazioni con foto reali |
 | B06 | M6 | Fornitori verificati EU, account/dominio, backup ripristinato, alert e primo locale reale |
-| B07 | M5S, successiva | Sale tramite zone e combinazioni di tavoli configurate dal ristoratore; assegnazione semplice con controllo occupazione |
-| B08 | M5S, successiva | Lista d’attesa per servizio: cognome, coperti, ordine di arrivo e compatibilità con tavoli liberi |
+| B07 | M5S, completato | Sale tramite zone e combinazioni di tavoli configurate dal ristoratore; assegnazione semplice con controllo occupazione |
+| B08 | M5S, completato | Lista d’attesa per servizio: cognome, coperti, ordine di arrivo e compatibilità con tavoli liberi |
 | B09 | Dopo il pilot MVP, agenzia | Console amministrativa BigAnt: onboarding locali, piano/stato, configurazione servizi e consumi; identità amministrativa distinta, permessi e audit obbligatori |
 
 ## Dettagli e vincoli
@@ -20,13 +20,13 @@
 
 - M1 completata: motore, concorrenza, stati, telefono E.164 e API.
 - M2 completata: interfaccia e cancello finale verdi. Email e telefono obbligatori in input; colonne nullable per anonimizzazione M5.
-- M3 completata: menu, quattro template e visibilità separata dall’esaurimento, approvati dall’utente. M4 completata; M5 locale con cancello automatico verde, M5S successiva e M6 da attivare.
+- M3 completata: menu, quattro template e visibilità separata dall’esaurimento, approvati dall’utente. M4 completata; M5 locale con cancello automatico verde, M5S completata e M6 da attivare.
 - M5: notifiche reali, privacy, cancellazione/retention e consenso; dati sanitari esclusi dagli export non necessari.
 - B03 implementato: nuova migrazione M5, evento/canale/destinatario unici, esiti incerti senza reinvio cieco e tentativi solo dopo rifiuto certo. Il cancello locale è in PROGRESS; attivazione fornitori e recapito reale restano B04/B06.
 - M6: store condiviso per rate limit se si avviano più repliche API; proxy fidati e TLS; infrastruttura e log esclusivamente EU. In M0 una sola istanza, rate limit in memoria.
 - M6: credenziali DB con privilegi minimi e verifica residenza EU; nessun servizio remoto è provisionato da M0.
 - Fase 2 esclusa: fidelity, pagamenti/acconti, sincronizzazione canali, voce, multi-sede, turni, agenti AI e cassa.
-- Estensione richiesta dall’utente il 17 settembre: gestione sala e lista d’attesa semplice dopo M4. La successiva precisazione chiede di evitare duplicazioni o peggioramenti: analisi in [SALA_E_ATTESA.md](SALA_E_ATTESA.md), nessun codice sala/prenotazioni cambiato in M4. La lista riguarda i servizi del locale, non i turni del personale. Il successivo «finisci tutto» consente di procedere con FIFO, compatibilità evidenziata e assegnazione manuale; M5S dopo il cancello automatico locale M5. Piantina a blocchi disegnabile rinviata alle funzioni Pro future.
+- Estensione richiesta dall’utente il 17 settembre: gestione sala e lista d’attesa semplice dopo M4. La successiva precisazione chiede di evitare duplicazioni o peggioramenti: analisi in [SALA_E_ATTESA.md](SALA_E_ATTESA.md), nessun codice sala/prenotazioni cambiato in M4. La lista riguarda i servizi del locale, non i turni del personale. Il successivo «finisci tutto» consente di procedere con FIFO, compatibilità evidenziata e assegnazione manuale; M5S conclusa dopo il cancello automatico locale M5; dettagli e verifiche in PROGRESS. Piantina a blocchi disegnabile rinviata alle funzioni Pro future.
 
 - M5–M6: la scelta Resend della SPEC va rivista per il vincolo EU: i metadati/log restano USA anche scegliendo Irlanda. Verificare anche metadati Sentry, filiera SMS, CDN/log e backup; dettagli in SERVIZI_ESTERNI.md.
 - M6: onboarding di tenant reali e scelta locale al login oltre i due demo; recovery password e processo di gestione account da definire. Attualmente il pannello di prova propone i soli due tenant seed.

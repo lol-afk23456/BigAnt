@@ -1,4 +1,4 @@
-# Prova BigAnt Book sul Mac — 35–40 minuti
+# Prova BigAnt Book sul Mac — 40–45 minuti
 
 ## Avvio
 
@@ -76,3 +76,13 @@ Nessuna email o push reale parte in M4. Il link copiato può essere scritto sull
 5. Da **Notifiche** prova le istruzioni di installazione. Il manifest appartiene al locale; la pagina offline è generica e non conserva nomi o prenotazioni. Push disabilitate finché non sono configurate. Android/iPhone reali richiedono la prova HTTPS descritta nella [guida notifiche/privacy](NOTIFICHE_E_PRIVACY.md).
 
 Il launcher avvia anche il worker ogni cinque minuti. La retention opera in piccoli lotti con registro persistente. Il valore iniziale di 24 mesi è una configurazione di prodotto da validare; l’informativa è una bozza, non un testo legale approvato.
+
+## Sala e attesa — prova M5S, 5 minuti
+
+1. In **Tavoli** usa **Filtra per zona**. Le zone sono quelle già presenti, non una seconda configurazione di sale. In **Combinazioni consentite** scegli due tavoli che il locale può realmente unire; assegna nome e capienza effettiva, entro la somma dei posti.
+2. In **Nuova prenotazione** scegli la combinazione e poi persone/data/fascia. Sono verificate anche capienza e ritmo. Nel dettaglio puoi assegnare una combinazione a una prenotazione esistente, correggendo coperti se necessario; vengono occupati tutti i componenti. Automatico cliente rimane sul singolo tavolo.
+3. Nell’agenda del giorno apri **Apri lista d’attesa**. Seleziona il servizio, inserisci cognome e coperti: nessun contatto richiesto, nessun tavolo occupato. Fila in ordine di arrivo; una soluzione compatibile viene evidenziata senza scavalcare automaticamente altri ospiti.
+4. Durante il servizio scegli **Accomoda**, controlla alternativa e orario proposti e conferma. Il sistema rivalida nello stesso lock e crea una prenotazione **Al tavolo**. Apri il dettaglio per vedere i tavoli fisici; **Completa** li libera. Per ospiti che se ne vanno usa **È andato via**, con undo di cinque secondi.
+5. **Mostra anche accomodati e usciti** conserva lo storico. Modifiche agli orari mantengono le vecchie liste; oltre mezzanotte il servizio appartiene al giorno d’inizio e compare anche il giorno seguente. Per una nuova struttura della combinazione crea un nuovo gruppo e disattiva il precedente: le prenotazioni già assegnate mantengono nome e componenti storici.
+
+Le alternative vengono aggiornate ogni trenta secondi e al ritorno nella scheda; **Aggiorna alternative** permette una verifica immediata. Nessuna assegnazione o SMS parte automaticamente. Piantina Pro e console agenzia restano future.

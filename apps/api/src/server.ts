@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 config({ path: new URL('../../../.env', import.meta.url), quiet: true });
+import { serverClock } from './clock.js';
 import { buildApp } from './app.js';
 import { disconnectDatabase } from '@bigant/database';
 import { notificationRuntime } from './notifications/config.js';
@@ -8,6 +9,6 @@ const secret = process.env.JWT_SECRET;
 if (!secret) throw new Error('JWT_SECRET_REQUIRED');
 const notifications=notificationRuntime();let working=false,again=false;
 const wakeNotifications=()=>{again=true;if(working)return;working=true;void (async()=>{try{do{again=false;await workerTick(notifications);}while(again);}catch{process.stderr.write('NOTIFICATION_WORKER_FAILED\n');}finally{working=false;}})();};
-const app = buildApp({ secret,notifications,wakeNotifications });
+const app = buildApp({ secret,notifications,wakeNotifications,now:serverClock(process.env) });
 for (const signal of ['SIGTERM','SIGINT']) process.on(signal, async () => { await app.close(); await disconnectDatabase(); });
 await app.listen({ port: Number(process.env.PORT ?? 3001), host: process.env.HOST ?? '127.0.0.1' });

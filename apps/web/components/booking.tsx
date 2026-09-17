@@ -1,11 +1,11 @@
 'use client';
 import { useEffect,useRef,useState,type FormEvent } from 'react';
-import { bookingInput,type PublicVenue,type AvailabilityResponse,type PublicSlot,type BookingReceipt } from '@bigant/types';
+import { bookingInput,type PublicVenue,type AvailabilityResponse,type PublicSlot,type BookingReceipt,type GroupRecord } from '@bigant/types';
 import { api,staffApi,ApiError,localDate,addDate,displayDate } from '../lib/api';
 import { useCopy,Brand,LanguageSwitch,Loading,ErrorNotice,Status } from './shared';
 
-export function BookingForm({slug,staff=false,initialDate,onBooked}:{slug:string;staff?:boolean;initialDate?:string;onBooked?:(receipt:BookingReceipt)=>void}) {
- const {t,language}=useCopy();
+export function BookingForm({slug,staff=false,initialDate,onBooked,groups=[]}:{slug:string;staff?:boolean;initialDate?:string;groups?:GroupRecord[];onBooked?:(receipt:BookingReceipt)=>void}) {
+ const {t,language}=useCopy();const [groupId,setGroupId]=useState('');
  const [venue,setVenue]=useState<PublicVenue|null>(null),[date,setDate]=useState(initialDate??''),[party,setParty]=useState(2),[availability,setAvailability]=useState<AvailabilityResponse|null>(null),[selected,setSelected]=useState<PublicSlot|null>(null);
  const [error,setError]=useState(''),[slotError,setSlotError]=useState(''),[loading,setLoading]=useState(false),[refresh,setRefresh]=useState(0),[busy,setBusy]=useState(false),[jumped,setJumped]=useState(false),[receipt,setReceipt]=useState<BookingReceipt|null>(null),[copied,setCopied]=useState(false);
  const [draft,setDraft]=useState({full_name:'',email:'',phone:'',notes:''});
@@ -13,13 +13,14 @@ export function BookingForm({slug,staff=false,initialDate,onBooked}:{slug:string
  useEffect(()=>{let alive=true;setError('');api<PublicVenue>(`/public/${slug}`).then(data=>{if(alive){setVenue(data);setParty(p=>Math.min(p,data.max_party_size));setDate(initialDate??localDate(data.timezone));formLoaded.current=Date.now();}}).catch(e=>{if(alive)setError((e as Error).message);});return()=>{alive=false;};},[slug,initialDate,refresh]);
  useEffect(()=>{
   if(!venue||!date)return;let alive=true;setLoading(true);setAvailability(null);setSelected(null);setSlotError('');
-  api<AvailabilityResponse>(`/public/${slug}/availability?date=${date}&party_size=${party}`).then(data=>{
+  const request=staff?staffApi<AvailabilityResponse>(`/staff/availability?date=${date}&party_size=${party}${groupId?`&table_group_id=${groupId}`:''}`):api<AvailabilityResponse>(`/public/${slug}/availability?date=${date}&party_size=${party}`);
+  request.then(data=>{
    if(!alive)return;
    if(!staff&&first.current&&date===localDate(venue.timezone)&&!data.slots.some(s=>s.available)&&data.alternatives.length){first.current=false;setJumped(true);setDate(data.alternatives[0]!.date);return;}
    first.current=false;setAvailability(data);
   }).catch(e=>{if(alive)setSlotError((e as Error).message);}).finally(()=>{if(alive)setLoading(false);});
   return()=>{alive=false;};
- },[venue,date,party,slug,staff]);
+ },[venue,date,party,slug,staff,groupId]);
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();if(!selected||!venue||busy)return;
   const fields=new FormData(event.currentTarget);
@@ -29,9 +30,9 @@ export function BookingForm({slug,staff=false,initialDate,onBooked}:{slug:string
   try {
    // Il token è verificato dal server; non inviare una compilazione sotto i due secondi.
    const remaining=2100-(Date.now()-formLoaded.current);if(remaining>0)await new Promise(resolve=>setTimeout(resolve,remaining));
-   const result=staff?await staffApi<BookingReceipt>('/reservations',{method:'POST',body:JSON.stringify({...parsed.data,source:'phone'})}):await api<BookingReceipt>(`/public/${slug}/reservations`,{method:'POST',body:JSON.stringify({...parsed.data,form_token:venue.form_token,website:fields.get('website')??''})});
+   const result=staff?await staffApi<BookingReceipt>('/reservations',{method:'POST',body:JSON.stringify({...parsed.data,source:'phone',...(groupId?{table_group_id:groupId}:{})})}):await api<BookingReceipt>(`/public/${slug}/reservations`,{method:'POST',body:JSON.stringify({...parsed.data,form_token:venue.form_token,website:fields.get('website')??''})});
    if(onBooked)onBooked(result);else setReceipt(result);
-  }catch(e){setError((e as Error).message);if(e instanceof ApiError&&e.status===409){setSelected(null);setAvailability(null);api<AvailabilityResponse>(`/public/${slug}/availability?date=${date}&party_size=${party}`).then(setAvailability).catch(()=>{});}}
+  }catch(e){setError((e as Error).message);if(e instanceof ApiError&&e.status===409){setSelected(null);setAvailability(null);(staff?staffApi<AvailabilityResponse>(`/staff/availability?date=${date}&party_size=${party}${groupId?`&table_group_id=${groupId}`:''}`):api<AvailabilityResponse>(`/public/${slug}/availability?date=${date}&party_size=${party}`)).then(setAvailability).catch(()=>{});}}
   finally{setBusy(false);}
  }
  if(!venue)return error?<ErrorNotice message={error} onRetry={()=>setRefresh(n=>n+1)}/>:<Loading/>;
@@ -41,6 +42,7 @@ export function BookingForm({slug,staff=false,initialDate,onBooked}:{slug:string
   <p className="booking-venue eyebrow accent">{venue.name}</p>
   {!staff&&<div className="progress-steps" aria-label={t('summary')}><span className="active"><b>1</b>{t('stepWhen')}</span><span className={selected?'active':''}><b>2</b>{t('stepYou')}</span><span><b>3</b>{t('stepDone')}</span></div>}
   <section className="panel booking-step"><div className="section-heading"><h2>{t('stepWhen')}</h2><span className="step-number">01</span></div>
+   {staff&&!!groups.filter(g=>g.active).length&&<label>{t('waitingPlacement')}<select value={groupId} onChange={e=>setGroupId(e.target.value)}><option value="">{t('autoAssign')}</option>{groups.filter(g=>g.active).map(g=><option key={g.id} value={g.id}>{g.name} · {g.min_capacity}–{g.max_capacity} · {t('groupManual')}</option>)}</select></label>}
    <fieldset><legend>{t('people')}</legend><div className="party-buttons">{Array.from({length:Math.min(8,venue.max_party_size)},(_,n)=>n+1).map(n=><button className={party===n?'choice selected':'choice'} type="button" key={n} aria-pressed={party===n} onClick={()=>setParty(n)}>{n}</button>)}</div>{venue.max_party_size>8&&<details className="more-people"><summary>{t('morePeople')}</summary><label>{t('party')}<input type="number" min="1" max={venue.max_party_size} value={party} onChange={e=>{const n=Number(e.target.value);if(n>=1&&n<=venue.max_party_size)setParty(n);}}/></label></details>}</fieldset>
    <div className="date-heading"><label htmlFor="booking-date">{t('date')}</label><input id="booking-date" type="date" value={date} min={today} max={addDate(today,venue.max_advance_days)} onChange={e=>{if(e.target.value){setDate(e.target.value);setJumped(false);}}}/></div>
    <div className="day-buttons">{Array.from({length:Math.min(5,venue.max_advance_days+1)},(_,n)=>addDate(today,n)).map((day,n)=><button key={day} type="button" className={date===day?'day-choice selected':'day-choice'} aria-pressed={date===day} onClick={()=>{setDate(day);setJumped(false);}}><small>{n===0?t('today'):n===1?t('tomorrow'):new Intl.DateTimeFormat(language,{weekday:'short',timeZone:'UTC'}).format(new Date(`${day}T12:00:00Z`))}</small><b>{Number(day.slice(8))}</b></button>)}</div>

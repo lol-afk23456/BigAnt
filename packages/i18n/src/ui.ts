@@ -1,8 +1,10 @@
+import { roomMessages } from './rooms';
 import { menuMessages } from './menu';
 import { reviewMessages } from './reviews';
 import { notificationMessages } from './notifications';
 export const uiMessages = {
   "it": {
+    ...roomMessages.it,
     ...menuMessages.it,
     ...reviewMessages.it,
     ...notificationMessages.it,
@@ -189,6 +191,7 @@ export const uiMessages = {
     "bookingError": "Questo orario potrebbe essere cambiato. Scegli una nuova disponibilità."
   },
   "en": {
+    ...roomMessages.en,
     ...menuMessages.en,
     ...reviewMessages.en,
     ...notificationMessages.en,

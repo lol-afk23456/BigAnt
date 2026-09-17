@@ -2,7 +2,7 @@
 
 Sette blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con criteri di accettazione verificabili da comando.
 
-**Stato al 17 settembre 2026:** M0–M3 e consolidamento M3C completati, con verifiche in [PROGRESS.md](PROGRESS.md). M4 completata; M5 locale con cancello automatico verde, prove live/fisiche pendenti. M5S sala/attesa autorizzata, successiva al cancello automatico locale M5. M6 da attivare. Le checkbox dei criteri originali restano requisiti: lo stato corrente è questa sintesi e i cancelli documentati, non una spunta implicita su ogni funzione futura.
+**Stato al 17 settembre 2026:** M0–M3 e consolidamento M3C completati, con verifiche in [PROGRESS.md](PROGRESS.md). M4 completata; M5 locale con cancello automatico verde, prove live/fisiche pendenti. M5S sala/attesa completata e verificata dopo il cancello automatico locale M5. M6 da attivare. Le checkbox dei criteri originali restano requisiti: lo stato corrente è questa sintesi e i cancelli documentati, non una spunta implicita su ogni funzione futura.
 
 **Regola:** nessuna missione inizia prima che la precedente abbia il cancello verde. Se una missione non entra in una sessione, fermati a un punto coerente (test verdi, commit pulito), aggiorna `PROGRESS.md` e riprendi da lì.
 
@@ -166,14 +166,16 @@ Sette blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con 
 - Informativa privacy per tenant, consenso marketing **separato e non pre-spuntato**
 
 **Criteri di accettazione**
-- [ ] Doppio tentativo di invio dello stesso promemoria → un solo messaggio spedito
-- [ ] Superato `sms_monthly_cap` → l'invio passa a email, il pannello lo mostra
-- [ ] Cambiare fornitore SMS richiede di modificare un solo file
+- [x] Doppio tentativo di invio dello stesso promemoria → un solo messaggio spedito
+- [x] Superato `sms_monthly_cap` → l'invio passa a email, il pannello lo mostra
+- [x] Cambiare fornitore SMS richiede di modificare un solo file
 - [ ] La PWA si installa e riceve una push su Android e su iOS 16.4+
-- [ ] Export produce un CSV valido e scrive in `AuditLog`
-- [ ] Cancellazione cliente anonimizza senza rompere lo storico prenotazioni
+- [x] Export produce un CSV valido e scrive in `AuditLog`
+- [x] Cancellazione cliente anonimizza senza rompere lo storico prenotazioni
 
 ---
+
+**Esito locale:** cancello automatico verde in PROGRESS. Il requisito sui telefoni fisici e il recapito reale rimangono pendenti; M5 non dichiarata completamente accettata in produzione.
 
 ## M5S — sala e attesa, autorizzata dall’utente
 
@@ -187,11 +189,11 @@ Prima dell’attivazione M6, dopo il cancello automatico locale M5. Richiesta de
 - Servizio fotografato negli ingressi in attesa, conservato se cambiano gli orari; oltre mezzanotte attribuito al giorno d’inizio. Visibilità solo staff; storico attesa anonimo dopo il periodo di retention.
 
 **Criteri**
-- [ ] Tavolo singolo/componente occupati una sola volta nella stessa finestra, anche in concorrenza.
-- [ ] Gruppi esterni/inattivi o con componenti non disponibili rifiutati; vecchie prenotazioni e assegnazione automatica singola conservate.
-- [ ] Attesa separata per tenant/giorno/servizio, FIFO stabile; doppio accomodamento produce una sola prenotazione.
-- [ ] Nessun contatto richiesto/inventato per l’attesa, nessun SMS automatico.
-- [ ] Un solo scenario browser sala/attesa a 375 px; cancello generale verde.
+- [x] Tavolo singolo/componente occupati una sola volta nella stessa finestra, anche in concorrenza.
+- [x] Gruppi esterni/inattivi o con componenti non disponibili rifiutati; vecchie prenotazioni e assegnazione automatica singola conservate.
+- [x] Attesa separata per tenant/giorno/servizio, FIFO stabile; doppio accomodamento produce una sola prenotazione.
+- [x] Nessun contatto richiesto/inventato per l’attesa, nessun SMS automatico.
+- [x] Un solo scenario browser sala/attesa a 375 px; cancello generale verde.
 
 ---
 

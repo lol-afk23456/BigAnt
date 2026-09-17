@@ -167,3 +167,7 @@ Per questo MVP non occorrono un servizio esterno di autenticazione, Maps API a p
 ## Aggiornamento sviluppo M5 — 17 settembre
 
 Coda, template, adattatori e pannelli locali sono implementati: dettagli e stati effettivi in [NOTIFICHE_E_PRIVACY](NOTIFICHE_E_PRIVACY.md). Gli invii restano simulati; nessuna scelta contrattuale viene chiusa dall’esistenza dell’adattatore. Le variabili definitive sono in [.env.example](../.env.example). Servono ancora account/dominio, verifiche EU, prove di recapito e dispositivi fisici. In particolare il candidato SMS IE1 non è un servizio già approvato o attivo.
+
+## Console per l’agenzia
+
+La piattaforma isola già i locali. Il pannello per l’agenzia è registrato come B09: onboarding/attivazione, piano e stato, configurazioni mancanti, consumi e audit. Non è ancora implementato. Nessun nuovo servizio esterno è obbligatorio per definirlo; scelta dell’identità amministrativa e dei permessi va completata prima di concedere azioni globali. Un titolare del locale non diventa amministratore BigAnt e la console non deve dare accesso implicito ai dati ospiti.

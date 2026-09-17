@@ -7,7 +7,7 @@ Registro al 17 settembre 2026. Fonte: richieste dell’utente e risoluzioni tecn
 | D01 | Una piattaforma, esperienza dedicata a ogni locale | URL cliente/staff per slug; dati isolati nel data layer. Il selettore dei due demo non è la pagina del ristorante |
 | D02 | Tema esclusivamente scuro, arancione iniziale | Nessun tema chiaro; personalizzazione del colore menu nei controlli approvati |
 | D03 | Prenotazione su pagina unica progressiva | Contatti dopo la fascia; numero persone con pulsanti; richieste facoltative collassate |
-| D04 | Email e telefono entrambi obbligatori | Nullabili nel database soltanto per esigenze di anonimizzazione, non nel form |
+| D04 | Email e telefono entrambi obbligatori nel form cliente/telefonata | Nullable per anonimizzazione e per ospiti della lista d’attesa: solo cognome/coperti, nessun recapito inventato |
 | D05 | Oggi pieno/chiuso → primo giorno utile | Alternative con tono invitante, senza schermata vuota |
 | D06 | Quattro template menu, un colore e una copertina | Essenziale, Pop, Elegante e Pub; stessi contenuti e funzioni |
 | D07 | Occhio separato da esaurito | Nascosto escluso dal pubblico; esaurito pubblico in grigio |

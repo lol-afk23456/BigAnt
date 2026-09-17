@@ -2,17 +2,17 @@
 
 ## Stato al 17 settembre 2026
 
-**M0–M4 e consolidamento M3C completati.** M3 include i quattro template e il comando occhio approvati dall’utente. M5 implementata localmente, cancello automatico verde; invii/dispositivi reali e M6 non attivi.
+**M0–M4 e consolidamento M3C completati.** M3 include i quattro template e il comando occhio approvati dall’utente. M5 implementata localmente, cancello automatico verde; M5S sala/attesa completata e verificata. Invii/dispositivi reali e M6 non attivi.
 
 ## Stato corrente della demo
 
-- M0–M3 e M3C (consolidamento richiesto dall’utente) conclusi. M4 conclusa.
-- Cliente: prenotazione progressiva e disdetta; staff: agenda, stati, tavoli, impostazioni e menu.
+- M0–M4 e M3C (consolidamento richiesto dall’utente) conclusi. M5 locale verificata, requisito fisico/live ancora pendente; M5S conclusa.
+- Cliente: prenotazione progressiva, consensi, privacy e disdetta; staff: agenda, stati, tavoli/combinazioni, attesa per servizio, impostazioni, menu, Clienti e Notifiche.
 - Menu: quattro template scuri, colore/copertina, allergeni, IT/EN, occhio separato da esaurito.
 - Recensioni M4: due scelte pubbliche prima del voto, feedback anonimo, card e lettura/note interne. Cancello finale verde.
-- Spunti sala/attesa del 17 settembre: solo analisi e backlog, nessun codice del motore/tavoli modificato. Vedi [analisi](SALA_E_ATTESA.md).
+- Sala/attesa M5S: zone riusate, combinazioni manuali con occupazione di tutti i componenti e snapshot; FIFO e accomodamento atomico senza recapiti inventati. Vedi [comportamento](SALA_E_ATTESA.md).
 - Ambiente locale Mac; dati demo persistenti. Servizi esterni, account reali e GitHub non attivati.
-- Ultimo cancello automatico M5: 84/84 backend, 6/6 browser, build/typecheck/lint verdi. Lighthouse locale 94/100, LCP 1563 ms; dettagli e limiti nel blocco M5 in fondo.
+- Ultimo cancello M5S: **97/97 backend, 7/7 browser**, build/typecheck/lint verdi. Lighthouse locale **100/100, LCP 1001 ms**; dettagli e limiti nel blocco finale in fondo.
 - Documenti operativi: [indice](README.md), [decisioni](DECISIONS.md), [prova locale](PROVA_LOCALE.md), [servizi esterni](SERVIZI_ESTERNI.md).
 
 Le sezioni seguenti sono lo storico dei blocchi: riferimenti a una pagina vuota o a missioni non ancora avviate descrivono quel momento, non lo stato attuale.
@@ -272,3 +272,24 @@ Richiesta «finisci tutto se non hai dubbi o cose da confermare». M4 aveva canc
 Sulla versione finale: `pnpm typecheck`, `pnpm lint` (zero warning), `pnpm test` **84/84** in nove file, `pnpm build` e `pnpm test:e2e` **6/6** verdi. Il nuovo scenario è passato prima isolatamente; corretta la dicitura del pulsante cliente da Dettagli prenotazione a Dettagli ospite. Backend verifica anche il trasferimento esplicito della sottoscrizione su dispositivo condiviso. Screenshot Notifiche a 375 px ispezionato, nessun overflow. Lighthouse menu **94/100, LCP 1563 ms**, stesso profilo locale mobile documentato M3, immagini sintetiche. Migrazioni già applicate non modificate; link documentali e diff check verdi.
 
 **Confine:** software M5 locale verificato, requisito installazione/push Android/iOS fisici e invii reali ancora pendenti; M5 non dichiarata completamente accettata in produzione. Dev non ancora migrato/riavviato in questo punto, test svolti su bigant_test. Si prosegue con M5S autorizzata dopo questo cancello automatico; M6 richiede account/dominio, verifiche EU e locale reale. Nessun servizio esterno, pubblicazione GitHub o reset dello sviluppo.
+
+## M5S — sala e attesa, cancello verde il 17 settembre
+
+Avviata dopo il cancello automatico locale M5, autorizzata dal «finisci tutto». Scelte iniziali dichiarate: FIFO con compatibilità evidenziata e combinazioni manuali. Zone, tavoli, agenda e motore originali riusati. Nuova migrazione additiva `202609170003_m5s_rooms_waitlist`: TableGroup/Member, ReservationTable e WaitlistEntry con FK composte e vincoli; applicata per ora soltanto al database di test. Nessuna prenotazione storica riscritta.
+
+Configurazioni immutabili per membri/capienza, nome e occupazioni fotografate per prenotazione. Form telefonata e dettaglio consentono la combinazione; scelta automatica pubblica resta sui singoli tavoli. Attesa per servizio con cognome/coperti, storico oltre mezzanotte e dopo cambio orari. Accomodamento atomico crea la prenotazione seated senza recapiti o consensi inventati; anonimizzazione/retention rimuovono anche i cognomi della fila.
+
+Primo blocco backend sala: otto test passati, incluse venti assegnazioni fisiche concorrenti e venti accomodamenti dello stesso ingresso. Suite finale generale e unico scenario frontend a 375 px in corso: M5S non ancora dichiarata conclusa. Orologio browser controllato soltanto con NODE_ENV=test, database `_test` e modalità demo; vietato in produzione e sul database di sviluppo.
+
+### Verifiche finali M5S
+
+- `pnpm typecheck`, `pnpm lint` senza warning, `pnpm test` **97/97** (dieci file), `pnpm build`, `pnpm test:e2e` **7/7** (circa 2,3 minuti) verdi. Tutti gli scenari precedenti conservati; un solo scenario browser aggiuntivo. Nove test sala/attesa e quattro modelli aggiunti al test obbligatorio di isolamento.
+- Concorrenza fisica singolo/combinazione, doppio accomodamento, occupazione e liberazione, componenti inattivi/ridotti/esterni, ruoli, dati storici dopo rinomina/disattivazione, FIFO, apertura cambiata, ingresso dopo mezzanotte, DST e rimozione cognomi con anonimizzazione/retention. Il motore rimane unico e l’assegnazione automatica singola è verificata.
+- Browser: filtro zona, nuova combinazione, telefonata da sei coperti, attesa senza email/telefono, assegnazione gruppo, dettaglio componenti, completamento e storico, EN e assenza overflow a 375 px. Scenario passato prima isolatamente; screenshot combinazioni/attesa ispezionati. Lighthouse menu finale **100/100, LCP 1001 ms**, immagini sintetiche e profilo DevTools mobile M3: non una misura del futuro hosting o di telefoni reali.
+- `git diff --check` verde, link locali documentali validi. Launcher verifica anche l’artefatto worker prima di riusare una build. Nessuna dipendenza aggiunta in M5S.
+
+### Riavvio e conservazione dei dati
+
+`pnpm local` ha applicato M5 e M5S allo sviluppo con migrazioni additive, conservato il seed e riusato la build finale. Web 3000, API 3001 e worker ogni cinque minuti in esecuzione; PostgreSQL preesistente conservato. Prima/dopo: **2 tenant, 101 clienti, 232 prenotazioni, 42 tavoli, 42 piatti, 65 recensioni, 2 card**, conteggi identici. HTTP 200 su home, staff, privacy, manifest e API health. Nessun reset, nuova prenotazione o card nella verifica dello sviluppo.
+
+**Punto di arresto:** software locale fino a M5S verificato e demo attiva. M5 resta da accettare sui telefoni fisici con HTTPS e recapito reale; M6 non iniziata né dichiarata conclusa. Per attivarla servono dominio/account, fornitori e filiera verificati EU, testi/dati del primo locale reale, budget/volumi e prova di backup/ripristino. Console agenzia B09: prevista, ancora da costruire con identità/permessi/audit distinti. Piantina Pro rinviata. Servizi esterni, GitHub, deploy e invii reali non attivati.

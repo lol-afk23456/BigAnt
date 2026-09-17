@@ -1,3 +1,5 @@
+import { roomRoutes } from './rooms.js';
+import { waitlistRoutes } from './waitlist.js';
 import { menuRoutes } from './menu.js';
 import { reviewRoutes } from './reviews.js';
 import { privacyRoutes } from './privacy.js';
@@ -72,6 +74,8 @@ export function buildApp(options: { secret: string; now?: () => Date; menuImageD
     app.addHook('onSend', async (_request, reply, payload) => { reply.header('Cache-Control','no-store'); return payload; });
     reservationRoutes(app, { secret: options.secret, now });
     settingsRoutes(app);
+    roomRoutes(app);
+    waitlistRoutes(app,now);
     menuRoutes(app, options.menuImageDir);
     reviewRoutes(app, now);
     privacyRoutes(app,now);

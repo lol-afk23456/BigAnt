@@ -6,6 +6,7 @@ import { db, withTenant, TenantScopeError, disconnectDatabase } from '../package
 
 let a: string;
 let b: string;
+const roomFixtures:{groups:string[];assignments:string[];waiting:string[]}={groups:[],assignments:[],waiting:[]};
 const queries = {
   Tenant: () => db.tenant.findMany(), StaffUser: () => db.staffUser.findMany(),
   TenantSettings: () => db.tenantSettings.findMany(), OpeningHours: () => db.openingHours.findMany(),
@@ -15,11 +16,21 @@ const queries = {
   Review: () => db.review.findMany(), NFCCard: () => db.nFCCard.findMany(),
   NotificationLog: () => db.notificationLog.findMany(), AuditLog: () => db.auditLog.findMany(),
   StaffSession: () => db.staffSession.findMany(), PushSubscription: () => db.pushSubscription.findMany(),
+  TableGroup:()=>db.tableGroup.findMany(),TableGroupMember:()=>db.tableGroupMember.findMany(),ReservationTable:()=>db.reservationTable.findMany(),WaitlistEntry:()=>db.waitlistEntry.findMany(),
 };
 beforeAll(async () => { const tenants = await fixtures(); a = tenants[0]!.id; b = tenants[1]!.id;
  for(const tenant_id of [a,b]){const staff=await admin.staffUser.findFirstOrThrow({where:{tenant_id}});await admin.pushSubscription.create({data:{tenant_id,staff_user_id:staff.id,endpoint_hash:'isolation-demo',endpoint:'https://fcm.googleapis.com/demo-isolation',p256dh:'fixture',auth:'fixture',active:false}});}
+
+ for(const tenant_id of [a,b]){
+  const tables=await admin.restaurantTable.findMany({where:{tenant_id},take:2});
+  const group=await admin.tableGroup.create({data:{tenant_id,name:'Isolamento fixture',min_capacity:1,max_capacity:4,active:false}});roomFixtures.groups.push(group.id);
+  await admin.tableGroupMember.createMany({data:tables.map(t=>({tenant_id,group_id:group.id,table_id:t.id}))});
+  const reservation=await admin.reservation.findFirstOrThrow({where:{tenant_id}});
+  roomFixtures.assignments.push((await admin.reservationTable.create({data:{tenant_id,reservation_id:reservation.id,table_id:tables[0]!.id,table_name:'Fixture isolamento'}})).id);
+  roomFixtures.waiting.push((await admin.waitlistEntry.create({data:{tenant_id,surname:'Fixture isolamento',party_size:2,service_key:'isolation',service_date:new Date('2026-09-21'),service_start:new Date('2026-09-21T10:00Z'),service_end:new Date('2026-09-21T20:00Z'),status:'left'}})).id);
+ }
  });
-afterAll(async () => { await admin.pushSubscription.deleteMany({where:{tenant_id:{in:[a,b]},endpoint_hash:'isolation-demo'}}); await admin.$disconnect(); await disconnectDatabase(); });
+afterAll(async () => { await admin.waitlistEntry.deleteMany({where:{id:{in:roomFixtures.waiting}}});await admin.reservationTable.deleteMany({where:{id:{in:roomFixtures.assignments}}});await admin.tableGroupMember.deleteMany({where:{group_id:{in:roomFixtures.groups}}});await admin.tableGroup.deleteMany({where:{id:{in:roomFixtures.groups}}});await admin.pushSubscription.deleteMany({where:{tenant_id:{in:[a,b]},endpoint_hash:'isolation-demo'}}); await admin.$disconnect(); await disconnectDatabase(); });
 
 test('ogni modello dello schema è coperto', () => {
   expect(Object.keys(queries).sort()).toEqual(Prisma.dmmf.datamodel.models.map(m => m.name).sort());

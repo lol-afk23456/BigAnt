@@ -48,6 +48,8 @@ Il CSV UTF-8 con BOM include identità, recapiti, consenso e conteggi; esclude a
 
 L’anonimizzazione applicativa mantiene righe/stati/contatori di prenotazione, rimuove nome, recapiti, allergie, note ospite/prenotazione e testo dei feedback associati, ruota i link di disdetta e cancella recapiti dai log di consegna. Feedback anonimi senza associazione a un ospite non possono essere individuati per nome; non vengono attribuiti automaticamente.
 
+L’estensione M5S cancella anche il cognome delle liste associate al cliente anonimizzato. Per gli ingressi vecchi di qualsiasi stato, un registro mensile distinto preserva i conteggi rimuovendo i cognomi. Gli ospiti accomodati dalla fila hanno nome e storico senza contatti inventati.
+
 La retention è configurabile 1–120 mesi, default 24. Una scansione mensile persistente tratta in piccoli lotti i clienti creati prima del limite, senza prenotazioni recenti/future o attive; audit di sistema con attore nullo. In caso di riavvio riprende i clienti rimanenti. Lo storico dei cancellati e i conteggi restano nel locale.
 
 L’informativa generata è una **bozza per la prova**, da completare e validare con dati, destinatari, basi giuridiche e contratti del locale prima dell’uso reale. La retention default è una scelta di prodotto, non un termine imposto dalla legge. I dati sanitari e gli obblighi di cancellazione presso destinatari/backup richiedono valutazione del titolare. [GDPR, articoli 5, 9, 13, 17](https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng/).

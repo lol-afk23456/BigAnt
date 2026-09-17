@@ -12,5 +12,5 @@ function fingerprint(){
  hash.update(process.versions.node).update(process.env.API_INTERNAL_URL??'http://127.0.0.1:3001');
  return hash.digest('hex');
 }
-export function buildIsCurrent(){return existsSync('apps/web/.next/BUILD_ID')&&existsSync('apps/api/dist/server.js')&&existsSync(stamp)&&readFileSync(stamp,'utf8')===fingerprint();}
+export function buildIsCurrent(){return existsSync('apps/web/.next/BUILD_ID')&&existsSync('apps/api/dist/server.js')&&existsSync('apps/api/dist/worker.js')&&existsSync(stamp)&&readFileSync(stamp,'utf8')===fingerprint();}
 if(process.argv.includes('--record')){mkdirSync('.local',{recursive:true});writeFileSync(stamp,fingerprint());}
