@@ -59,7 +59,7 @@ pnpm test:e2e
 
 Unit e integrazione usano PostgreSQL reale in `bigant_test`. Playwright ricrea i due tenant demo **solo nel database di test**, avvia API:3001 e web:3100 e verifica i percorsi browser a 375 px. Ferma il launcher prima degli E2E per liberare 3001; non eseguire Vitest e Playwright contemporaneamente sullo stesso DB.
 
-Su macOS Playwright usa Chrome installato (compatibile anche con questo Mac macOS 13). Su Linux/CI: `pnpm exec playwright install --with-deps chromium`. Screenshot in `test-results/visual`, trace e schermate di errore in `test-results`, esclusi da Git. GitHub Actions è predisposto; non è stato eseguito sul remoto.
+Su macOS Playwright usa Chrome installato (compatibile anche con questo Mac macOS 13). Su Linux/CI: `pnpm exec playwright install --with-deps chromium`. Screenshot in `test-results/visual`, trace e schermate di errore in `test-results`, esclusi da Git. GitHub Actions esegue i controlli a ogni push/PR; l'esito della prima esecuzione remota è registrato in [PROGRESS](docs/PROGRESS.md).
 
 `API_INTERNAL_URL` deve essere impostato **alla build** per la destinazione delle rewrite Next. Default locale: `http://127.0.0.1:3001`. Nessuna chiave segreta nel frontend. Il launcher locale fissa porte e loopback; non è un comando di deploy.
 
