@@ -3,6 +3,7 @@ import { PrismaClient, type ReservationStatus } from '@prisma/client';
 import argon2 from 'argon2';
 import { DateTime } from 'luxon';
 import { demoMenus,demoDish } from './demo-menu.js';
+import { demoCustomerName, demoComments } from './demo-people.js';
 
 export const demos = [
   { slug: 'trattoria-santa-lucia', name: 'Trattoria Santa Lucia', email: 'owner@santalucia.test', type: 'restaurant' as const, capacity: 40, tables: 12, duration: 90, pacing: 12, auto: true, categories: 5, items: 28, customers: 40, reservations: 80, reviews: 25 },
@@ -16,7 +17,7 @@ export async function seedDemo(client: PrismaClient) {
   const today = DateTime.now().setZone('Europe/Rome').startOf('day');
   for (const [index, demo] of demos.entries()) {
     const existing = await client.tenant.findUnique({ where: { slug: demo.slug } });
-    if (existing) { await upgradeDemoMenu(client,existing.id,index,demo.items);tenants.push(existing); continue; }
+    if (existing) { await upgradeDemoMenu(client,existing.id,index,demo.items);await upgradeDemoPeople(client,existing.id,index,demo.customers);tenants.push(existing); continue; }
     const tenant = await client.$transaction(async tx => {
       const tenant = await tx.tenant.create({ data: { name: demo.name, slug: demo.slug, type: demo.type, plan: 'full', google_place_id: `test-place-${index}` } });
       const tenant_id = tenant.id;
@@ -30,7 +31,7 @@ export async function seedDemo(client: PrismaClient) {
       const tables = [];
       for (let n = 0; n < demo.tables; n++) tables.push(await tx.restaurantTable.create({ data: { tenant_id, name: `Tavolo ${n + 1}`, max_capacity: index ? 4 : n < 4 ? 2 : 4, zone: index ? 'Terrazza' : 'Sala' } }));
       const customers = [];
-      for (let n = 0; n < demo.customers; n++) customers.push(await tx.customer.create({ data: { tenant_id, full_name: `Cliente demo ${index + 1}-${n + 1}`, phone_e164: `+393${index}${String(n).padStart(8,'0')}`, email: `cliente${n}@tenant${index}.test` } }));
+      for (let n = 0; n < demo.customers; n++) customers.push(await tx.customer.create({ data: { tenant_id, full_name: demoCustomerName(index,n), notes:'DEMO · Persona inventata. Nessun recapito da contattare.',phone_e164: `+393${index}${String(n).padStart(8,'0')}`, email: `cliente${n}@tenant${index}.test` } }));
       const categories = [];
       for (const [sort_order,category] of demoMenus[index]!.entries()) categories.push(await tx.menuCategory.create({ data: { tenant_id, name_it:category.name_it,name_en:category.name_en,sort_order } }));
       for (let n = 0; n < demo.items; n++) {const {category,dish}=demoDish(index,n);await tx.menuItem.create({ data: { tenant_id, category_id:categories[category]!.id,...dish,sort_order:n,is_available:n%9!==0 } });}
@@ -38,7 +39,7 @@ export async function seedDemo(client: PrismaClient) {
       const reservations = [];
       for (let n = 0; n < demo.reservations; n++) reservations.push(await tx.reservation.create({ data: { tenant_id, customer_id: customers[n % customers.length]!.id, table_id: tables[n % tables.length]!.id, reserved_at: today.plus({days:Math.floor(n / 6)-4,hours:19,minutes:(n%6)*15}).toJSDate(), duration_min: demo.duration, party_size: 2, status: statuses[n % statuses.length]!, source: 'direct', cancel_token: randomBytes(32).toString('hex') } }));
       const card = await tx.nFCCard.create({ data: { tenant_id, card_uid: `demo-${demo.slug}`, label: 'Cassa' } });
-      for (let n = 0; n < demo.reviews; n++) await tx.review.create({ data: { tenant_id, customer_id: customers[n % customers.length]!.id, nfc_card_id: card.id, channel: n % 3 ? 'private' : 'google_redirect', rating: n % 3 ? n % 5 + 1 : null, comment: n % 3 ? 'Feedback dimostrativo' : null } });
+      for (let n = 0; n < demo.reviews; n++) await tx.review.create({ data: { tenant_id, customer_id: customers[n % customers.length]!.id, nfc_card_id: card.id, channel: n % 3 ? 'private' : 'google_redirect', rating: n % 3 ? n % 5 + 1 : null, comment: n % 3 ? demoComments[n % 5] : null } });
       await tx.notificationLog.create({ data: { tenant_id, reservation_id: reservations[0]!.id, type: 'confirmation', channel: 'email', recipient: demo.email, status: 'failed' } });
       await tx.auditLog.create({ data: { tenant_id, staff_user_id: staff.id, action: 'seed', entity_type: 'Tenant', entity_id: tenant_id, metadata: { demo: true } } });
       // Fixture revocata: nessuna credenziale utilizzabile nel seed.
@@ -48,6 +49,13 @@ export async function seedDemo(client: PrismaClient) {
     tenants.push(tenant);
   }
   return tenants;
+}
+
+async function upgradeDemoPeople(client:PrismaClient,tenant_id:string,index:number,count:number){
+ await client.$transaction(async tx=>{
+  for(let n=0;n<count;n++)await tx.customer.updateMany({where:{tenant_id,full_name:`Cliente demo ${index+1}-${n+1}`,phone_e164:`+393${index}${String(n).padStart(8,'0')}`,email:`cliente${n}@tenant${index}.test`,notes:'',allergies:null,marketing_consent:false,total_visits:0,no_show_count:0,last_visit_at:null,anonymized_at:null,updated_at:{equals:tx.customer.fields.created_at}},data:{full_name:demoCustomerName(index,n),notes:'DEMO · Persona inventata. Nessun recapito da contattare.'}});
+  for(let rating=1;rating<=5;rating++)await tx.review.updateMany({where:{tenant_id,channel:'private',rating,comment:'Feedback dimostrativo',staff_seen_at:null,staff_response:null,updated_at:{equals:tx.review.fields.created_at}},data:{comment:demoComments[rating-1]}});
+ },{timeout:30000});
 }
 
 async function upgradeDemoMenu(client:PrismaClient,tenant_id:string,index:number,count:number){

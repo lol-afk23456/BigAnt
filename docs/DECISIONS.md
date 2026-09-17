@@ -17,6 +17,7 @@ Registro al 17 settembre 2026. Fonte: richieste dell’utente e risoluzioni tecn
 | D11 | Consolidare la demo prima di M4 | Ingressi dedicati, navigazione persistente, menu senza reload e documenti coerenti |
 | D12 | Sala e attesa semplici, procedere dopo M5 | FIFO con compatibilità evidenziata, combinazioni scelte manualmente; zone esistenti riusate, nessuna piantina Pro |
 | D13 | Notifiche locali senza invii reali | Outbox PostgreSQL; modalità demo registra simulated. Credenziali e verifiche EU prima di live |
+| D14 | Dati demo comprensibili e protocollo richiesti il 17 settembre | Nomi/feedback originali aggiornati solo se intatti; casi guidati aggiunti esplicitamente senza reset. Analisi produzione distinta dall’attivazione dei servizi |
 
 ## Interpretazioni tecniche già risolte
 

@@ -1,5 +1,7 @@
 # Prova BigAnt Book sul Mac — 40–45 minuti
 
+Per una prova con esiti registrabili usa [PROTOCOLLO_TEST](PROTOCOLLO_TEST.md). I casi DEMO nell’app sono spiegati in [DATI_DEMO](DATI_DEMO.md); per rinnovarli senza cancellare le prove, con database locale attivo: `pnpm seed` e `pnpm demo:examples`. La verifica completa di produzione è in [MESSA_IN_PRODUZIONE](MESSA_IN_PRODUZIONE.md).
+
 ## Avvio
 
 Doppio clic su **Avvia BigAnt.command** nella cartella del progetto. Su questo Mac il runtime locale è predisposto in `.local`, senza cambiare Node di sistema. Attendi il messaggio e apri **http://localhost:3000** in Chrome. Tieni il terminale aperto; Ctrl+C ferma le app e conserva i dati. La prima build può richiedere diversi minuti su questo Mac. Gli avvii successivi riusano la build se codice e configurazione non cambiano.

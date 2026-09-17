@@ -5,6 +5,9 @@ I documenti correnti sono qui. `files/` conserva gli originali ricevuti e non gu
 | Documento | Uso |
 | --- | --- |
 | [PROVA_LOCALE.md](PROVA_LOCALE.md) | Avviare e provare cliente, staff e menu sul Mac |
+| [DATI_DEMO.md](DATI_DEMO.md) | Nomi e casi guidati già presenti, date e aggiornamento senza reset |
+| [PROTOCOLLO_TEST.md](PROTOCOLLO_TEST.md) | Prova iniziale, casi ripetibili, attese ed esiti da registrare |
+| [MESSA_IN_PRODUZIONE.md](MESSA_IN_PRODUZIONE.md) | Interventi ancora necessari nel codice, servizi, collaudo e operatività |
 | [PROGRESS.md](PROGRESS.md) | Stato attuale, ultimo cancello e storico delle verifiche |
 | [DECISIONS.md](DECISIONS.md) | Scelte approvate e interpretazioni tecniche già risolte |
 | [SPEC.md](SPEC.md) | Comportamento e modello dati, con distinzione fra moduli presenti e futuri |

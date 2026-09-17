@@ -26,6 +26,8 @@ Santa Lucia conferma automaticamente; Lido richiede conferma dello staff. La hom
 
 Il seed conserva le prove precedenti. I vecchi placeholder del menu mai modificati vengono aggiornati a contenuti IT/EN dimostrativi; piatti modificati, foto e prenotazioni vengono conservati. Ricette/prezzi/allergeni seed non sono un menu reale verificato. Per ricreare intenzionalmente i **soli due locali demo cancellandone tutte le prove**: `pnpm demo:reset --confirm`, ad app ferme. Funziona soltanto su database locali chiamati `bigant` o `bigant_test`; vietato in produzione. Le prenotazioni ricreate hanno date relative a oggi.
 
+Il seed aggiorna anche nomi e feedback originali mai modificati. `pnpm demo:examples`, con DB locale attivo e notifiche demo, aggiunge casi guidati coppia/famiglia/gruppo e lista d’attesa, rispettando disponibilità e prove precedenti. È ripetibile senza duplicati nello stesso giorno. [Dati già presenti](docs/DATI_DEMO.md), [protocollo di test](docs/PROTOCOLLO_TEST.md) e [lavori necessari prima della produzione](docs/MESSA_IN_PRODUZIONE.md).
+
 ## Sviluppo e verifiche
 
 In alternativa al launcher, prepara `.env` da `.env.example`, genera un `JWT_SECRET` casuale e avvia `pnpm db:local` in un terminale. Nel secondo:
@@ -63,7 +65,7 @@ Migrazioni/seed e lookup minimali pre-contesto sono privilegiati. Il client Pris
 
 ## Perimetro e condivisione
 
-M0–M3 implementate: fondamenta, motore prenotazioni, cliente/staff, impostazioni/tavoli e menu digitale. Consolidamento M3C concluso e cancello verde. M4 recensioni conclusa; M5 notifiche/PWA/privacy verificata localmente con invii simulati, M5S sala/attesa conclusa. Ultimo ricontrollo: 100 test backend e sette scenari browser, tipi/lint/build verdi. M6 produzione e verifica push fisiche restano da attivare. [Missioni](docs/MISSIONS.md), [specifica](docs/SPEC.md), [backlog](docs/BACKLOG.md). Gli originali ricevuti sono archiviati in `files/`; i documenti operativi correnti sono in `docs/`. [Indice documentazione](docs/README.md), [decisioni approvate](docs/DECISIONS.md).
+M0–M3 implementate: fondamenta, motore prenotazioni, cliente/staff, impostazioni/tavoli e menu digitale. Consolidamento M3C concluso e cancello verde. M4 recensioni conclusa; M5 notifiche/PWA/privacy verificata localmente con invii simulati, M5S sala/attesa conclusa. M5C aggiunge dati guidati e protocollo. Ultimo ricontrollo: 104 test backend e sette scenari browser, tipi/lint/build verdi. M6 produzione e verifica push fisiche restano da attivare. [Missioni](docs/MISSIONS.md), [specifica](docs/SPEC.md), [backlog](docs/BACKLOG.md). Gli originali ricevuti sono archiviati in `files/`; i documenti operativi correnti sono in `docs/`. [Indice documentazione](docs/README.md), [decisioni approvate](docs/DECISIONS.md).
 
 Il repository è locale: **nessuna pubblicazione GitHub**. Condividerlo permetterà ai soci di clonare il codice; per una prova via link servirà un ambiente ospitato. `.env`, database, runtime, dipendenze e artefatti sono esclusi da Git. [Report servizi da collegare](docs/SERVIZI_ESTERNI.md).
 

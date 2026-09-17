@@ -4,6 +4,8 @@
 
 Questo documento raccoglie soltanto ciò che serve per collegare BigAnt a email, SMS, hosting e servizi operativi. Le indicazioni sui fornitori sono proposte tecniche: la verifica documentale non sostituisce la verifica dell’account, della configurazione e del contratto prima dell’attivazione.
 
+Collegare questi servizi non basta per la produzione: [MESSA_IN_PRODUZIONE](MESSA_IN_PRODUZIONE.md) elenca anche accessi/recovery, proxy, header, ripristino, monitoraggio e collaudo, con criteri verificabili. Per provare la demo: [dati guidati](DATI_DEMO.md) e [protocollo](PROTOCOLLO_TEST.md).
+
 ## 1. Cosa è già chiaro e cosa manca
 
 Il lavoro tecnico può proseguire con le informazioni disponibili: esperienza dedicata al locale, prenotazioni, menu, recensioni, preparazione delle notifiche e test mirati. Restano valide le scelte approvate: tema scuro e arancione, prenotazione progressiva, email e telefono obbligatori, quattro template menu e comando occhio.

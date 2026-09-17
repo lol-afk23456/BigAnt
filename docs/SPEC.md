@@ -605,6 +605,8 @@ Utenti: `owner@santalucia.test` / `owner@lidomiseno.test`, password `bigant2026`
 
 Il menu seed ha contenuti IT/EN dimostrativi: ricette, prezzi e allergeni non sono quelli verificati di un locale reale. Gli avvii conservano le prove. L’aggiornamento dei vecchi menu interviene soltanto sui placeholder con firma originale e timestamp mai modificato; non ricrea piatti, prenotazioni o tenant.
 
+Consolidamento M5C richiesto il 17 settembre: nomi/feedback leggibili con aggiornamento conservativo dei soli originali, e comando esplicito `demo:examples` per coppia/famiglia/gruppo e attesa. Una serie per locale/giorno, protetta dal lock, senza reset o disponibilità forzata; solo database locale e notifiche demo. Dati e limiti in [DATI_DEMO](DATI_DEMO.md), prova in [PROTOCOLLO_TEST](PROTOCOLLO_TEST.md), analisi di produzione in [MESSA_IN_PRODUZIONE](MESSA_IN_PRODUZIONE.md).
+
 ---
 
 ## 12. Definition of Done per modulo

@@ -66,3 +66,29 @@ test('aggiornamento menu demo conserva piatti modificati e identità esistenti',
   await admin.menuItem.update({where:{id:edited.id},data:edited});
  }
 });
+
+test('nomi e feedback leggibili aggiornano solo i placeholder mai modificati',async()=>{
+ const tenant=await admin.tenant.findUniqueOrThrow({where:{slug:demos[0]!.slug}});
+ const where={tenant_id:tenant.id};
+ const first=await admin.customer.findFirstOrThrow({where:{...where,email:'cliente0@tenant0.test'}});
+ const edited=await admin.customer.findFirstOrThrow({where:{...where,email:'cliente1@tenant0.test'}});
+ const review=await admin.review.findFirstOrThrow({where:{...where,channel:'private',rating:1}});
+ try{
+  await admin.customer.update({where:{id:first.id},data:{full_name:'Cliente demo 1-1',notes:'',updated_at:first.created_at}});
+  await admin.customer.update({where:{id:edited.id},data:{full_name:'Cliente demo 1-2',notes:'Nota del ristoratore',updated_at:edited.created_at}});
+  await admin.review.update({where:{id:review.id},data:{comment:'Feedback dimostrativo',staff_seen_at:null,staff_response:null,updated_at:review.created_at}});
+  await seedDemo(admin);
+  expect(await admin.customer.findUniqueOrThrow({where:{id:first.id}})).toMatchObject({full_name:'Giulia Rossi',phone_e164:first.phone_e164,email:first.email});
+  expect(await admin.customer.findUniqueOrThrow({where:{id:edited.id}})).toMatchObject({full_name:'Cliente demo 1-2',notes:'Nota del ristoratore'});
+  expect((await admin.review.findUniqueOrThrow({where:{id:review.id}})).comment).toContain('aspettato molto');
+  const customer=await admin.customer.findUniqueOrThrow({where:{id:first.id}});
+  const seen=await admin.review.update({where:{id:review.id},data:{comment:'Feedback dimostrativo',staff_response:'Già gestito',updated_at:review.created_at}});
+  await seedDemo(admin);
+  expect(await admin.customer.findUniqueOrThrow({where:{id:first.id}})).toEqual(customer);
+  expect(await admin.review.findUniqueOrThrow({where:{id:review.id}})).toEqual(seen);
+ }finally{
+  await admin.customer.update({where:{id:first.id},data:first});
+  await admin.customer.update({where:{id:edited.id},data:edited});
+  await admin.review.update({where:{id:review.id},data:review});
+ }
+});

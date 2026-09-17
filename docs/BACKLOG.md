@@ -14,6 +14,8 @@
 | B08 | M5S, completato | Lista d’attesa per servizio: cognome, coperti, ordine di arrivo e compatibilità con tavoli liberi |
 | B09 | Dopo il pilot MVP, agenzia | Console amministrativa BigAnt: onboarding locali, piano/stato, configurazione servizi e consumi; identità amministrativa distinta, permessi e audit obbligatori |
 
+Il controllo del 17 settembre è tradotto in punti P01–P12 in [MESSA_IN_PRODUZIONE](MESSA_IN_PRODUZIONE.md), con distinzione fra codice, configurazione e prove. Nessuna attivazione M6 viene dichiarata dal completamento dei dati demo/documenti M5C.
+
 ## Dettagli e vincoli
 
 - Richiesta agenzia del 17 settembre: il multi-tenant esiste, la console dell’agenzia ancora no. La prima versione deve gestire attivazione/sospensione, configurazioni mancanti e consumi senza concedere accesso implicito ai dati degli ospiti. Eventuali interventi nei locali richiedono autorizzazione, scope esplicito e audit. Il lavoro M5/sala continua; nessuna console amministrativa anticipata in questo blocco.

@@ -197,6 +197,20 @@ Prima dell’attivazione M6, dopo il cancello automatico locale M5. Richiesta de
 
 ---
 
+## M5C — dati demo e protocollo, richiesti il 17 settembre
+
+**Obiettivo:** rendere comprensibile la prova locale, conservando le prove già salvate; chiarire i lavori necessari prima della produzione.
+
+**Da fare:** nomi/feedback inventati leggibili, aggiornamento conservativo, comando locale esplicito per casi prenotazione/combinazione/attesa validi e idempotenti; guida ai dati, analisi P01–P12 e protocollo con passi/risultati attesi.
+
+**Criteri:**
+- [x] Cancello generale verde e app riavviata sul Mac.
+- [x] Esempi inseriti nei due demo senza alterare prenotazioni, tavoli e menu delle prove precedenti.
+- [x] Test di idempotenza/concorrenza, conservazione modifiche e rispetto chiusure verdi.
+- [x] Documenti dati/test/produzione coerenti con codice ed evidenze.
+
+**Confine:** nessun account acquistato, invio live, deploy o console agenzia; criteri M5 fisici e M6 ancora aperti.
+
 ## M6 — Messa in produzione
 
 **Obiettivo.** Un locale vero, in EU, con i backup attivi.

@@ -2,7 +2,7 @@
 
 ## Stato al 17 settembre 2026
 
-**M0–M4 e consolidamento M3C completati.** M3 include i quattro template e il comando occhio approvati dall’utente. M5 implementata localmente, cancello automatico verde; M5S sala/attesa completata e verificata. Invii/dispositivi reali e M6 non attivi.
+**M0–M4 e consolidamento M3C completati.** M3 include i quattro template e il comando occhio approvati dall’utente. M5 implementata localmente, cancello automatico verde; M5S sala/attesa completata e verificata. M5C dati guidati/documenti verificata localmente. Invii/dispositivi reali e M6 non attivi.
 
 ## Stato corrente della demo
 
@@ -12,7 +12,8 @@
 - Recensioni M4: due scelte pubbliche prima del voto, feedback anonimo, card e lettura/note interne. Cancello finale verde.
 - Sala/attesa M5S: zone riusate, combinazioni manuali con occupazione di tutti i componenti e snapshot; FIFO e accomodamento atomico senza recapiti inventati. Vedi [comportamento](SALA_E_ATTESA.md).
 - Ambiente locale Mac; dati demo persistenti. Servizi esterni, account reali e GitHub non attivati.
-- Ultimo ricontrollo M5/M5S: **100/100 backend, 7/7 browser**, build/typecheck/lint verdi. Lighthouse locale **99/100, LCP 1035 ms**; dettagli e limiti nel blocco finale in fondo.
+- Ultimo ricontrollo M5C: **104/104 backend, 7/7 browser**, build/typecheck/lint verdi. Lighthouse locale **91/100, LCP 1319 ms**, immagini sintetiche e Chrome mobile simulato; dettagli nel blocco finale.
+- Demo guidata: tre prenotazioni DEMO per locale il 17 settembre alle 19:00, due combinazioni e sei ingressi in attesa. Prenotazioni/tavoli/menu preesistenti conservati; [dati](DATI_DEMO.md), [protocollo](PROTOCOLLO_TEST.md), [produzione](MESSA_IN_PRODUZIONE.md).
 - Documenti operativi: [indice](README.md), [decisioni](DECISIONS.md), [prova locale](PROVA_LOCALE.md), [servizi esterni](SERVIZI_ESTERNI.md).
 
 Le sezioni seguenti sono lo storico dei blocchi: riferimenti a una pagina vuota o a missioni non ancora avviate descrivono quel momento, non lo stato attuale.
@@ -322,3 +323,40 @@ Richiesta «Ricontrolla tutto e continua»: riletti documenti e stato Git, riesa
 **Demo riavviata.** `pnpm local` in esecuzione: web 3000, API 3001, worker; nessuna migrazione pendente. Conteggi prima/dopo identici: 2 tenant, 101 clienti, 232 prenotazioni, 42 tavoli, 42 piatti, 65 recensioni, 2 card; combinazioni e attesa demo ancora vuote. Home, staff/menu Santa Lucia, prenotazione/privacy/manifest Lido e health API rispondono HTTP 200. I test hanno usato soltanto `bigant_test`; la demo `bigant` non è stata resettata.
 
 **Confine successivo.** Nessuna migrazione o nuova dipendenza. Prima del pilot online servono dominio/budget/intestatario, scelta e verifica EU degli account, destinatari autorizzati, iPhone/Android. Prima dei dati reali restano anche proxy/rate limit, header HTTPS, accessi/recovery, backup database+foto con ripristino, alert e documenti del locale. I dettagli sono B04–B06 e SERVIZI_ESTERNI; B09 agenzia resta dopo il pilot. Nessun acquisto, invio reale, deploy o pubblicazione GitHub eseguito.
+
+## M5C — dati demo comprensibili e protocollo, 17 settembre 2026
+
+Richiesta: esempi chiari nell’app, analisi concreta di ciò che manca per la produzione e protocollo di test. Nessuna attivazione di servizi o nuova funzione fuori perimetro.
+
+### Realizzato e decisioni
+
+- Seed con 100 nomi inventati distinti fra i due tenant e feedback privati pertinenti al voto. Aggiornamento dei soli placeholder con contatti/firma originali e timestamp mai modificato; note/letture/risposte dell’operatore protette. ID e contatti conservati.
+- `pnpm demo:examples`: tre prenotazioni coppia/famiglia/gruppo per locale, due combinazioni dimostrative, FIFO 2/4/6 nel primo servizio valido oggi/domani. Tutte le disponibilità rivalidate con il motore esistente nel lock del tenant; chiusure, durata, capienza, ritmo e componenti occupati rispettati. Capienza/ritmo ridotti escludono anche gli ingressi in attesa incompatibili.
+- Marker audit per locale/giorno rende l’inserimento idempotente anche in concorrenza. Ripetere nello stesso giorno conserva le modifiche; un nuovo giorno aggiunge una serie. Nessun reset, nessuna modifica automatica delle impostazioni o delle combinazioni disattivate.
+- CLI limitata a DB locali `bigant`/`bigant_test`, fuori produzione e solo notifiche demo. Test manuale negativo: produzione, host remoto e modalità live rifiutati prima delle query. I recapiti sono inventati; nessun messaggio reale inviato.
+- Dati aggiunti il 17 settembre: Giulia Rossi (2), Famiglia Bianchi (4), Gruppo Esposito (6), ore 19:00 in entrambi i locali. Santa confermata, Lido pending. Coppia/famiglia da assegnare secondo le impostazioni attuali; gruppo sui Tavoli 5+6 / 29+30. Attesa nella Cena Santa e nel continuato Lido.
+- Documenti nuovi: DATI_DEMO, MESSA_IN_PRODUZIONE e PROTOCOLLO_TEST; indice, avvio, servizi, decisioni e missioni allineati. Protocollo con prima prova 20–25 minuti, casi T01–T15 e prove remote T16–T20. Verificati i link locali dei dieci documenti aggiornati.
+- Analisi produzione P01–P12 basata sul codice: accessi/provisioning e recovery, proxy/limiti, HTTPS/CSP/HSTS, backup DB/foto e restore, monitoraggio DB/coda/alert, recapito/rimbalzi, telefoni, privacy/configurazioni EU, carico e rilascio. Non basta inserire le chiavi dei fornitori. La console agenzia resta B09; nessun M6 dichiarato concluso.
+- Runner in `scripts/` e incluso nel typecheck root; logica esempi nel contesto API riusa disponibilità, gruppi/snapshot e outbox. Nessuna dipendenza o migrazione nuova; sette scenari frontend esistenti, nessun nuovo scenario aggiunto.
+
+### Evidenze e cancello finale
+
+| Comando / verifica | Esito |
+| --- | --- |
+| `pnpm typecheck` | Verde, incluso script e test nuovi |
+| `pnpm lint` | Verde, zero warning |
+| `pnpm test` | 104/104 in 11 file, 54,38 s; 26 isolamento tenant |
+| `pnpm test:e2e` | 7/7, 2,4 minuti, viewport 375 px |
+| `pnpm build` | Verde; artefatti/impronta aggiornati |
+| Lighthouse incluso E2E | 91/100, LCP 1319 ms; profilo mobile M3, foto sintetiche locali |
+| Confronto dati demo prima/dopo | 232 prenotazioni precedenti, 42 tavoli e 42 piatti identici; clienti/feedback già modificati conservati |
+| Ripetizione comando sul DB demo | Nessun duplicato, `created:false` per entrambi |
+| Totali DB demo | 238 prenotazioni, 107 clienti, 65 recensioni, 42 tavoli, 42 piatti, 2 combinazioni, 6 ingressi in attesa; nessun placeholder Cliente demo residuo |
+| Riavvio locale | Web e API HTTP 200; cinque migrazioni applicate, nessuna pendente |
+| Controllo app aggiornata | Login nei due locali, tre casi agenda e tre ingressi attesa visibili nel servizio corretto; screenshot Chrome desktop ispezionati |
+
+Confronti conservativi in `.local/demo-examples-before.json` e `.local/demo-examples-verification.json`, esclusi da Git. Il launcher locale è riavviato e conserva le prove. I punteggi Lighthouse variano tra esecuzioni; non sono una misura di telefoni o hosting reali.
+
+Il collegamento UI integrato non si inizializzava per un errore del sandbox; controllo completato con Chrome/Playwright locale. Nel controllo aggiuntivo i selettori sono stati corretti per l’elemento summary e il select con label contenente opzioni, poi scelto il servizio Cena a Santa Lucia. Non sono emersi difetti applicativi; screenshot in `.local/demo-guidata-*.png`. Il protocollo esplicita il servizio per evitare di cercare la fila della cena nel pranzo.
+
+**Punto di arresto:** M5C locale completata. Prossimo lavoro: eseguire il protocollo con Riccardo/soci, correggere difetti e preparare la configurazione EU di collaudo per M5/M6 quando dominio, budget, account, volumi e dispositivi saranno disponibili. GitHub, acquisti, messaggi reali, deploy e console agenzia non attivati.
