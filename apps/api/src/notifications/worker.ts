@@ -1,5 +1,5 @@
 import { db,withTenant,reservationTransaction,activeTenantIds } from '@bigant/database';
-import { calendarPeriod } from '@bigant/core';
+import { calendarPeriod,reservationNotificationIsCurrent } from '@bigant/core';
 import { transactionCopy } from '@bigant/i18n';
 import type { NotificationLog } from '@bigant/database';
 import { enqueue,type EventName } from './outbox.js';
@@ -19,7 +19,7 @@ export async function scheduleReminders(tenantId:string,now:Date) {
   }
  });
 }
-async function messageFor(tenantId:string,log:NotificationLog,runtime:NotificationRuntime):Promise<Message|null> {
+async function messageFor(tenantId:string,log:NotificationLog,runtime:NotificationRuntime,now:Date):Promise<Message|null> {
  return withTenant(tenantId,async()=>{
   const tenant=await db.tenant.findFirstOrThrow();if(tenant.status!=='active'||!log.recipient)return null;
   const settings=await db.tenantSettings.findFirstOrThrow();
@@ -35,9 +35,7 @@ async function messageFor(tenantId:string,log:NotificationLog,runtime:Notificati
    if(!reservation)return null;
    if(!staffEvent){
     if(reservation.customer.anonymized_at)return null;
-    if(event==='reminder'&&(reservation.status!=='confirmed'||payload.reserved_at!==reservation.reserved_at.toISOString()))return null;
-    if(event==='pending'&&reservation.status!=='pending')return null;
-    if(['created','confirmed'].includes(event)&&!['confirmed','seated','completed'].includes(reservation.status))return null;
+    if(!reservationNotificationIsCurrent(event,reservation,payload.reserved_at,now))return null;
     url=`${runtime.origin}/prenotazione/${reservation.cancel_token}`;
     const when=new Intl.DateTimeFormat(locale,{timeZone:tenant.timezone,dateStyle:'medium',timeStyle:'short'}).format(reservation.reserved_at);
     text=`${tenant.name}\n${when} · ${reservation.party_size} ${copy.guests}\n${event==='pending'?copy.pendingHint+'\n':''}${copy.manage} ${url}`;
@@ -64,11 +62,16 @@ export async function dispatch(tenantId:string,runtime:NotificationRuntime,now:D
    const log=await tx.notificationLog.findFirst({where:{status:'queued',event_name:{not:'legacy'},due_at:{lte:now}},orderBy:[{due_at:'asc'},{id:'asc'}]});
    if(!log)return null;
    if(log.channel==='sms'){
+    const reservation=log.reservation_id?await tx.reservation.findUnique({where:{id:log.reservation_id},include:{customer:true}}):null;
+    const payload=log.payload as {reserved_at?:string};
+    if(!reservation||reservation.customer.anonymized_at||!reservationNotificationIsCurrent(log.event_name,reservation,payload.reserved_at,now)){
+     await tx.notificationLog.update({where:{id:log.id},data:{status:'skipped',error_code:'EVENT_NO_LONGER_VALID'}});
+     return {skip:true as const,log};
+    }
     const settings=await tx.tenantSettings.findFirstOrThrow();const month=calendarPeriod(now,tenant.timezone);
     const used=await tx.notificationLog.count({where:{channel:'sms',status:{in:['processing','sent','uncertain','simulated']},attempted_at:{gte:month.start,lt:month.end}}});
     if(!settings.sms_enabled||!['pro','full'].includes(tenant.plan)||used>=settings.sms_monthly_cap){
-     const reservation=log.reservation_id?await tx.reservation.findUnique({where:{id:log.reservation_id},include:{customer:true}}):null;
-     if(reservation&&!reservation.customer.anonymized_at&&reservation.customer.email){
+     if(reservation.customer.email){
       await enqueue(tx,tenantId,log.event_key,log.event_name as EventName,'email',reservation.customer.email,{reservationId:reservation.id,locale:reservation.locale,reservedAt:reservation.reserved_at,fallback:true});
       // Se l’email dell’evento esiste già, viene riusata senza una seconda consegna.
       await tx.notificationLog.updateMany({where:{event_key:log.event_key,channel:'email'},data:{fallback:true}});
@@ -84,7 +87,7 @@ export async function dispatch(tenantId:string,runtime:NotificationRuntime,now:D
   if(claimed.skip)continue;
   const log=claimed.log;
   try{
-   const message=await messageFor(tenantId,log,runtime);
+   const message=await messageFor(tenantId,log,runtime,now);
    if(!message){await withTenant(tenantId,()=>db.notificationLog.update({where:{id:log.id},data:{status:'skipped',error_code:'EVENT_NO_LONGER_VALID'}}));continue;}
    const result=await runtime.channels[log.channel].send(message,log.id);
    await withTenant(tenantId,()=>db.notificationLog.update({where:{id:log.id},data:{status:result.status,provider_id:result.providerId,sent_at:result.status==='sent'?now:null}}));count++;

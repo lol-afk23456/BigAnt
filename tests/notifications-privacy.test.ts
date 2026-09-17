@@ -52,6 +52,24 @@ test('tetto SMS atomico in concorrenza, email di fallback e segnalazione nel pan
  const summary=await app.inject({url:'/notifications/summary',headers:headers()});expect(summary.statusCode).toBe(200);expect(summary.json()).toMatchObject({sms_used:1,sms_cap:1,sms_fallbacks:1,mode:'demo'});
  expect((await app.inject({url:'/notifications',headers:headers()})).body).not.toContain('ospite');
 });
+test.each(['cap','disabled'] as const)('promemoria spostato: il fallback %s non riattiva il vecchio evento',async reason=>{
+ const {reservation}=await booking();await scheduleReminders(ids[0]!,now);
+ await admin.reservation.update({where:{id:reservation.id},data:{reserved_at:new Date('2026-09-22T12:00:00Z')}});
+ await admin.tenantSettings.update({where:{tenant_id:ids[0]!},data:reason==='cap'?{sms_monthly_cap:0}:{sms_enabled:false}});
+ let calls=0;const channel={send:async()=>{calls++;return {status:'sent' as const,providerId:'unexpected'};}};
+ runtime.channels.sms=channel;runtime.channels.email=channel;
+ await dispatch(ids[0]!,runtime,now);
+ expect(calls).toBe(0);
+ expect(await admin.notificationLog.count({where:{reservation_id:reservation.id,channel:'email'}})).toBe(0);
+ expect((await admin.notificationLog.findFirstOrThrow({where:{reservation_id:reservation.id}})).status).toBe('skipped');
+});
+test('un promemoria rimasto in coda oltre l’orario della prenotazione non viene inviato',async()=>{
+ await booking();await scheduleReminders(ids[0]!,now);let calls=0;
+ runtime.channels.sms={send:async()=>{calls++;return {status:'sent',providerId:'unexpected'};}};
+ await dispatch(ids[0]!,runtime,new Date('2026-09-21T12:00:01Z'));
+ expect(calls).toBe(0);
+ expect((await admin.notificationLog.findFirstOrThrow({where:{tenant_id:ids[0]!}})).status).toBe('skipped');
+});
 test('attesa e conferma sono eventi diversi; fallback non duplica l’email di conferma',async()=>{
  const payload={full_name:'Ospite telefono',phone:'3331234567',email:'ospite@m5.test',party_size:2,reserved_at:'2026-09-21T12:00:00Z',locale:'en'};
  const created=await app.inject({method:'POST',url:'/reservations',headers:headers(),payload});expect(created.statusCode).toBe(201);const id=created.json<{id:string}>().id;

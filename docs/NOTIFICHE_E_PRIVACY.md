@@ -8,7 +8,7 @@ La creazione della prenotazione o del feedback e l’inserimento della consegna 
 
 Un worker può essere avviato con `pnpm worker:watch`; il launcher `pnpm local` lo include. Esegue una scansione iniziale e ogni cinque minuti. Gli eventi immediati svegliano anche il dispatcher API dopo la risposta; la coda PostgreSQL sopravvive a interruzioni e riavvii. Non occorre Redis per questa versione. `pnpm worker:once` esegue un solo ciclo e si chiude, utilizzabile da un scheduler dell’ambiente futuro.
 
-Il promemoria è deduplicato per prenotazione e orario di arrivo. Una modifica dell’orario crea un nuovo evento; il precedente viene scartato al controllo finale. Disdetta, anonimizzazione e abbonamenti push scaduti impediscono consegne obsolete. Il tetto SMS viene riservato sotto lock, per mese nel fuso del locale; gli esiti incerti contano prudenzialmente. Il fallback riusa l’email dello stesso evento se esiste già.
+Il promemoria è deduplicato per prenotazione e orario di arrivo. Una modifica dell’orario crea un nuovo evento; il precedente viene scartato prima del fallback e al controllo finale. Il passaggio da SMS a email non può riattivare un promemoria relativo al vecchio orario. Se il worker riparte dopo l’arrivo previsto, scarta il promemoria ormai scaduto. Disdetta, anonimizzazione e abbonamenti push scaduti impediscono consegne obsolete. Il tetto SMS viene riservato sotto lock, per mese nel fuso del locale; gli esiti incerti contano prudenzialmente. Il fallback riusa l’email dello stesso evento se esiste già.
 
 | Stato | Significato | Comportamento |
 | --- | --- | --- |
