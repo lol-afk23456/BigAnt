@@ -6,7 +6,7 @@ Per una prova con esiti registrabili usa [PROTOCOLLO_TEST](PROTOCOLLO_TEST.md). 
 
 Doppio clic su **Avvia BigAnt.command** nella cartella del progetto. Su questo Mac il runtime locale è predisposto in `.local`, senza cambiare Node di sistema. Attendi il messaggio e apri **http://localhost:3000** in Chrome. Tieni il terminale aperto; Ctrl+C ferma le app e conserva i dati. La prima build può richiedere diversi minuti su questo Mac. Gli avvii successivi riusano la build se codice e configurazione non cambiano.
 
-Su un altro Mac: installa Node 22 e pnpm 10, poi dalla cartella del repository esegui `pnpm install` e `pnpm local`. Il launcher crea `.env` con una chiave casuale solo se assente, avvia PostgreSQL locale, applica migrazioni e seed e compila le app. Non sovrascrive `.env` esistente.
+Su un altro Mac: segui [GUIDA_TESTER](GUIDA_TESTER.md) per clonare il repository e installare Node 22.23.2 e pnpm 10.32.1. Dalla cartella esegui `pnpm install --frozen-lockfile` e `pnpm local`; in un secondo terminale, a DB attivo, `pnpm demo:examples` aggiunge i casi guidati. Il launcher crea `.env` con una chiave casuale solo se assente, avvia PostgreSQL locale, applica migrazioni e seed e compila le app. Non sovrascrive `.env` esistente.
 
 | Locale | Accesso staff | Password |
 | --- | --- | --- |

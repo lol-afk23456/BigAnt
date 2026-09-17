@@ -22,7 +22,7 @@ Per attivare servizi a pagamento o un locale reale serviranno dominio, intestata
 | **Demo ai soci via link** | Hosting EU, database e foto persistenti, HTTPS, account di prova; database separato dalla produzione | Flussi con dati inventati; eventuali notifiche solo verso destinatari di test autorizzati |
 | **Locale operativo** | Demo consolidata, M5–M6, email e altri canali previsti, backup, alert, account reali e documenti privacy | Prenotazione vera, conferma dal telefono e feedback da card |
 
-GitHub conserva il codice. I soci possono clonarlo e avviarlo; un link utilizzabile senza installazione richiede anche hosting. Database, foto caricate e segreti non vengono trasferiti con il repository. La pubblicazione GitHub resta alla fine della prova locale, come concordato.
+GitHub conserva il codice. Il 17 settembre l'utente ha autorizzato la pubblicazione su [lol-afk23456/BigAnt](https://github.com/lol-afk23456/BigAnt) dopo la prova locale; esito in [PROGRESS](PROGRESS.md). I soci possono clonarlo e avviarlo seguendo [GUIDA_TESTER](GUIDA_TESTER.md); un link utilizzabile senza installazione richiede anche hosting. Database, foto caricate e segreti non vengono trasferiti con il repository.
 
 ## 3. Servizi da collegare
 

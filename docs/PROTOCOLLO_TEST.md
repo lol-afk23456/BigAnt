@@ -4,8 +4,8 @@ Versione 17 settembre 2026. Per Riccardo e soci; usare dati inventati. Questo pr
 
 ## Preparazione — 5 minuti
 
-1. Avvia **Avvia BigAnt.command**, attendi l’indirizzo e apri `http://localhost:3000`. Mantieni il terminale aperto. Non avviare una seconda copia.
-2. Gli esempi guidati sono già predisposti per questa sessione. Per una prova in un altro giorno, con database attivo esegui `pnpm seed` e `pnpm demo:examples` dalla cartella del progetto. Il comando stampa le date effettive e gli eventuali casi saltati. Leggi [DATI_DEMO](DATI_DEMO.md).
+1. Su un clone nuovo segui [GUIDA_TESTER](GUIDA_TESTER.md), poi avvia `pnpm local`; sul Mac originale è disponibile anche **Avvia BigAnt.command** con runtime predisposto. Attendi l’indirizzo e apri `http://localhost:3000`. Mantieni il terminale aperto. Non avviare una seconda copia.
+2. Sul Mac originale gli esempi guidati sono predisposti per questa sessione; in un clone nuovo aggiungili con `pnpm demo:examples` in un secondo terminale, a database attivo. Per una prova in un altro giorno usa `pnpm seed` e `pnpm demo:examples`. Il comando stampa le date effettive e gli eventuali casi saltati. Leggi [DATI_DEMO](DATI_DEMO.md).
 3. Usa una finestra normale per lo staff e una finestra in incognito per il cliente. Per confrontare contemporaneamente i due staff, servono profili browser separati: due schede normali condividono i cookie e non rappresentano due sessioni isolate.
 4. Scegli un codice per la prova, per esempio **PROVA-A**. Per nuovi ospiti usa `PROVA-A Anna Verdi`, `prova.a@example.test`, `3201234567`. Per un secondo cliente cambia nome, email e telefono (`prova.b@example.test`, `3201234568`). Non contattare questi numeri e non attivare notifiche live.
 5. Annotare data/ora, locale, giorno dell’agenda, lingua/browser e versione del software. Una fascia proposta può cambiare se un altro tester prenota. Non usare `bigant_test` per prove manuali e non resettare i demo condivisi.
