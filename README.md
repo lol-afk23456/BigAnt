@@ -6,9 +6,17 @@ Prototipo multi-tenant per prenotazioni, menu e feedback di ristoranti e lidi. N
 
 Su questo Mac: doppio clic su **Avvia BigAnt.command**, attendi l'avvio, poi apri **http://localhost:3000** in Chrome. Il runtime isolato è in `.local`: non modifica Node di sistema e non viene incluso in Git.
 
-Su un checkout nuovo servono **Node 22** (`.nvmrc`) e **pnpm 10.32.1**. Con nvm: `nvm install && nvm use`, poi `corepack enable`.
+Repository per soci e tester: [lol-afk23456/BigAnt](https://github.com/lol-afk23456/BigAnt). [Guida tester](docs/GUIDA_TESTER.md) e [PDF dell'app e dell'avvio](output/pdf/BigAnt_Book_Guida_Tester.pdf).
+
+Su un checkout nuovo servono **Git, Node 22.23.2** (`.nvmrc`) e **pnpm 10.32.1**. Installa Node con [nvm](https://github.com/nvm-sh/nvm) o dal [sito ufficiale](https://nodejs.org/en/download), scegliendo la versione richiesta. Con nvm, riapri il terminale dopo l'installazione e usa `nvm install` e `nvm use` nella cartella clonata. Per pnpm usa la versione fissata dal progetto ([installazione pnpm 10](https://pnpm.io/10.x/installation)).
 
 ```sh
+git clone https://github.com/lol-afk23456/BigAnt.git
+cd BigAnt
+# Solo se usi nvm:
+nvm install
+nvm use
+npm install --global pnpm@10.32.1
 pnpm install --frozen-lockfile
 pnpm local
 ```
@@ -67,7 +75,7 @@ Migrazioni/seed e lookup minimali pre-contesto sono privilegiati. Il client Pris
 
 M0–M3 implementate: fondamenta, motore prenotazioni, cliente/staff, impostazioni/tavoli e menu digitale. Consolidamento M3C concluso e cancello verde. M4 recensioni conclusa; M5 notifiche/PWA/privacy verificata localmente con invii simulati, M5S sala/attesa conclusa. M5C aggiunge dati guidati e protocollo. Ultimo ricontrollo: 104 test backend e sette scenari browser, tipi/lint/build verdi. M6 produzione e verifica push fisiche restano da attivare. [Missioni](docs/MISSIONS.md), [specifica](docs/SPEC.md), [backlog](docs/BACKLOG.md). Gli originali ricevuti sono archiviati in `files/`; i documenti operativi correnti sono in `docs/`. [Indice documentazione](docs/README.md), [decisioni approvate](docs/DECISIONS.md).
 
-Il repository è locale: **nessuna pubblicazione GitHub**. Condividerlo permetterà ai soci di clonare il codice; per una prova via link servirà un ambiente ospitato. `.env`, database, runtime, dipendenze e artefatti sono esclusi da Git. [Report servizi da collegare](docs/SERVIZI_ESTERNI.md).
+Il repository di destinazione autorizzato il 17 settembre è [BigAnt su GitHub](https://github.com/lol-afk23456/BigAnt); l'esito della pubblicazione è registrato in [PROGRESS](docs/PROGRESS.md). Il clone ricrea dati demo indipendenti sul computer di ciascun tester; per una prova comune via link serve un ambiente ospitato. `.env`, database, foto locali, runtime, dipendenze e artefatti di build/test sono esclusi da Git. Il PDF della guida è incluso. [Report servizi da collegare](docs/SERVIZI_ESTERNI.md).
 
 ## Menu digitale (M3)
 

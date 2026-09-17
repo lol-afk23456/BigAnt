@@ -4,6 +4,7 @@ I documenti correnti sono qui. `files/` conserva gli originali ricevuti e non gu
 
 | Documento | Uso |
 | --- | --- |
+| [GUIDA_TESTER.md](GUIDA_TESTER.md) / [PDF](../output/pdf/BigAnt_Book_Guida_Tester.pdf) | Funzioni attuali, repository GitHub, clone/avvio da un nuovo computer e prima prova |
 | [PROVA_LOCALE.md](PROVA_LOCALE.md) | Avviare e provare cliente, staff e menu sul Mac |
 | [DATI_DEMO.md](DATI_DEMO.md) | Nomi e casi guidati già presenti, date e aggiornamento senza reset |
 | [PROTOCOLLO_TEST.md](PROTOCOLLO_TEST.md) | Prova iniziale, casi ripetibili, attese ed esiti da registrare |

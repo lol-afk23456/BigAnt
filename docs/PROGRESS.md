@@ -11,7 +11,7 @@
 - Menu: quattro template scuri, colore/copertina, allergeni, IT/EN, occhio separato da esaurito.
 - Recensioni M4: due scelte pubbliche prima del voto, feedback anonimo, card e lettura/note interne. Cancello finale verde.
 - Sala/attesa M5S: zone riusate, combinazioni manuali con occupazione di tutti i componenti e snapshot; FIFO e accomodamento atomico senza recapiti inventati. Vedi [comportamento](SALA_E_ATTESA.md).
-- Ambiente locale Mac; dati demo persistenti. Servizi esterni, account reali e GitHub non attivati.
+- Ambiente locale Mac; dati demo persistenti. Servizi esterni dell'app e account reali non attivati. Distribuzione GitHub autorizzata dall'utente: stato nel blocco finale.
 - Ultimo ricontrollo M5C: **104/104 backend, 7/7 browser**, build/typecheck/lint verdi. Lighthouse locale **91/100, LCP 1319 ms**, immagini sintetiche e Chrome mobile simulato; dettagli nel blocco finale.
 - Demo guidata: tre prenotazioni DEMO per locale il 17 settembre alle 19:00, due combinazioni e sei ingressi in attesa. Prenotazioni/tavoli/menu preesistenti conservati; [dati](DATI_DEMO.md), [protocollo](PROTOCOLLO_TEST.md), [produzione](MESSA_IN_PRODUZIONE.md).
 - Documenti operativi: [indice](README.md), [decisioni](DECISIONS.md), [prova locale](PROVA_LOCALE.md), [servizi esterni](SERVIZI_ESTERNI.md).
@@ -360,3 +360,22 @@ Confronti conservativi in `.local/demo-examples-before.json` e `.local/demo-exam
 Il collegamento UI integrato non si inizializzava per un errore del sandbox; controllo completato con Chrome/Playwright locale. Nel controllo aggiuntivo i selettori sono stati corretti per l’elemento summary e il select con label contenente opzioni, poi scelto il servizio Cena a Santa Lucia. Non sono emersi difetti applicativi; screenshot in `.local/demo-guidata-*.png`. Il protocollo esplicita il servizio per evitare di cercare la fila della cena nel pranzo.
 
 **Punto di arresto:** M5C locale completata. Prossimo lavoro: eseguire il protocollo con Riccardo/soci, correggere difetti e preparare la configurazione EU di collaudo per M5/M6 quando dominio, budget, account, volumi e dispositivi saranno disponibili. GitHub, acquisti, messaggi reali, deploy e console agenzia non attivati.
+
+## Consegna GitHub e guida tester - 17 settembre 2026
+
+Richiesta esplicita: pubblicare il progetto su `https://github.com/lol-afk23456/BigAnt.git` e preparare un PDF con funzioni, accessi e clone/avvio locale. La richiesta aggiorna il precedente vincolo di non pubblicare prima della prova locale; non autorizza un deploy o invii reali.
+
+### Preparato e verificato
+
+- Repository di destinazione controllato autenticandosi con `lol-afk23456`: vuoto e pubblico. Configurato `origin`; ramo remoto previsto `main`, senza force push. Accesso GitHub CLI completato dall'utente nel browser; helper configurato solo per questo repository, credenziali/runtime esclusi da Git. HTTPS salvato e SSH iniziali non consentivano il push; dopo il login il dry-run è riuscito.
+- `docs/GUIDA_TESTER.md` e `output/pdf/BigAnt_Book_Guida_Tester.pdf`: 8 pagine, 18 collegamenti, funzioni implementate, differenze demo/live, versioni esatte, comandi clone/installazione/avvio, accessi, esempi, prova iniziale, aggiornamenti e problemi. WSL/telefoni dichiarati da collaudare. Tutte le pagine renderizzate e controllate; testo, link, accessi e comandi validati con pypdf.
+- README e indice aggiornati. pnpm installato alla versione 10.32.1 anziché affidarsi a un Corepack non predisposto; runtime Node 22.23.2. Doppio clic del launcher originale distinto dall'avvio terminale su un computer nuovo.
+- Controllata la storia Git: 570 oggetti, nessun percorso riservato tracciato né corrispondenza nei principali pattern di token/chiavi private. `.env`, `.local/`, database, foto runtime, dipendenze e artefatti intermedi non pubblicati. Anche `tmp/pdfs/` esclusa; PDF finale incluso.
+
+### Prova da un clone pulito
+
+Clone temporaneo separato in `/private/tmp/bigant-tester-clone-20260917`, senza runtime/dipendenze del checkout. Usati Node/pnpm installati, come strumenti esterni al clone. `pnpm install --frozen-lockfile` riuscito; PostgreSQL nuovo su 55433, generate, tutte le cinque migrazioni, seed e build riusciti (7 task, nessuna cache, 56,21 s). `demo:examples` ha creato i tre casi e l'attesa in entrambi i locali, senza casi saltati.
+
+Web/API temporanei su 3300/3301: home, prenotazione, entrambi i menu e staff HTTP 200; health OK; login dei due owner e agenda con DEMO verificati attraverso le rewrite web. Porte diverse per conservare demo e DB originali su 3000/3001/55432. Questa è una verifica di installazione e avvio puliti su questo Mac, non una prova di Windows/Apple Silicon o un nuovo cancello completo: il cancello applicativo resta quello M5C sopra (104 backend, 7 browser, tipi/lint/build verdi). Nessun codice applicativo o migrazione modificati in questo blocco.
+
+**Stato prima della pubblicazione:** PDF e sorgenti pronti, dry-run push riuscito; push effettivo e CI remota da verificare. Nessuna produzione o servizio esterno dell'app attivato.
