@@ -19,6 +19,8 @@ Richiesta del 17 settembre 2026, analizzata durante M4 prima di modificare il mo
 
 Il servizio della lista è quello del locale (pranzo/cena o apertura continuata), distinto dai turni del personale. Ogni ingresso conserva giorno d’inizio, orari UTC ed etichetta del servizio; vecchie liste restano consultabili dopo il cambio orari e i servizi oltre mezzanotte compaiono anche il giorno successivo. La lista non richiede account cliente, SMS, pagamenti o contatti obbligatori.
 
+Durante un servizio oltre mezzanotte le alternative restano aggiornate anche lasciando l’agenda sul giorno d’inizio. La scelta nel modulo di accomodamento identifica tavolo/combinazione **e orario**, non la posizione nell’elenco: se un aggiornamento elimina quella proposta, il pulsante si disabilita e invita a scegliere nuovamente. Non viene assegnata in silenzio un’altra alternativa.
+
 ## Scelte risolte per procedere
 
 Il successivo «finisci tutto se non hai dubbi o cose da confermare» consente di usare le proposte iniziali: FIFO con compatibilità evidenziata e combinazioni assegnate manualmente. Dichiarate in DECISIONS D12 e missione M5S. M4 non viene riscritta; il nuovo blocco parte dopo il cancello automatico locale M5.
@@ -36,4 +38,4 @@ Modello e criteri in SPEC §16 e MISSIONS M5S. I componenti della combinazione s
 
 **Pro futuro:** piantina disegnabile a blocchi e struttura grafica del locale. Non necessaria per configurare le combinazioni semplici, rinviata nel BACKLOG.
 
-**Esito:** M5S completata localmente, cancello 97 backend/7 browser e prova a 375 px in PROGRESS. Gli avvii conservano i dati. Servizi esterni e telefoni fisici non verificati da questo blocco.
+**Esito:** M5S completata localmente; ultimo ricontrollo 100 backend/7 browser, compreso aggiornamento del modulo aperto, e prova a 375 px in PROGRESS. Gli avvii conservano i dati. Servizi esterni e telefoni fisici non verificati da questo blocco.

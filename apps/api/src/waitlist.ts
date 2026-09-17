@@ -21,7 +21,8 @@ export function waitlistRoutes(app:FastifyInstance,now:()=>Date){
    const placements:Placement[]=[];
    // Suggerire solo durante il servizio; la rivalidazione decisiva avviene al clic.
    if(row.status==='waiting'&&!row.anonymized_at&&clock>=row.service_start&&clock<row.service_end){
-    const candidate={...input,partySize:row.party_size,settings:{...input.settings,min_lead_time_min:0,auto_assign_tables:false}};
+    // Dopo mezzanotte la fila resta nel servizio d’origine, le fasce partono dal giorno corrente.
+    const candidate={...input,date:dateInZone(clock,input.timezone),partySize:row.party_size,settings:{...input.settings,min_lead_time_min:0,auto_assign_tables:false}};
     for(const slot of computeAvailability(candidate).filter(s=>s.available&&new Date(s.starts_at)>=row.service_start&&new Date(new Date(s.starts_at).getTime()+input.settings.turn_duration_min*60000)<=row.service_end)){
      const start=new Date(slot.starts_at);const duration=input.settings.turn_duration_min;
      for(const table of input.tables)if(chooseTable([table],input.existingReservations,start,duration,row.party_size))placements.push({kind:'table',id:table.id,name:table.name??table.id,starts_at:slot.starts_at,max_capacity:table.max_capacity});

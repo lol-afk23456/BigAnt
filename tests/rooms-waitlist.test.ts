@@ -80,6 +80,12 @@ test('servizio fotografato dopo cambio orari, oltre mezzanotte e DST; nessun acc
  await app.inject({method:'PUT',url:'/opening-hours',headers:headers(),payload:[{weekday:1,start_time:'20:00',end_time:'02:00'}]});
  const night=await app.inject({method:'POST',url:'/waitlist',headers:headers(),payload:{service_key:'2026-09-21:20:00-02:00',service_date:'2026-09-21',surname:'Notturno',party_size:2}});expect(night.statusCode).toBe(201);
  const tomorrow=await app.inject({url:'/waitlist?date=2026-09-22',headers:headers()});expect(tomorrow.json().entries.some((r:{id:string})=>r.id===night.json().id)).toBe(true);
+ const serviceDay=await app.inject({url:'/waitlist?date=2026-09-21',headers:headers()});
+ for(const result of [serviceDay,tomorrow]){
+  const entry=result.json().entries.find((r:{id:string})=>r.id===night.json().id);
+  expect(entry.placements.length).toBeGreaterThan(0);
+  expect(entry.placements[0].starts_at).toBe('2026-09-21T22:15:00.000Z');
+ }
  const overnight=serviceWindows('2026-09-22','Europe/Rome',[{weekday:1,start_time:'20:00',end_time:'02:00'}]);expect(overnight).toHaveLength(1);expect(overnight[0]).toMatchObject({date:'2026-09-21',start:'2026-09-21T18:00:00.000Z',end:'2026-09-22T00:00:00.000Z'});
  const dst=serviceWindows('2026-10-25','Europe/Rome',[{weekday:0,start_time:'01:00',end_time:'03:00'}]);expect(new Date(dst[0]!.end).getTime()-new Date(dst[0]!.start).getTime()).toBe(3*3600000);
 });

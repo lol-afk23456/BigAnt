@@ -1,5 +1,6 @@
 import { expect,test } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
+import type { WaitlistResponse } from '../../packages/types/src/index';
 test('sala e attesa a 375px: combinazione manuale, fila e accomodamento senza contatti',async({page})=>{
  await page.goto('/r/lido-miseno/staff?view=tables');await page.getByLabel('Password',{exact:true}).fill('bigant2026');await page.getByRole('button',{name:/Accedi al pannello/}).click();
  await page.getByLabel('Filtra per zona').selectOption('Terrazza');await expect(page.locator('.table-card').first()).toBeVisible();
@@ -9,6 +10,18 @@ test('sala e attesa a 375px: combinazione manuale, fila e accomodamento senza co
  await page.locator('#staff-date').fill(future.toISOString().slice(0,10));await expect(page.locator('.reservation-row').filter({hasText:'Gruppo telefonata browser'})).toContainText('Terrazza gruppo browser');await page.getByRole('button',{name:'Oggi',exact:true}).click();
  await page.locator('.waitlist-accordion>summary').click();const queue=page.locator('.waitlist-panel');await queue.getByLabel('Cognome',{exact:true}).fill('Rossi browser');await queue.getByLabel('Persone',{exact:true}).fill('6');await queue.getByRole('button',{name:'Aggiungi in attesa',exact:false}).click();const waiting=queue.locator('.waiting-row').filter({hasText:'Rossi browser'});await expect(waiting).toContainText('C’è una soluzione da valutare');await expect(queue.getByLabel('Email',{exact:true})).toHaveCount(0);await expect(queue.getByLabel('Telefono',{exact:true})).toHaveCount(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await mkdir('test-results/visual',{recursive:true});await page.screenshot({path:'test-results/visual/attesa-375.png',fullPage:true});
- await waiting.getByRole('button',{name:'Accomoda',exact:true}).click();dialog=page.getByRole('dialog');await expect(dialog.getByLabel('Tavolo o combinazione')).toContainText('Terrazza gruppo browser');await dialog.getByRole('button',{name:'Accomoda',exact:true}).click();await expect(dialog).toHaveCount(0);await expect(waiting).toHaveCount(0);const booking=page.locator('.reservation-row').filter({hasText:'Rossi browser'});await expect(booking).toContainText('Al tavolo');await booking.locator('.guest-button').click();dialog=page.getByRole('dialog');await expect(dialog).toContainText('Tavoli occupati');await expect(dialog).toContainText('Tavolo 1');await expect(dialog).toContainText('Tavolo 2');await dialog.getByRole('button',{name:'Completa',exact:true}).click();await expect(dialog).toHaveCount(0);await expect(booking).toContainText('Completata');
+ await waiting.getByRole('button',{name:'Accomoda',exact:true}).click();dialog=page.getByRole('dialog');await expect(dialog.getByLabel('Tavolo o combinazione')).toContainText('Terrazza gruppo browser');
+ // Simula un aggiornamento mentre il modulo è aperto: stesso tavolo, nuova fascia.
+ await page.route('**/api/waitlist?*',async route=>{
+  const response=await route.fetch();const data:WaitlistResponse=await response.json();
+  for(const row of data.entries.filter(row=>row.surname==='Rossi browser'))for(const placement of row.placements)placement.starts_at=new Date(new Date(placement.starts_at).getTime()+15*60000).toISOString();
+  await route.fulfill({response,json:data});
+ });
+ await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
+ await expect(dialog.getByRole('status')).toContainText('La disponibilità è cambiata');
+ await expect(dialog.getByRole('button',{name:'Accomoda',exact:true})).toBeDisabled();
+ await expect(dialog.getByLabel('Tavolo o combinazione')).toHaveValue('');
+ await dialog.getByLabel('Tavolo o combinazione').selectOption({index:1});
+ await dialog.getByRole('button',{name:'Accomoda',exact:true}).click();await expect(dialog).toHaveCount(0);await expect(waiting).toHaveCount(0);const booking=page.locator('.reservation-row').filter({hasText:'Rossi browser'});await expect(booking).toContainText('Al tavolo');await booking.locator('.guest-button').click();dialog=page.getByRole('dialog');await expect(dialog).toContainText('Tavoli occupati');await expect(dialog).toContainText('Tavolo 1');await expect(dialog).toContainText('Tavolo 2');await dialog.getByRole('button',{name:'Completa',exact:true}).click();await expect(dialog).toHaveCount(0);await expect(booking).toContainText('Completata');
  await queue.getByRole('checkbox',{name:'Mostra anche accomodati e usciti'}).check();await expect(queue.locator('.waiting-row').filter({hasText:'Rossi browser'})).toContainText('Accomodato');await page.getByRole('button',{name:'EN',exact:true}).click();await expect(queue.getByRole('heading',{name:'Welcome those waiting.'})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
