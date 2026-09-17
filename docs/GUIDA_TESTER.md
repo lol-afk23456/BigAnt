@@ -223,6 +223,8 @@ Console agenzia per gestire tutti i clienti, piantina della sala a blocchi Pro, 
 
 GitHub permette ai soci di provare il progetto in locale. Per una prova comune via link occorre un ambiente remoto di collaudo separato, con HTTPS e dati inventati; non basta lasciare acceso il Mac di un socio.
 
+**Aggiornamento GitHub del 17 settembre:** tipi, lint, test backend e build verdi. Benchmark menu: 95/100, LCP 2,35 s; il limite sotto i 2 s resta aperto. Misure e lavori necessari sono registrati in PROGRESS.
+
 <!-- page -->
 
 ## Windows e riferimenti operativi

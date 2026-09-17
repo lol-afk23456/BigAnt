@@ -34,6 +34,8 @@ Gli adattatori email/SMS/push esistono. Oggi producono invii simulati. I test au
 
 P07 comprende una decisione da chiudere con il provider: il codice attuale registra l’accettazione della richiesta e non ha webhook di recapito/rimbalzo. Per il pilot occorre almeno una riconciliazione documentata; l’automazione degli esiti richiede ulteriore sviluppo. Analogamente, P04 non impone di costruire subito la console agenzia: il provisioning iniziale può essere amministrativo, con controlli e audit. La console rimane B09.
 
+**Evidenza P10, consegna GitHub del 17 settembre:** la copertina attualmente caricata nella demo Mac (variante 960 WebP circa 120 KB) ha prodotto performance 82/100, LCP 3626 ms, di cui 3138 ms di download, con il profilo mobile previsto. È una prova diversa dal precedente 91/100/LCP 1319 ms con immagini sintetiche. Le foto esistenti sono conservate; budget/varianti delle immagini vanno migliorati e ricollaudati prima del lancio. Esiti dei runner Linux in PROGRESS: non considerare un test funzionale verde una certificazione delle prestazioni.
+
 ## Servizi effettivamente necessari
 
 Dominio/DNS/HTTPS, hosting EU, PostgreSQL, immagini persistenti, backup separati, email transazionali, caselle di risposta/assistenza e monitoraggio. SMS e Web Push completano il perimetro notifiche della SPEC, con configurazione, costi e prove propri. Worker e coda usano già PostgreSQL: nessun servizio di code aggiuntivo è obbligatorio per il pilot.

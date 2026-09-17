@@ -36,4 +36,6 @@ Il controllo del 17 settembre è tradotto in punti P01–P12 in [MESSA_IN_PRODUZ
 
 - M6: immagini menu locali da trasferire a storage persistente EU; includere foto nei backup, pulizia file orfani e controllo limite disco. Aggiornamento pubblico periodico: dimensionare rate limit/proxy per richieste SSR aggregate prima del deploy.
 
+- B05, evidenza del 17 settembre durante la consegna GitHub: il benchmark della copertina attualmente caricata sul Mac ha dato 82/100 e LCP 3626 ms sul profilo 750/250 Kbps, 150 ms, CPU 4×. Il download della variante 960 WebP da circa 120 KB assorbe 3138 ms. Il precedente 91/100 su immagini sintetiche non prova questo caso. Definire un budget per le copertine/foto e verificare qualità, varianti e download con foto realistiche; non rimuovere o alterare le foto dell'operatore per far passare il test. Anche il primo benchmark del runner Linux è fallito: dettagli/report nel blocco consegna di PROGRESS.
+
 - M3C: script di aggiornamento menu servito come asset esterno. M6: verificare la CSP del deploy e prestazioni/cache su immagini reali e infrastruttura remota.
