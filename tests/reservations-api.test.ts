@@ -31,12 +31,12 @@ async function form(index=0) {
 }
 async function book(index=0,changes:Partial<typeof payload>={},ip='127.0.0.1') {
  const form_token=await form(index);
- return app.inject({method:'POST',url:`/public/${tenants[index]!.slug}/reservations`,remoteAddress:ip,payload:{...payload,...changes,form_token}});
+ return app.inject({method:'POST',url:`/public/${tenants[index]!.slug}/reservations`,remoteAddress:ip,payload:{...payload,privacy_accepted:true,...changes,form_token}});
 }
 test('20 richieste parallele sull’ultima fascia: una sola prenotazione',async()=>{
  await admin.tenantSettings.update({where:{tenant_id:tenants[0]!.id},data:{total_capacity:2}});
  const form_token=await form();
- const results=await Promise.all(Array.from({length:20},(_,n)=>app.inject({method:'POST',url:`/public/${tenants[0]!.slug}/reservations`,remoteAddress:`10.0.0.${n+1}`,payload:{...payload,form_token}})));
+ const results=await Promise.all(Array.from({length:20},(_,n)=>app.inject({method:'POST',url:`/public/${tenants[0]!.slug}/reservations`,remoteAddress:`10.0.0.${n+1}`,payload:{...payload,privacy_accepted:true,form_token}})));
  expect(results.filter(r=>r.statusCode===201)).toHaveLength(1);
  expect(results.filter(r=>r.statusCode===409)).toHaveLength(19);
  expect(await admin.reservation.count({where:{tenant_id:tenants[0]!.id}})).toBe(1);
@@ -44,7 +44,7 @@ test('20 richieste parallele sull’ultima fascia: una sola prenotazione',async(
 test('il lock copre anche inizi diversi con permanenze sovrapposte',async()=>{
  await admin.tenantSettings.update({where:{tenant_id:tenants[0]!.id},data:{total_capacity:2}});
  const form_token=await form();
- const results=await Promise.all([instant,'2026-09-21T10:15:00.000Z'].map(reserved_at=>app.inject({method:'POST',url:`/public/${tenants[0]!.slug}/reservations`,payload:{...payload,reserved_at,form_token}})));
+ const results=await Promise.all([instant,'2026-09-21T10:15:00.000Z'].map(reserved_at=>app.inject({method:'POST',url:`/public/${tenants[0]!.slug}/reservations`,payload:{...payload,privacy_accepted:true,reserved_at,form_token}})));
  expect(results.map(r=>r.statusCode).sort()).toEqual([201,409]);
 });
 test('ritmo 12: la 13ª persona riceve PACING_LIMIT',async()=>{
@@ -91,11 +91,11 @@ test('modifica rivalida capienza e tavoli, conserva durata e impedisce riferimen
 test('honeypot, tempo minimo, token falsificato e rate limit pubblici',async()=>{
  const v=await app.inject({url:`/public/${tenants[0]!.slug}`});const token=v.json().form_token;
  const url=`/public/${tenants[0]!.slug}/reservations`;
- expect((await app.inject({method:'POST',url,payload:{...payload,form_token:token}})).statusCode).toBe(400);
+ expect((await app.inject({method:'POST',url,payload:{...payload,privacy_accepted:true,form_token:token}})).statusCode).toBe(400);
  clock=new Date(clock.getTime()+3000);
- expect((await app.inject({method:'POST',url,payload:{...payload,form_token:token,website:'bot'}})).statusCode).toBe(400);
- expect((await app.inject({method:'POST',url,payload:{...payload,form_token:'invalid'}})).statusCode).toBe(400);
- for(let n=0;n<3;n++) {const r=await app.inject({method:'POST',url,payload:{...payload,form_token:'invalid'}});expect(r.statusCode).toBe(n===2?429:400);}
+ expect((await app.inject({method:'POST',url,payload:{...payload,privacy_accepted:true,form_token:token,website:'bot'}})).statusCode).toBe(400);
+ expect((await app.inject({method:'POST',url,payload:{...payload,privacy_accepted:true,form_token:'invalid'}})).statusCode).toBe(400);
+ for(let n=0;n<3;n++) {const r=await app.inject({method:'POST',url,payload:{...payload,privacy_accepted:true,form_token:'invalid'}});expect(r.statusCode).toBe(n===2?429:400);}
 });
 test('disdetta oltre termine bloccata e conteggio visite aggiornato una volta',async()=>{
  const created=await book();const id=created.json().id;

@@ -2,7 +2,7 @@
 
 Sette blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con criteri di accettazione verificabili da comando.
 
-**Stato al 17 settembre 2026:** M0–M3 e consolidamento M3C completati, con verifiche in [PROGRESS.md](PROGRESS.md). M4 completata; M5–M6 non avviate. Le checkbox dei criteri originali restano requisiti: lo stato corrente è questa sintesi e i cancelli documentati, non una spunta implicita su ogni funzione futura.
+**Stato al 17 settembre 2026:** M0–M3 e consolidamento M3C completati, con verifiche in [PROGRESS.md](PROGRESS.md). M4 completata; M5 locale con cancello automatico verde, prove live/fisiche pendenti. M5S sala/attesa autorizzata, successiva al cancello automatico locale M5. M6 da attivare. Le checkbox dei criteri originali restano requisiti: lo stato corrente è questa sintesi e i cancelli documentati, non una spunta implicita su ogni funzione futura.
 
 **Regola:** nessuna missione inizia prima che la precedente abbia il cancello verde. Se una missione non entra in una sessione, fermati a un punto coerente (test verdi, commit pulito), aggiorna `PROGRESS.md` e riprendi da lì.
 
@@ -172,6 +172,26 @@ Sette blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con 
 - [ ] La PWA si installa e riceve una push su Android e su iOS 16.4+
 - [ ] Export produce un CSV valido e scrive in `AuditLog`
 - [ ] Cancellazione cliente anonimizza senza rompere lo storico prenotazioni
+
+---
+
+## M5S — sala e attesa, autorizzata dall’utente
+
+Prima dell’attivazione M6, dopo il cancello automatico locale M5. Richiesta del 17 settembre e successivo «finisci tutto»: usare ordine di arrivo con compatibilità evidenziata e assegnazione manuale delle combinazioni. Nessuna piantina Pro o console agenzia inclusa.
+
+**Da fare**
+- Riusare `RestaurantTable.zone` per filtrare la sala, senza secondo modello di sala.
+- Combinazioni consentite configurate dall’owner; componenti fisici espliciti e capienza effettiva. Membri immutabili dopo la creazione; per una nuova combinazione creare una nuova configurazione e disattivare la precedente.
+- Assegnazione staff sullo stesso lock e motore capienza/ritmo; ogni tavolo componente occupato. Snapshot nome e tavoli della prenotazione, così le configurazioni future non cambiano lo storico.
+- Lista d’attesa per giorno e servizio: cognome, coperti e arrivo. FIFO stabile; compatibilità suggerita, decisione operatore. Accomodamento crea una prenotazione staff senza recapiti inventati e rivalida dentro la stessa transazione.
+- Servizio fotografato negli ingressi in attesa, conservato se cambiano gli orari; oltre mezzanotte attribuito al giorno d’inizio. Visibilità solo staff; storico attesa anonimo dopo il periodo di retention.
+
+**Criteri**
+- [ ] Tavolo singolo/componente occupati una sola volta nella stessa finestra, anche in concorrenza.
+- [ ] Gruppi esterni/inattivi o con componenti non disponibili rifiutati; vecchie prenotazioni e assegnazione automatica singola conservate.
+- [ ] Attesa separata per tenant/giorno/servizio, FIFO stabile; doppio accomodamento produce una sola prenotazione.
+- [ ] Nessun contatto richiesto/inventato per l’attesa, nessun SMS automatico.
+- [ ] Un solo scenario browser sala/attesa a 375 px; cancello generale verde.
 
 ---
 

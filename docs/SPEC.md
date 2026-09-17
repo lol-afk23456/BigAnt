@@ -1,7 +1,7 @@
 # BigAnt Book — Specifica tecnica operativa
 
 **Versione:** 3.1 — settembre 2026, allineata alle decisioni approvate
-**Stato:** M0–M3 e consolidamento M3C implementati e verificati; M4 implementata e verificata; M5–M6 da costruire. I requisiti dei moduli successivi descrivono il prodotto atteso, non funzionalità già attive. Vedi [indice documenti](README.md), [stato e verifiche](PROGRESS.md) e [decisioni](DECISIONS.md).
+**Stato:** M0–M3 e consolidamento M3C implementati e verificati; M4 implementata e verificata; M5 implementata localmente con cancello automatico verde, invii/dispositivi reali da provare; M6 da attivare. I requisiti dei moduli successivi descrivono il prodotto atteso, non funzionalità già attive. Vedi [indice documenti](README.md), [stato e verifiche](PROGRESS.md) e [decisioni](DECISIONS.md).
 **Destinatario:** agente di sviluppo / sviluppatore
 **Documento correlato:** `BigAnt_Book_Sintesi.html` (strategia, mercato, modello di business)
 
@@ -35,15 +35,15 @@ Da rileggere prima di ogni sessione di lavoro.
 | Mobile | **PWA installabile** (no app nativa nell'MVP) — Web Push su Android e iOS 16.4+ |
 | Auth staff | JWT access (15 min) + refresh token httpOnly (30 gg) |
 | Validazione | Zod, schemi condivisi in `packages/types` |
-| Code queue | BullMQ + Redis (o pg-boss se si vuole evitare Redis in MVP) |
-| Email | Adattatore M5 da implementare; candidato Scaleway TEM, verifica prima dell’attivazione |
+| Code queue | Outbox PostgreSQL M5 con claim/lock del tenant, worker dedicato; senza Redis |
+| Email | Adattatore TEM fr-par M5 implementato; candidato da verificare prima dell’attivazione |
 | SMS | Fornitore sostituibile da verificare, candidato Twilio IE1 non ancora approvato per residenza EU |
 | Storage immagini | M3: filesystem persistente e tre varianti WebP; storage EU remoto da scegliere in M6 |
 | Hosting | Da scegliere dopo la prova locale e la verifica EU; candidati nel report servizi |
 | Errori | Monitoraggio/log EU da verificare; Sentry SaaS EU non approvato con il vincolo attuale |
 | Test | Vitest (unit), Playwright (e2e sui 3 flussi pubblici) |
 
-Scelte, fonti e informazioni per attivare i fornitori: [SERVIZI_ESTERNI.md](SERVIZI_ESTERNI.md). Nessun account remoto o invio reale configurato.
+Scelte, fonti e informazioni per attivare i fornitori: [SERVIZI_ESTERNI.md](SERVIZI_ESTERNI.md). Nessun account remoto o invio reale configurato. Dettagli della coda M5 e della privacy in [NOTIFICHE_E_PRIVACY](NOTIFICHE_E_PRIVACY.md).
 
 ### Struttura repository
 
@@ -291,7 +291,7 @@ id, tenant_id, card_uid (unique), label ("Tavolo 3", "Cassa"), active, last_tapp
 | provider_id | text | nullable, id del provider per debug |
 | sent_at | timestamptz | nullable |
 
-**Vincolo attuale M0:** `(reservation_id, type)` unique parziale su `status != 'failed'`. Prima di M5 va rivisto con una nuova migrazione: non distingue attesa e conferma né consegne su canali diversi. Il requisito di idempotenza è registrare prima dell’invio e deduplicare per evento stabile, canale e destinatario; gestione degli esiti incerti del provider nel worker. Vedi BACKLOG e SERVIZI_ESTERNI.
+**Vincolo M5:** unique su `(tenant_id, event_key, channel, recipient_hash)`, evento stabile e consegna registrata prima dell’invio. La nuova migrazione sostituisce il vincolo parziale M0 prenotazione/tipo. Claim atomico, tentativi e stato incerto gestiti dal worker; nessun reinvio automatico dopo un esito incerto. Vedi NOTIFICHE_E_PRIVACY e SERVIZI_ESTERNI.
 
 ### 3.13 AuditLog
 
@@ -448,7 +448,7 @@ POST   /reservations                      (creazione manuale da telefonata)
 PATCH  /reservations/:id                  (modifica, cambio stato, assegna tavolo)
 DELETE /reservations/:id
 
-GET    /customers?q=
+GET    /customers                       (solo cursore; ricerca POST /customers/search nel corpo)
 GET    /customers/:id
 PATCH  /customers/:id
 DELETE /customers/:id                     (GDPR — audit obbligatorio)
@@ -643,3 +643,18 @@ Se questo accade una volta, il prodotto esiste. Prima di allora è un'ipotesi, e
 6. Layer agenti AI (orchestratore → agenti specializzati → strumenti, con gate di approvazione umana su tutto ciò che esce verso una persona)
 
 Nessuno di questi punti va toccato prima che il criterio della sezione 13 sia soddisfatto.
+
+## 15. Implementazione locale M5
+
+Evento/canale/destinatario sostituiscono il vecchio vincolo notifiche con migrazione additiva. Consegne queued/processing/sent/failed/uncertain/simulated/skipped; il worker non invia le righe legacy e non ritenta esiti incerti. Manifest e abbonamenti push appartengono al locale; cache solo della shell generica. Privacy pubblica, timestamp consensi, retention_months default 24 e privacy_contact_email nelle impostazioni; Customer.anonymized_at identifica i contatti rimossi. Audit di sistema con staff_user_id nullable. Ricerca clienti in POST, export/anonimizzazione owner. Codice pronto per prova locale, servizi reali e testi legali da validare; contratto operativo in [NOTIFICHE_E_PRIVACY](NOTIFICHE_E_PRIVACY.md).
+
+## 16. Estensione sala e lista d’attesa M5S
+
+Autorizzata dal successivo «finisci tutto» dopo la richiesta e la precisazione del 17 settembre: riusare zone, tavoli, prenotazioni e motore esistenti. Ordine di arrivo stabile, compatibilità evidenziata e combinazioni assegnate manualmente; piantina Pro rinviata.
+
+- `TableGroup` e `TableGroupMember`: nome/capienza effettiva, almeno due tavoli fisici attivi dello stesso locale. Membri e capienza immutabili; per cambiare struttura si crea una nuova combinazione e si disattiva la precedente. La capienza non può superare la somma delle capienze fisiche. Modifiche owner, lettura staff, audit.
+- `ReservationTable`: snapshot dei tavoli fisici occupati da una combinazione; prenotazione con `table_group_id` e nome storico. Una modifica di configurazione non cambia le occupazioni esistenti. L’assegnazione automatica cliente rimane sui singoli tavoli; l’operatore può scegliere un gruppo consentito. Stesso lock del tenant, stesse regole di capienza/ritmo, controllo di ogni componente.
+- `WaitlistEntry`: cognome, coperti, arrivo, stato waiting/seated/left e servizio fotografato (giorno d’inizio, orari UTC, etichetta). Lista riservata allo staff, senza telefono/email obbligatori o inventati e senza messaggi automatici. Servizi oltre mezzanotte attribuiti al giorno d’inizio e visibili anche il giorno successivo.
+- Inserire in attesa non occupa un tavolo. L’operatore sceglie fascia e tavolo/combinazione: il backend rivalida in transazione e crea la prenotazione seated, collegando l’ingresso una sola volta. Per ospiti già fuori dal locale l’anticipo minimo è zero; apertura, chiusure, durata, capienza, ritmo e occupazioni restano vincolanti.
+- Gli ingressi restano consultabili se cambiano gli orari; ai servizi archiviati non si aggiungono nuovi ospiti. Per accomodare si rivalidano gli orari correnti. Retention rimuove il cognome dagli ingressi vecchi e preserva i conteggi.
+- UI: filtro zona nella gestione tavoli, configurazione combinazioni nello stesso pannello, lista d’attesa accessibile dall’agenda. Compatibilità è un suggerimento; nessun salto o assegnazione automatica della fila.

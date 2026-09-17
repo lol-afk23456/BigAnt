@@ -18,8 +18,9 @@ const customerInput = {
 };
 export const bookingInput = z.object({
   ...customerInput, reserved_at: z.iso.datetime({offset:true}), party_size: z.number().int().min(1).max(500), notes: z.string().trim().max(1000).default(''),
+  locale:z.enum(['it','en']).default('it'), marketing_consent:z.boolean().default(false), privacy_accepted:z.boolean().optional(),
 }).strict();
-export const publicBookingInput = bookingInput.extend({ website: z.string().max(200).default(''), form_token: z.string().max(1500) }).strict();
+export const publicBookingInput = bookingInput.extend({ website: z.string().max(200).default(''), form_token: z.string().max(1500), privacy_accepted:z.literal(true) }).strict();
 export const staffBookingInput = bookingInput.extend({ source: z.enum(['staff','phone']).default('phone'), table_id: z.uuid().nullable().optional() }).strict();
 export const reservationPatch = z.object({
   reserved_at: z.iso.datetime({offset:true}).optional(), party_size:z.number().int().min(1).max(500).optional(),
@@ -63,3 +64,4 @@ export interface ReservationRecord extends BookingReceipt {duration_min:number;t
 
 export * from './menu';
 export * from './reviews';
+export * from './notifications';

@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { db, reservationTransaction, type TenantTransaction } from '@bigant/database';
 import { computeAvailability, chooseTable, normalizePhone, assertTransition, DomainError, activeStatuses, dateInZone, addDays, dayBounds, type AvailabilityInput, type Slot } from '@bigant/core';
 import type { StaffBookingInput, BookingInput, ReservationPatch } from '@bigant/types';
+import { reservationCreated,reservationChanged } from '../notifications/outbox.js';
 
 type Reader = TenantTransaction;
 export async function loadAvailability(reader: Reader, date: string, partySize: number, now: Date, excludeId?: string): Promise<AvailabilityInput> {
@@ -46,8 +47,10 @@ export async function createReservation(tenantId:string, data:BookingInput|Staff
     if(requested) checkTable(input,requested,instant,input.settings.turn_duration_min);
     const settings=await tx.tenantSettings.findFirstOrThrow();
     // Per una prenotazione pubblica non si sovrascrivono i contatti già presenti.
-    const customer=await tx.customer.upsert({where:{tenant_id_phone_e164:{tenant_id:tenantId,phone_e164:phone}},create:{tenant_id:tenantId,full_name:data.full_name,phone_e164:phone,email:data.email},update:staffId?{full_name:data.full_name,email:data.email}:{}});
-    return tx.reservation.create({data:{tenant_id:tenantId,customer_id:customer.id,table_id:requested??slot.table_id??null,reserved_at:instant,duration_min:settings.turn_duration_min,party_size:data.party_size,status:settings.auto_confirm?'confirmed':'pending',source:staffId&&'source' in data?data.source:'direct',notes:data.notes,cancel_token:randomBytes(32).toString('hex')},include:{customer:true,table:true}});
+    const consent=!staffId&&data.marketing_consent?{marketing_consent:true,marketing_consent_at:now}:{};
+    const customer=await tx.customer.upsert({where:{tenant_id_phone_e164:{tenant_id:tenantId,phone_e164:phone}},create:{tenant_id:tenantId,full_name:data.full_name,phone_e164:phone,email:data.email,...consent},update:{...(staffId?{full_name:data.full_name,email:data.email}:{}),...consent}});
+    const created=await tx.reservation.create({data:{tenant_id:tenantId,customer_id:customer.id,table_id:requested??slot.table_id??null,reserved_at:instant,duration_min:settings.turn_duration_min,party_size:data.party_size,status:settings.auto_confirm?'confirmed':'pending',source:staffId&&'source' in data?data.source:'direct',notes:data.notes,locale:data.locale,privacy_accepted_at:!staffId&&data.privacy_accepted?now:null,cancel_token:randomBytes(32).toString('hex')},include:{customer:true,table:true}});
+    await reservationCreated(tx,tenantId,created);return created;
   });
 }
 export async function patchReservation(tenantId:string,id:string,data:ReservationPatch,now:Date,staffId:string) {
@@ -76,6 +79,7 @@ export async function patchReservation(tenantId:string,id:string,data:Reservatio
     if(data.status==='completed') await tx.customer.update({where:{id:current.customer_id},data:{total_visits:{increment:1},last_visit_at:current.reserved_at}});
     if(data.status==='no_show') await tx.customer.update({where:{id:current.customer_id},data:{no_show_count:{increment:1}}});
     if(data.status==='cancelled') await tx.auditLog.create({data:{tenant_id:tenantId,staff_user_id:staffId,action:'reservation.cancel',entity_type:'Reservation',entity_id:id}});
+    await reservationChanged(tx,tenantId,updated,current.status,'staff');
     return updated;
   });
 }
@@ -98,7 +102,8 @@ export async function cancelPublic(tenantId:string,id:string,now:Date) {
     const settings=await tx.tenantSettings.findFirstOrThrow();
     if(now.getTime()>current.reserved_at.getTime()-settings.cancellation_deadline_hours*3600000) throw new DomainError('CANCELLATION_CLOSED');
     assertTransition(current.status,'cancelled');
-    await tx.reservation.update({where:{id},data:{status:'cancelled',cancelled_by:'customer'}});
+    const updated=await tx.reservation.update({where:{id},data:{status:'cancelled',cancelled_by:'customer'}});
+    await reservationChanged(tx,tenantId,updated,current.status,'customer');
     return {status:'cancelled' as const};
   });
 }

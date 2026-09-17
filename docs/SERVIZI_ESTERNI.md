@@ -8,7 +8,7 @@ Questo documento raccoglie soltanto ciò che serve per collegare BigAnt a email,
 
 Il lavoro tecnico può proseguire con le informazioni disponibili: esperienza dedicata al locale, prenotazioni, menu, recensioni, preparazione delle notifiche e test mirati. Restano valide le scelte approvate: tema scuro e arancione, prenotazione progressiva, email e telefono obbligatori, quattro template menu e comando occhio.
 
-M0–M4 sono concluse. Prenotazioni, menu e feedback usano PostgreSQL e foto sul Mac. Email, SMS e push non sono implementati; M5–M6 restano da completare. Avere i recapiti dei clienti nel database non significa che i messaggi vengano già inviati.
+M0–M4 sono concluse. Prenotazioni, menu e feedback usano PostgreSQL e foto sul Mac. Adattatori email/SMS/push e coda persistente M5 sono implementati localmente, con cancello automatico verde e trasporti simulati. Collegamento ai fornitori, prove su dispositivi e M6 restano da completare. Avere i recapiti dei clienti nel database non significa che i messaggi vengano già inviati.
 
 Per attivare servizi a pagamento o un locale reale serviranno dominio, intestatario degli account, budget, volumi e recapiti reali. Questi dati non sono necessari per continuare la prova locale. Per i test su dispositivi serviranno inoltre un iPhone e un Android: il solo Mac non copre il cancello PWA.
 
@@ -31,11 +31,11 @@ GitHub conserva il codice. I soci possono clonarlo e avviarlo; un link utilizzab
 | **PostgreSQL** | Prenotazioni, clienti, staff, sessioni e impostazioni | Stessa regione EU dell’API; gestito se il budget lo consente | Demo remota / M6 | Locale oggi; remoto da configurare |
 | **Foto e copertine** | Conservare i caricamenti dopo riavvii e deploy | Volume persistente per un pilot singolo; Object Storage EU per maggiore autonomia | Demo remota | Filesystem locale già disponibile |
 | **Backup** | Recuperare database e foto | Copie cifrate separate dal server e ripristino provato | Prima dei dati reali | Da configurare |
-| **Email transazionali** | Attesa, conferma, disdetta e promemoria via email | **Scaleway TEM Essential**, candidato da validare | M5 | Nessun adattatore implementato |
+| **Email transazionali** | Attesa, conferma, disdetta e promemoria via email | **Scaleway TEM Essential**, candidato da validare | M5 | Adattatore TEM implementato in M5, invii demo |
 | **Casella per le risposte** | Ricevere domande dei clienti e comunicazioni di supporto | Casella esistente del locale per Reply-To; casella BigAnt per assistenza | M5 / attivazione | Recapiti da indicare |
 | **SMS** | Promemoria e comunicazioni previste dalla SPEC | Fornitore sostituibile; Twilio IE1 da verificare prima di scegliere | M5 | Scelta non chiusa |
-| **Worker e coda** | Eseguire promemoria e tentativi anche dopo un riavvio | Partire valutando una coda su PostgreSQL; Redis se necessario | M5 | Da implementare, nessun account aggiuntivo obbligatorio oggi |
-| **Web Push** | Avvisare il titolare sul telefono | Web Push standard con chiavi VAPID | M5 | Da implementare e verificare sui dispositivi |
+| **Worker e coda** | Eseguire promemoria e tentativi anche dopo un riavvio | Partire valutando una coda su PostgreSQL; Redis se necessario | M5 | Coda PostgreSQL/worker M5 implementati, nessun account aggiuntivo oggi |
+| **Web Push** | Avvisare il titolare sul telefono | Web Push standard con chiavi VAPID | M5 | Codice M5 implementato, recapito/dispositivi reali da verificare |
 | **Google e card QR/NFC** | Aprire il flusso feedback del locale | Place ID reale per locale e card contenenti il link BigAnt | M4 | Dati demo; nessuna sincronizzazione Google prevista |
 | **Monitoraggio e alert** | Avvisare quando il servizio non risponde e diagnosticare errori | Controlli da un punto EU distinto dal server; errori e log filtrati in EU | M6 | Responsabile e soluzione da scegliere |
 
@@ -63,7 +63,7 @@ La guida Scaleway descrive la verifica DNS e indica che la verifica del dominio 
 
 ## 5. SMS: controllo dei consumi e scelta del fornitore
 
-Il collegamento deve rispettare abilitazione per tenant, tetto mensile, fallback email e separazione dei dati fra locali. La matrice degli eventi va resa coerente prima di M5: la SPEC prevede anche un SMS dopo la conferma dello staff, non soltanto il promemoria.
+Il collegamento deve rispettare abilitazione per tenant, tetto mensile, fallback email e separazione dei dati fra locali. La matrice degli eventi M5 distingue gli stati e i canali: la SPEC prevede anche un SMS dopo la conferma dello staff, non soltanto il promemoria.
 
 Serviranno account, mittente/numerazione validi per le destinazioni, credenziali regionali, esiti di consegna, paesi abilitati e limite di spesa. Il costo va calcolato sui segmenti effettivamente fatturati: lunghezza e codifica del testo possono trasformare un messaggio in più segmenti. [Segmentazione e fatturazione SMS, documentazione Twilio](https://www.twilio.com/docs/glossary/what-sms-character-limit).
 
@@ -154,12 +154,16 @@ Le credenziali reali vanno inserite nel gestore dei segreti dell’ambiente o ne
 ## 11. Lavoro di integrazione e ordine di attivazione
 
 1. **Preparazione locale:** adattatori di notifica, template IT/EN e test con trasporto finto; completare i requisiti delle missioni pertinenti.
-2. **Affidabilità:** correggere con una nuova migrazione la deduplicazione dei messaggi. L’attuale chiave prenotazione/tipo non distingue attesa e conferma né due canali dello stesso evento. Proposta: evento stabile e chiave di consegna per evento/canale/destinatario, registrata prima dell’invio.
+2. **Affidabilità:** correggere con una nuova migrazione la deduplicazione dei messaggi. La migrazione M5 sostituisce la chiave prenotazione/tipo con evento stabile e chiave di consegna per evento/canale/destinatario, registrata prima dell’invio.
 3. **Worker:** coda persistente, pianificazione ogni cinque minuti, tentativi controllati, tetto SMS e gestione delle risposte incerte del provider. Un timeout dopo l’invio non deve causare un reinvio cieco.
 4. **Ambiente remoto:** account verificati, HTTPS, database/foto persistenti, segreti, configurazione dei proxy e limiti di richieste adeguati. Verificare i log del proxy, inclusi token nei link di disdetta.
 5. **Recapito di prova:** email prima, poi SMS e push con destinatari autorizzati; provare errori e fallback oltre al caso riuscito.
 6. **Uso reale:** privacy, retention/export/anonimizzazione, accessi reali, backup ripristinato, alert e cancello M6 documentati.
 
-La configurazione attuale comprende DATABASE_URL, JWT_SECRET, HOST, PORT e MENU_IMAGE_DIR; API_INTERNAL_URL è letto dalla configurazione web. Le impostazioni dei fornitori e dei webhook non sono ancora implementate: i nomi definitivi andranno documentati in .env.example durante l’integrazione, senza inserirvi valori segreti.
+La configurazione attuale comprende DATABASE_URL, JWT_SECRET, HOST, PORT e MENU_IMAGE_DIR; API_INTERNAL_URL è letto dalla configurazione web. Le variabili degli adattatori sono in .env.example. Le procedure di recapito/rimbalzo richiedono ancora i fornitori reali, senza inserirvi valori segreti.
 
 Per questo MVP non occorrono un servizio esterno di autenticazione, Maps API a pagamento per il semplice redirect, ordinazioni, pagamenti, CRM o un’app nativa. Il piano di attivazione resta nei moduli già previsti.
+
+## Aggiornamento sviluppo M5 — 17 settembre
+
+Coda, template, adattatori e pannelli locali sono implementati: dettagli e stati effettivi in [NOTIFICHE_E_PRIVACY](NOTIFICHE_E_PRIVACY.md). Gli invii restano simulati; nessuna scelta contrattuale viene chiusa dall’esistenza dell’adattatore. Le variabili definitive sono in [.env.example](../.env.example). Servono ancora account/dominio, verifiche EU, prove di recapito e dispositivi fisici. In particolare il candidato SMS IE1 non è un servizio già approvato o attivo.

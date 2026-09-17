@@ -32,12 +32,13 @@ test('vincoli SQL: prezzo, rating, identità tenant e idempotenza notifiche', as
   await expect(admin.review.create({data:{tenant_id,channel:'google_redirect',rating:5}})).rejects.toThrow();
   await expect(admin.tenant.update({where:{id:tenant_id},data:{slug:'changed-slug'}})).rejects.toThrow();
   const reservation = await admin.reservation.findFirstOrThrow({where:{tenant_id}});
-  const data = {tenant_id,reservation_id:reservation.id,type:'reminder' as const,channel:'email' as const,recipient:'demo@example.test'};
+  const data = {tenant_id,reservation_id:reservation.id,type:'reminder' as const,channel:'email' as const,recipient:'demo@example.test',event_key:'test-stable-reminder',recipient_hash:'test-recipient'};
   const first = await admin.notificationLog.create({data});
   try {
     await expect(admin.notificationLog.create({data})).rejects.toThrow();
     await admin.notificationLog.update({where:{id:first.id},data:{status:'failed'}});
-    const retried = await admin.notificationLog.create({data});
+    await expect(admin.notificationLog.create({data})).rejects.toThrow();
+    const retried = await admin.notificationLog.create({data:{...data,channel:'sms'}});
     await admin.notificationLog.delete({where:{id:retried.id}});
   } finally { await admin.notificationLog.delete({where:{id:first.id}}); }
 });

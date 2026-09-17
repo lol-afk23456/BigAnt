@@ -15,6 +15,8 @@ Registro al 17 settembre 2026. Fonte: richieste dell’utente e risoluzioni tecn
 | D09 | Prova iniziale sul Mac; GitHub alla fine | Nessun deploy, invito o pubblicazione implicito nella prova locale |
 | D10 | Report dedicato ai servizi esterni | Email/SMS/push e infrastruttura da collegare in M5–M6; account e budget prima dell’attivazione |
 | D11 | Consolidare la demo prima di M4 | Ingressi dedicati, navigazione persistente, menu senza reload e documenti coerenti |
+| D12 | Sala e attesa semplici, procedere dopo M5 | FIFO con compatibilità evidenziata, combinazioni scelte manualmente; zone esistenti riusate, nessuna piantina Pro |
+| D13 | Notifiche locali senza invii reali | Outbox PostgreSQL; modalità demo registra simulated. Credenziali e verifiche EU prima di live |
 
 ## Interpretazioni tecniche già risolte
 
@@ -24,8 +26,8 @@ Registro al 17 settembre 2026. Fonte: richieste dell’utente e risoluzioni tecn
 - Gli avvii conservano le prove. Il consolidamento può aggiornare solo placeholder seed originali mai modificati, con confronti atomici; nessun reset del database di sviluppo.
 - La pagina feedback presenta a tutti Google e privato prima del voto. Nessuna soglia per scegliere il canale o escludere alert sui nuovi feedback privati.
 - M4 usa segnalazioni interne nel pannello per tutti i privati non letti; email e push reali restano M5. Card modificabili dal titolare, consultabili dallo staff. Place ID seed dimostrativi: esito locale, niente apertura Google.
-- Gli spunti sala/attesa del 17 settembre richiedono verifica delle funzioni già presenti, come precisato dall’utente. Analisi e preferenze aperte in [SALA_E_ATTESA](SALA_E_ATTESA.md); nessuna duplicazione del motore e nessuna estensione implementata in M4.
+- Gli spunti sala/attesa del 17 settembre richiedono verifica delle funzioni già presenti, come precisato dall’utente. Analisi in [SALA_E_ATTESA](SALA_E_ATTESA.md); nessuna duplicazione del motore e nessuna estensione implementata in M4. Il successivo «finisci tutto» autorizza M5S con le proposte iniziali, dichiarate nel registro D12.
 
 ## Scelte ancora aperte
 
-Dominio, intestatario account, budget e volumi; fornitore SMS e verifica della filiera push/EU; infrastruttura e gestione degli incidenti; obiettivi backup/recupero; dati e testi del locale reale. Prima di M5 va aggiornata la deduplicazione NotificationLog con nuova migrazione. Dettagli in [BACKLOG](BACKLOG.md) e [servizi esterni](SERVIZI_ESTERNI.md).
+Dominio, intestatario account, budget e volumi; fornitore SMS e verifica della filiera push/EU; infrastruttura e gestione degli incidenti; obiettivi backup/recupero; dati e testi del locale reale. La migrazione M5 aggiorna la deduplicazione NotificationLog per evento/canale/destinatario. Dettagli in [BACKLOG](BACKLOG.md) e [servizi esterni](SERVIZI_ESTERNI.md).

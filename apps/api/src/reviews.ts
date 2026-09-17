@@ -4,6 +4,7 @@ import { db,resolveTenant,reservationTransaction } from '@bigant/database';
 import { DomainError,feedbackRetrySeconds,googleReviewUrl } from '@bigant/core';
 import { feedbackQuery,publicReviewInput,reviewQuery,reviewPatch,cardInput,cardPatch,slugParam,idParam,type FeedbackOptions } from '@bigant/types';
 import { withStaff } from './staff.js';
+import { reviewCreated } from './notifications/outbox.js';
 const reviewSelect={id:true,rating:true,comment:true,channel:true,staff_seen_at:true,staff_response:true,created_at:true,nfc_card:{select:{label:true}}} as const;
 const cardSelect={id:true,card_uid:true,label:true,active:true,last_tapped_at:true,tap_count:true} as const;
 export function reviewRoutes(app:FastifyInstance,now:()=>Date){
@@ -34,6 +35,7 @@ export function reviewRoutes(app:FastifyInstance,now:()=>Date){
    }
    // Il lock DB rende il limite della card valido anche con richieste parallele.
    const review=await tx.review.create({data:{tenant_id:id,nfc_card_id:card?.id??null,channel:data.channel,rating:data.channel==='private'?data.rating:null,comment:data.channel==='private'?data.comment||null:null,created_at:now()}});
+   if(data.channel==='private')await reviewCreated(tx,id,review.id);
    reply.code(201);
    return {id:review.id,channel:review.channel,...(data.channel==='google_redirect'?{redirect_url:googleReviewUrl(tenant.google_place_id!),google_demo:tenant.google_place_id!.startsWith('test-place-')}:{})};
   });

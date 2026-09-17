@@ -9,6 +9,7 @@ export async function api<T>(path:string,options:RequestInit={},token?:string):P
  catch {throw new ApiError(uiMessages[language].network,'NETWORK',0);}
  if(!response.ok){let error:{error?:{message:string;code:string}}={};try{error=await response.json();}catch{/* Risposta non JSON: usare il messaggio di rete tradotto. */}throw new ApiError(error.error?.message??uiMessages[language].network,error.error?.code??'UNKNOWN',response.status);}
  if(response.status===204)return undefined as T;
+ if(response.headers.get('Content-Type')?.startsWith('text/csv'))return await response.blob() as T;
  return response.json() as Promise<T>;
 }
 async function refresh(){

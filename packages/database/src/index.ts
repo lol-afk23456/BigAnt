@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { Prisma, PrismaClient } from '@prisma/client';
+export type {Reservation,NotificationLog,NotificationChannel,NotificationType} from '@prisma/client';
 
 const context = new AsyncLocalStorage<string>();
 const advisoryLock = new AsyncLocalStorage<boolean>();
@@ -71,6 +72,10 @@ export async function resolveTenant(slug: string) {
   return client.tenant.findUnique({ where: { slug }, select: { id: true, status: true } });
 }
 export async function disconnectDatabase() { await client.$disconnect(); }
+// Confine del worker: soltanto identità dei tenant, nessun dato ospite fuori contesto.
+export async function activeTenantIds() {
+  return (await client.tenant.findMany({where:{status:'active'},select:{id:true}})).map(t=>t.id);
+}
 
 export type TenantTransaction = Omit<typeof db, '$connect' | '$disconnect' | '$transaction' | '$extends'>;
 // Il lock copre l'intero locale: protegge anche slot diversi con permanenze sovrapposte.

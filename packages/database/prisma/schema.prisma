@@ -84,6 +84,10 @@ enum NotificationStatus {
   queued
   sent
   failed
+  processing
+  uncertain
+  simulated
+  skipped
 }
 
 model Tenant {
@@ -101,6 +105,7 @@ model Tenant {
   notificationLog NotificationLog[]
   auditLog        AuditLog[]
   staffSession    StaffSession[]
+  pushSubscription PushSubscription[]
   id              String            @id @default(uuid(7)) @db.Uuid
   name            String
   slug            String            @unique
@@ -132,6 +137,7 @@ model StaffUser {
   updated_at    DateTime       @updatedAt @db.Timestamptz(6)
   audits        AuditLog[]
   sessions      StaffSession[]
+  pushSubscriptions PushSubscription[]
 
   @@unique([tenant_id, email])
   @@unique([tenant_id, id])
@@ -155,6 +161,8 @@ model TenantSettings {
   reminder_hours_before       Int      @default(4)
   sms_enabled                 Boolean  @default(false)
   sms_monthly_cap             Int      @default(300)
+  retention_months            Int      @default(24)
+  privacy_contact_email       String?  @db.Citext
   created_at                  DateTime @default(now()) @db.Timestamptz(6)
   updated_at                  DateTime @updatedAt @db.Timestamptz(6)
 }
@@ -220,6 +228,7 @@ model Customer {
   total_visits         Int           @default(0)
   no_show_count        Int           @default(0)
   last_visit_at        DateTime?     @db.Timestamptz(6)
+  anonymized_at        DateTime?     @db.Timestamptz(6)
   created_at           DateTime      @default(now()) @db.Timestamptz(6)
   updated_at           DateTime      @updatedAt @db.Timestamptz(6)
   reservations         Reservation[]
@@ -244,6 +253,8 @@ model Reservation {
   internal_notes String            @default("")
   cancel_token   String            @unique
   cancelled_by   CancelledBy?
+  locale         Locale            @default(it)
+  privacy_accepted_at DateTime?     @db.Timestamptz(6)
   created_at     DateTime          @default(now()) @db.Timestamptz(6)
   updated_at     DateTime          @updatedAt @db.Timestamptz(6)
   customer       Customer          @relation(fields: [tenant_id, customer_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
@@ -344,18 +355,47 @@ model NotificationLog {
   status         NotificationStatus  @default(queued)
   provider_id    String?
   sent_at        DateTime?           @db.Timestamptz(6)
+  event_key      String              @default(uuid())
+  event_name     String              @default("legacy")
+  recipient_hash String              @default(uuid())
+  payload        Json                @default("{}")
+  attempts       Int                 @default(0)
+  due_at         DateTime            @default(now()) @db.Timestamptz(6)
+  attempted_at   DateTime?           @db.Timestamptz(6)
+  error_code     String?
+  fallback      Boolean              @default(false)
   created_at     DateTime            @default(now()) @db.Timestamptz(6)
   updated_at     DateTime            @updatedAt @db.Timestamptz(6)
   reservation    Reservation?        @relation(fields: [tenant_id, reservation_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([tenant_id, id])
+  @@unique([tenant_id, event_key, channel, recipient_hash])
+  @@index([tenant_id, status, due_at])
+}
+
+model PushSubscription {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  tenant_id     String    @db.Uuid
+  staff_user_id String    @db.Uuid
+  endpoint_hash String
+  endpoint      String
+  p256dh        String
+  auth          String
+  active        Boolean   @default(true)
+  created_at    DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime   @updatedAt @db.Timestamptz(6)
+  tenant        Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  staff_user    StaffUser @relation(fields: [tenant_id, staff_user_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([tenant_id, id])
+  @@unique([tenant_id, staff_user_id, endpoint_hash])
 }
 
 model AuditLog {
   id            String    @id @default(uuid(7)) @db.Uuid
   tenant_id     String    @db.Uuid
   tenant        Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
-  staff_user_id String    @db.Uuid
+  staff_user_id String?   @db.Uuid
   action        String
   entity_type   String
   entity_id     String    @db.Uuid
@@ -363,7 +403,7 @@ model AuditLog {
   ip            String?
   created_at    DateTime  @default(now()) @db.Timestamptz(6)
   updated_at    DateTime  @updatedAt @db.Timestamptz(6)
-  staff_user    StaffUser @relation(fields: [tenant_id, staff_user_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
+  staff_user    StaffUser? @relation(fields: [tenant_id, staff_user_id], references: [tenant_id, id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([tenant_id, id])
 }

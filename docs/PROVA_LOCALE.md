@@ -1,4 +1,4 @@
-# Prova BigAnt Book sul Mac — 25–30 minuti
+# Prova BigAnt Book sul Mac — 35–40 minuti
 
 ## Avvio
 
@@ -15,7 +15,7 @@ La homepage è il selettore dei due demo. Apri il locale: il suo ingresso `/r/:s
 
 ## Percorso da provare
 
-1. **Cliente Santa Lucia, 3 minuti.** Dalla home scegli “Apri il locale” per Santa Lucia, poi “Prenota il tavolo”. Tocca il numero di persone, seleziona una data tra domani e dopodomani e un orario. I contatti appaiono solo dopo la scelta. Inserisci nome, email e telefono inventati ma formalmente validi (per esempio `prova@example.test` e `3331234567`). Apri “Aggiungi una richiesta”, prenota e controlla la conferma immediata. Copia/apri il link di gestione.
+1. **Cliente Santa Lucia, 3 minuti.** Dalla home scegli “Apri il locale” per Santa Lucia, poi “Prenota il tavolo”. Tocca il numero di persone, seleziona una data tra domani e dopodomani e un orario. I contatti appaiono solo dopo la scelta. Inserisci nome, email e telefono inventati ma formalmente validi (per esempio `prova@example.test` e `3331234567`). Apri “Aggiungi una richiesta”, accetta la presa visione della privacy (obbligatoria), lascia il marketing deselezionato, prenota e controlla la conferma immediata. Copia/apri il link di gestione.
 2. **Disdetta, 1 minuto.** Dalla gestione annulla la prenotazione. Lo stato deve diventare “Prenotazione disdetta”. Per evitare il termine di disdetta, usa un appuntamento almeno due giorni nel futuro.
 3. **Lido e staff, 4 minuti.** Prenota come ospite al Lido: deve apparire “Richiesta ricevuta”. Accedi al suo pannello, scegli lo stesso giorno: trova la richiesta in cima, confermala, apri il dettaglio e assegna un tavolo. Ricarica la pagina: la sessione e la sezione aperta devono restare attive. Cambia sezione e prova Indietro/Avanti del browser. Prova anche ricerca nome/telefono e vista “Orari”.
 4. **Telefonata, 2 minuti.** Nel pannello crea una prenotazione manuale. Scegli uno slot libero, inserisci contatti e salva. Apri il dettaglio per correggere note o numero di persone: una modifica incompatibile deve essere rifiutata senza sovraprenotare.
@@ -40,7 +40,7 @@ Non eseguire il reset mentre altri stanno provando. Per i test automatici il dat
 
 ## Risultato atteso
 
-Il cliente può richiedere/prenotare, disdire e lasciare feedback privato; lo staff può gestire giorno, stati, tavoli, orari, chiusure, menu, card e lettura dei feedback. La homepage demo e le guide facilitano una prima prova; hosting, notifiche reali, privacy/retention completa e PWA appartengono alle missioni successive.
+Il cliente può richiedere/prenotare, disdire e lasciare feedback privato; lo staff può gestire giorno, stati, tavoli, orari, chiusure, menu, card e lettura dei feedback. La homepage demo e le guide facilitano una prima prova; Notifiche simulate, privacy e PWA sono disponibili nella prova M5. Hosting, recapito reale e verifica su telefoni fisici richiedono servizi configurati.
 
 
 ## Menu digitale — prova M3
@@ -66,3 +66,13 @@ Foto ammesse: JPEG, PNG e WebP fino a 5 MB. Il server produce tre varianti WebP.
 6. Disattiva una card e prova undo entro cinque secondi. Lasciando completare la disattivazione, il suo link deve risultare indisponibile. Riattivala per tornare a usarlo; lo storico rimane. Prova anche lingua EN e larghezza 375 px.
 
 Nessuna email o push reale parte in M4. Il link copiato può essere scritto sulla card NFC o usato per creare un QR: la programmazione fisica non viene eseguita dal progetto. Le aperture della card includono i reload e non contano persone uniche.
+
+## Notifiche e privacy — prova M5, 5 minuti
+
+1. Crea una prenotazione manuale futura, poi apri **Notifiche**. La conferma compare **Simulato**: nessun messaggio parte. Gli esiti del provider, quando abilitato, indicano accettazione e non prova di recapito.
+2. Come titolare, salva contatto privacy, anticipo promemoria e retention. SMS disponibile per piani Pro/Full; nella demo la quota e i fallback si verificano automaticamente nel database di test. Non attivare live per una prova.
+3. Apri **Clienti**, cerca un ospite inventato e scarica CSV. L’export non include note o allergie. In **Dettagli ospite** modifica le note o revoca il marketing; non si può inventare un consenso positivo da telefonata.
+4. Su un ospite di prova, scegli **Anonimizza ospite**: hai cinque secondi per annullare. Dopo l’esecuzione contatti e testi liberi vengono rimossi, storico e conteggi restano. Il vecchio link di disdetta viene invalidato. L’azione completata non è reversibile.
+5. Da **Notifiche** prova le istruzioni di installazione. Il manifest appartiene al locale; la pagina offline è generica e non conserva nomi o prenotazioni. Push disabilitate finché non sono configurate. Android/iPhone reali richiedono la prova HTTPS descritta nella [guida notifiche/privacy](NOTIFICHE_E_PRIVACY.md).
+
+Il launcher avvia anche il worker ogni cinque minuti. La retention opera in piccoli lotti con registro persistente. Il valore iniziale di 24 mesi è una configurazione di prodotto da validare; l’informativa è una bozza, non un testo legale approvato.

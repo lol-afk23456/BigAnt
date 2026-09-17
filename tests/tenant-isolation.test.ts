@@ -14,10 +14,12 @@ const queries = {
   MenuCategory: () => db.menuCategory.findMany(), MenuItem: () => db.menuItem.findMany(),
   Review: () => db.review.findMany(), NFCCard: () => db.nFCCard.findMany(),
   NotificationLog: () => db.notificationLog.findMany(), AuditLog: () => db.auditLog.findMany(),
-  StaffSession: () => db.staffSession.findMany(),
+  StaffSession: () => db.staffSession.findMany(), PushSubscription: () => db.pushSubscription.findMany(),
 };
-beforeAll(async () => { const tenants = await fixtures(); a = tenants[0]!.id; b = tenants[1]!.id; });
-afterAll(async () => { await admin.$disconnect(); await disconnectDatabase(); });
+beforeAll(async () => { const tenants = await fixtures(); a = tenants[0]!.id; b = tenants[1]!.id;
+ for(const tenant_id of [a,b]){const staff=await admin.staffUser.findFirstOrThrow({where:{tenant_id}});await admin.pushSubscription.create({data:{tenant_id,staff_user_id:staff.id,endpoint_hash:'isolation-demo',endpoint:'https://fcm.googleapis.com/demo-isolation',p256dh:'fixture',auth:'fixture',active:false}});}
+ });
+afterAll(async () => { await admin.pushSubscription.deleteMany({where:{tenant_id:{in:[a,b]},endpoint_hash:'isolation-demo'}}); await admin.$disconnect(); await disconnectDatabase(); });
 
 test('ogni modello dello schema è coperto', () => {
   expect(Object.keys(queries).sort()).toEqual(Prisma.dmmf.datamodel.models.map(m => m.name).sort());

@@ -3,6 +3,8 @@ import { parsePhoneNumberFromString } from 'libphonenumber-js/max';
 import type { ReservationStatus } from './availability.js';
 export * from './availability';
 export * from './reviews';
+export * from './privacy';
+export * from './notifications';
 export class DomainError extends Error {
   constructor(public code: 'CARD_COOLDOWN' | 'INVALID_IMAGE' | 'CATEGORY_NOT_EMPTY' | 'INVALID_PHONE' | 'INVALID_TRANSITION' | 'SLOT_UNAVAILABLE' | 'PACING_LIMIT' | 'TABLE_UNAVAILABLE' | 'CANCELLATION_CLOSED' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'FORBIDDEN' | 'INVALID_INPUT', public statusCode = 409) { super(code); }
 }

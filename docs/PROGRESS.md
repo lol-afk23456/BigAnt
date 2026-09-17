@@ -2,7 +2,7 @@
 
 ## Stato al 17 settembre 2026
 
-**M0–M4 e consolidamento M3C completati.** M3 include i quattro template e il comando occhio approvati dall’utente. Cancelli automatici verdi; M5–M6 non iniziate.
+**M0–M4 e consolidamento M3C completati.** M3 include i quattro template e il comando occhio approvati dall’utente. M5 implementata localmente, cancello automatico verde; invii/dispositivi reali e M6 non attivi.
 
 ## Stato corrente della demo
 
@@ -12,7 +12,7 @@
 - Recensioni M4: due scelte pubbliche prima del voto, feedback anonimo, card e lettura/note interne. Cancello finale verde.
 - Spunti sala/attesa del 17 settembre: solo analisi e backlog, nessun codice del motore/tavoli modificato. Vedi [analisi](SALA_E_ATTESA.md).
 - Ambiente locale Mac; dati demo persistenti. Servizi esterni, account reali e GitHub non attivati.
-- Ultimo cancello: 72/72 test backend, 5/5 scenari browser, build/typecheck/lint verdi. Lighthouse locale 100/100, LCP 1338 ms; dettagli e limiti nel blocco M4 in fondo.
+- Ultimo cancello automatico M5: 84/84 backend, 6/6 browser, build/typecheck/lint verdi. Lighthouse locale 94/100, LCP 1563 ms; dettagli e limiti nel blocco M5 in fondo.
 - Documenti operativi: [indice](README.md), [decisioni](DECISIONS.md), [prova locale](PROVA_LOCALE.md), [servizi esterni](SERVIZI_ESTERNI.md).
 
 Le sezioni seguenti sono lo storico dei blocchi: riferimenti a una pagina vuota o a missioni non ancora avviate descrivono quel momento, non lo stato attuale.
@@ -254,3 +254,21 @@ Richiesti durante M4 senza interromperla, poi precisato di evitare duplicazioni 
 `pnpm local` ha applicato la migrazione additiva M4 al database di sviluppo `bigant`, conservato i due tenant con seed idempotente e riutilizzato la build finale verificata. Web su 3000 e API su 3001 lasciati in esecuzione; PostgreSQL preesistente conservato. HTTP 200 su feedback e relativa API per entrambi i locali. Verificate anche recensioni e card con i dati persistenti a 1440 px e card a 375 px, senza overflow orizzontale. Nessuna recensione o card aggiunta dalla verifica sui dati di sviluppo.
 
 **Confine:** M4 conclusa, prima di M5 e delle estensioni sala/attesa. Nessun servizio esterno attivato, reset dati sviluppo o pubblicazione GitHub.
+## M5 — cancello automatico locale verde il 17 settembre 2026
+
+Richiesta «finisci tutto se non hai dubbi o cose da confermare». M4 aveva cancello verde. Avviata M5 con trasporto predefinito demo, senza account, spesa o invii reali.
+
+- Nuova migrazione `202609170002_m5_notifications`: evento/canale/destinatario unici, tentativi e stati processing/uncertain/simulated/skipped, consensi/lingua prenotazione, retention e contatto privacy; PushSubscription con FK tenant/staff. Audit di sistema con attore nullo, senza attribuzione fittizia al titolare.
+- Outbox inserita atomicamente nella transazione di prenotazione/feedback. Coda PostgreSQL, risveglio API sugli eventi e worker ogni cinque minuti; nessun nuovo Redis necessario. Promemoria distinto per orario di arrivo; eventi obsoleti scartati. Tetto mensile SMS atomico, fallback email senza doppia consegna.
+- Trasporti demo, TEM fr-par, SMS candidato IE1 sostituibile in una classe e Web Push con libreria standard; nessun canale reale abilitato. Esito accepted distinto da recapito. Timeout/worker interrotto → uncertain; solo rifiuto 429 riprovabile tre volte con lo stesso ID.
+- Sezioni Notifiche e Clienti, privacy pubblica per locale, consensi separati, timestamp e IT/EN. CSV con protezione formule, esclusione allergie/note e audit. Anonimizzazione idempotente anche di testo libero, recapiti consegne e link di disdetta; storico/contatori conservati. Retention persistente mensile a piccoli lotti, senza trattare clienti recenti/futuri/attivi.
+- PWA per locale, istruzioni installazione/consenso, shell offline generica; niente cache di API/pagine ospiti. La prova Android/iPhone fisici e il recapito con credenziali reali restano da eseguire e non sono sostituiti dai test simulati.
+- Guida dedicata [NOTIFICHE_E_PRIVACY](NOTIFICHE_E_PRIVACY.md), `.env.example` aggiornato; informativa dichiarata bozza da validare prima dell’uso reale. Console agenzia registrata in B09, non implementata durante M5.
+
+`pnpm test`: **84/84**, nove file, database di test separato; tutti i precedenti test passano. Undici nuovi test notifiche/privacy e nuovo modello nell’isolamento. Lint verde. Tipi/build/browser finali ancora in completamento in questo punto dello storico; non dichiarata M5 conclusa né M6 avviata.
+
+### Verifiche finali M5 e confine
+
+Sulla versione finale: `pnpm typecheck`, `pnpm lint` (zero warning), `pnpm test` **84/84** in nove file, `pnpm build` e `pnpm test:e2e` **6/6** verdi. Il nuovo scenario è passato prima isolatamente; corretta la dicitura del pulsante cliente da Dettagli prenotazione a Dettagli ospite. Backend verifica anche il trasferimento esplicito della sottoscrizione su dispositivo condiviso. Screenshot Notifiche a 375 px ispezionato, nessun overflow. Lighthouse menu **94/100, LCP 1563 ms**, stesso profilo locale mobile documentato M3, immagini sintetiche. Migrazioni già applicate non modificate; link documentali e diff check verdi.
+
+**Confine:** software M5 locale verificato, requisito installazione/push Android/iOS fisici e invii reali ancora pendenti; M5 non dichiarata completamente accettata in produzione. Dev non ancora migrato/riavviato in questo punto, test svolti su bigant_test. Si prosegue con M5S autorizzata dopo questo cancello automatico; M6 richiede account/dominio, verifiche EU e locale reale. Nessun servizio esterno, pubblicazione GitHub o reset dello sviluppo.

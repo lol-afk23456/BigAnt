@@ -1,0 +1,22 @@
+import { expect,test } from '@playwright/test';
+import { mkdir } from 'node:fs/promises';
+test('M5 a 375px: notifiche simulate, CSV, anonimizzazione, PWA dedicata senza cache ospiti',async({page,context})=>{
+ await page.goto('/r/trattoria-santa-lucia/staff?view=reservations');
+ await page.getByLabel('Password',{exact:true}).fill('bigant2026');await page.getByRole('button',{name:/Accedi al pannello/}).click();
+ await page.locator('.page-heading').getByRole('button',{name:'Nuova prenotazione',exact:false}).click();
+ const dialog=page.getByRole('dialog');const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());const future=new Date(`${today}T12:00:00Z`);future.setUTCDate(future.getUTCDate()+5);
+ await dialog.locator('#booking-date').fill(future.toISOString().slice(0,10));await dialog.locator('.slot').first().click();
+ await dialog.getByLabel('Nome e cognome').fill('Ospite M5 browser');await dialog.getByLabel('Email',{exact:true}).fill('m5-browser@example.test');await dialog.getByLabel('Telefono',{exact:true}).fill('3331112233');await dialog.getByRole('button',{name:'Prenota il tavolo'}).click();await expect(dialog).toHaveCount(0);
+ await page.getByRole('button',{name:'Notifiche',exact:false}).click();await expect(page.getByRole('heading',{name:'Tieni tutti aggiornati.'})).toBeVisible();await expect(page.getByText('Prova locale: i messaggi sono simulati.',{exact:false})).toBeVisible();
+ await expect(page.locator('.delivery-row').filter({hasText:'Conferma prenotazione'}).filter({hasText:'Simulato'}).first()).toBeVisible();await expect(page.getByText('m5-browser@example.test')).toHaveCount(0);
+ const manifest=await page.locator('link[rel=manifest]').getAttribute('href');expect(manifest).toBe('/r/trattoria-santa-lucia/manifest');const response=await page.request.get(manifest!);const data=await response.json();expect(data.start_url).toBe('/r/trattoria-santa-lucia/staff?view=reservations');expect(data.display).toBe('standalone');expect(data.icons).toHaveLength(3);
+ await page.waitForFunction(async()=>!!await navigator.serviceWorker.getRegistration('/r/trattoria-santa-lucia/'));
+ await page.waitForFunction(async()=>!!await caches.match('/offline'));
+ const cached=await page.evaluate(async()=>{const all=[];for(const key of await caches.keys()){for(const request of await (await caches.open(key)).keys())all.push(new URL(request.url).pathname);}return all;});expect(cached.every(path=>path==='/offline'||path.startsWith('/icons/'))).toBe(true);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await mkdir('test-results/visual',{recursive:true});await page.screenshot({path:'test-results/visual/notifiche-375.png',fullPage:true});
+ await page.getByRole('button',{name:'Clienti',exact:false}).click();await page.getByLabel('Cerca un ospite').fill('Ospite M5 browser');await page.getByRole('button',{name:'Cerca un ospite',exact:true}).click();const row=page.locator('.delivery-row').filter({hasText:'Ospite M5 browser'});await expect(row).toBeVisible();
+ const downloadPromise=page.waitForEvent('download');await page.getByRole('button',{name:'Esporta CSV'}).click();const download=await downloadPromise;expect(download.suggestedFilename()).toBe('bigant-clienti.csv');
+ await row.getByRole('button',{name:'Dettagli ospite',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'Anonimizza ospite'}).click();await expect(page.getByRole('status').filter({hasText:'Anonimizzazione'})).toBeVisible();await expect(row).toHaveCount(0,{timeout:10000});
+ await page.getByLabel('Cerca un ospite').fill('');await page.getByRole('button',{name:'Cerca un ospite',exact:true}).click();await expect(page.locator('.delivery-row').filter({hasText:'Cliente anonimizzato'})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ const guest=await context.newPage();await guest.goto('/r/lido-miseno/privacy');await expect(guest.getByText('Il titolare del trattamento è',{exact:false})).toContainText('Lido Miseno');await guest.getByRole('button',{name:'EN',exact:true}).click();await expect(guest.getByRole('heading',{name:'Privacy notice'})).toBeVisible();await guest.close();
+});

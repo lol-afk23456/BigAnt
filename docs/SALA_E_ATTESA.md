@@ -19,12 +19,11 @@ Richiesta del 17 settembre 2026, durante M4. Questo documento è un’analisi: n
 
 Il servizio della lista è quello del locale (pranzo/cena o apertura continuata), distinto dai turni del personale. Va definito come mantenere lo storico se gli orari vengono modificati e come gestire servizi oltre mezzanotte. La lista non richiede account cliente, SMS, pagamenti o contatti obbligatori.
 
-## Scelte chieste, ancora da raccogliere
+## Scelte risolte per procedere
 
-- Ordine di arrivo con compatibilità evidenziata, oppure compatibilità come primo criterio di ordinamento.
-- Assegnazione manuale delle combinazioni, oppure anche automatica quando nessun tavolo singolo basta.
+Il successivo «finisci tutto se non hai dubbi o cose da confermare» consente di usare le proposte iniziali: FIFO con compatibilità evidenziata e combinazioni assegnate manualmente. Dichiarate in DECISIONS D12 e missione M5S. M4 non viene riscritta; il nuovo blocco parte dopo il cancello automatico locale M5.
 
-Queste preferenze non bloccano M4. Proposta iniziale: ordine di arrivo e assegnazione manuale. Prima di implementare l’estensione, dettagliare modello dati, migrazione additiva e criteri di accettazione in SPEC/MISSIONS sulla base della scelta.
+Modello e criteri in SPEC §16 e MISSIONS M5S. I componenti della combinazione sono immutabili: nuova configurazione per cambiare struttura. Le occupazioni e il nome della combinazione sono fotografati nella prenotazione. Ogni ingresso in attesa conserva il servizio con il giorno d’inizio, compresi quelli oltre mezzanotte; i vecchi ingressi restano consultabili dopo la modifica degli orari.
 
 ## Verifiche necessarie prima di chiudere l’estensione
 

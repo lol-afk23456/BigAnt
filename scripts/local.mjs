@@ -28,6 +28,6 @@ try{
  await run('pnpm',['generate']);await run('pnpm',['db:migrate']);await run('pnpm',['seed']);if(!buildIsCurrent())await run('pnpm',['build']);else process.stdout.write('Build verificata invariata: riutilizzo gli artefatti locali.\n');
  if(!closing){
   process.stdout.write('\nBigAnt Book → http://localhost:3000\nLascia questa finestra aperta. Ctrl+C ferma le app. I dati restano sul Mac.\n\n');
-  await Promise.all([run(process.execPath,['apps/api/dist/server.js'],true),run('pnpm',['--filter','@bigant/web','start','--port','3000','--hostname','127.0.0.1'],true)]);
+  await Promise.all([run(process.execPath,['apps/api/dist/server.js'],true),run(process.execPath,['apps/api/dist/worker.js','--watch'],true),run('pnpm',['--filter','@bigant/web','start','--port','3000','--hostname','127.0.0.1'],true)]);
  }
 }catch(error){process.stderr.write(`${error.message}\n`);stop(1);}
