@@ -12,7 +12,7 @@
 - Recensioni M4: due scelte pubbliche prima del voto, feedback anonimo, card e lettura/note interne. Cancello finale verde.
 - Sala/attesa M5S: zone riusate, combinazioni manuali con occupazione di tutti i componenti e snapshot; FIFO e accomodamento atomico senza recapiti inventati. Vedi [comportamento](SALA_E_ATTESA.md).
 - Ambiente locale Mac; dati demo persistenti. Servizi esterni, account reali e GitHub non attivati.
-- Ultimo cancello M5S: **97/97 backend, 7/7 browser**, build/typecheck/lint verdi. Lighthouse locale **100/100, LCP 1001 ms**; dettagli e limiti nel blocco finale in fondo.
+- Ultimo ricontrollo M5/M5S: **100/100 backend, 7/7 browser**, build/typecheck/lint verdi. Lighthouse locale **99/100, LCP 1035 ms**; dettagli e limiti nel blocco finale in fondo.
 - Documenti operativi: [indice](README.md), [decisioni](DECISIONS.md), [prova locale](PROVA_LOCALE.md), [servizi esterni](SERVIZI_ESTERNI.md).
 
 Le sezioni seguenti sono lo storico dei blocchi: riferimenti a una pagina vuota o a missioni non ancora avviate descrivono quel momento, non lo stato attuale.
@@ -293,3 +293,32 @@ Primo blocco backend sala: otto test passati, incluse venti assegnazioni fisiche
 `pnpm local` ha applicato M5 e M5S allo sviluppo con migrazioni additive, conservato il seed e riusato la build finale. Web 3000, API 3001 e worker ogni cinque minuti in esecuzione; PostgreSQL preesistente conservato. Prima/dopo: **2 tenant, 101 clienti, 232 prenotazioni, 42 tavoli, 42 piatti, 65 recensioni, 2 card**, conteggi identici. HTTP 200 su home, staff, privacy, manifest e API health. Nessun reset, nuova prenotazione o card nella verifica dello sviluppo.
 
 **Punto di arresto:** software locale fino a M5S verificato e demo attiva. M5 resta da accettare sui telefoni fisici con HTTPS e recapito reale; M6 non iniziata né dichiarata conclusa. Per attivarla servono dominio/account, fornitori e filiera verificati EU, testi/dati del primo locale reale, budget/volumi e prova di backup/ripristino. Console agenzia B09: prevista, ancora da costruire con identità/permessi/audit distinti. Piantina Pro rinviata. Servizi esterni, GitHub, deploy e invii reali non attivati.
+
+## Ricontrollo e correzioni M5/M5S — 17 settembre 2026
+
+Richiesta «Ricontrolla tutto e continua»: riletti documenti e stato Git, riesaminati accessi/tenant, motore prenotazioni, sala/attesa, notifiche/privacy, menu, PWA e confini di attivazione. Nessuna nuova missione di prodotto avviata.
+
+**Correzioni confermate.**
+
+- Il fallback SMS→email poteva riattivare un promemoria della vecchia data dopo lo spostamento della prenotazione, usando nella nuova email la data aggiornata. Ora il worker verifica prima la validità dell’evento; regola pura condivisa anche col controllo finale. Nessun fallback per un evento obsoleto, nessun consumo SMS prenotato per quell’evento.
+- Un promemoria rimasto in coda oltre l’arrivo previsto poteva partire al riavvio del worker. Ora viene scartato su entrambi i canali.
+- Dopo mezzanotte, restando nell’agenda del giorno d’inizio, un servizio ancora aperto perdeva i suggerimenti per la fila. Ora le fasce si calcolano sul giorno corrente nel fuso del locale, conservando identità/storico del servizio.
+- Il modulo di accomodamento usava l’indice dell’alternativa. Un aggiornamento poteva cambiare tavolo/orario senza una nuova scelta: ora conserva identità e fascia; se scompaiono disabilita l’azione e invita a scegliere di nuovo, IT/EN.
+
+**Prove.** Prima della correzione quattro verifiche backend fallivano: due casi fallback (tetto raggiunto/SMS disabilitati), promemoria scaduto e attesa oltre mezzanotte. Dopo la correzione sono verdi. Il solo scenario browser sala/attesa già presente verifica anche un aggiornamento del modulo aperto, simulando in modo deterministico una fascia cambiata nella risposta API; la successiva assegnazione usa il backend reale di test.
+
+| Comando | Risultato |
+| --- | --- |
+| `pnpm typecheck` | Passato; corretta un’importazione del tipo nel test browser |
+| `pnpm lint` | Passato, zero warning |
+| `pnpm test` | 100/100, dieci file; inclusi 26 test di isolamento tenant |
+| `pnpm build` | API, worker e Next.js di produzione compilati |
+| `pnpm test:e2e` | 7/7, 2,1 minuti, viewport 375 px |
+| Lighthouse nel test menu | 99/100, LCP 1035 ms; misura locale simulata, non rete o telefono reale |
+| Collegamenti Markdown locali / `git diff --check` | Passati |
+
+**Documentazione.** Stato corrente e checkbox M0–M3 allineati al cancello. Rimossi riferimenti obsoleti alla ricerca prenotazioni nell’URL; spiegate le correzioni in SALA_E_ATTESA e NOTIFICHE_E_PRIVACY. SERVIZI_ESTERNI distingue componenti già implementati, ambiente di collaudo M5 e attivazione M6, con informazioni ed evidenze necessarie a ciascun passaggio. Nessuna nuova verifica di prezzi o contratti esterni in questo blocco.
+
+**Demo riavviata.** `pnpm local` in esecuzione: web 3000, API 3001, worker; nessuna migrazione pendente. Conteggi prima/dopo identici: 2 tenant, 101 clienti, 232 prenotazioni, 42 tavoli, 42 piatti, 65 recensioni, 2 card; combinazioni e attesa demo ancora vuote. Home, staff/menu Santa Lucia, prenotazione/privacy/manifest Lido e health API rispondono HTTP 200. I test hanno usato soltanto `bigant_test`; la demo `bigant` non è stata resettata.
+
+**Confine successivo.** Nessuna migrazione o nuova dipendenza. Prima del pilot online servono dominio/budget/intestatario, scelta e verifica EU degli account, destinatari autorizzati, iPhone/Android. Prima dei dati reali restano anche proxy/rate limit, header HTTPS, accessi/recovery, backup database+foto con ripristino, alert e documenti del locale. I dettagli sono B04–B06 e SERVIZI_ESTERNI; B09 agenzia resta dopo il pilot. Nessun acquisto, invio reale, deploy o pubblicazione GitHub eseguito.

@@ -63,7 +63,7 @@ Migrazioni/seed e lookup minimali pre-contesto sono privilegiati. Il client Pris
 
 ## Perimetro e condivisione
 
-M0–M3 implementate: fondamenta, motore prenotazioni, cliente/staff, impostazioni/tavoli e menu digitale. Consolidamento M3C concluso e cancello verde. M4 recensioni conclusa; M5 notifiche/PWA/privacy verificata localmente con invii simulati, M5S sala/attesa conclusa. Ultimo cancello: 97 test backend e sette scenari browser, tipi/lint/build verdi. M6 produzione e verifica push fisiche restano da attivare. [Missioni](docs/MISSIONS.md), [specifica](docs/SPEC.md), [backlog](docs/BACKLOG.md). Gli originali ricevuti sono archiviati in `files/`; i documenti operativi correnti sono in `docs/`. [Indice documentazione](docs/README.md), [decisioni approvate](docs/DECISIONS.md).
+M0–M3 implementate: fondamenta, motore prenotazioni, cliente/staff, impostazioni/tavoli e menu digitale. Consolidamento M3C concluso e cancello verde. M4 recensioni conclusa; M5 notifiche/PWA/privacy verificata localmente con invii simulati, M5S sala/attesa conclusa. Ultimo ricontrollo: 100 test backend e sette scenari browser, tipi/lint/build verdi. M6 produzione e verifica push fisiche restano da attivare. [Missioni](docs/MISSIONS.md), [specifica](docs/SPEC.md), [backlog](docs/BACKLOG.md). Gli originali ricevuti sono archiviati in `files/`; i documenti operativi correnti sono in `docs/`. [Indice documentazione](docs/README.md), [decisioni approvate](docs/DECISIONS.md).
 
 Il repository è locale: **nessuna pubblicazione GitHub**. Condividerlo permetterà ai soci di clonare il codice; per una prova via link servirà un ambiente ospitato. `.env`, database, runtime, dipendenze e artefatti sono esclusi da Git. [Report servizi da collegare](docs/SERVIZI_ESTERNI.md).
 

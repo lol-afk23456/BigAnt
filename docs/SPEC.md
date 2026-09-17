@@ -443,7 +443,7 @@ POST   /auth/login
 POST   /auth/refresh
 POST   /auth/logout
 
-GET    /reservations?date=&status=&q=
+GET    /reservations?date=&status=
 POST   /reservations                      (creazione manuale da telefonata)
 PATCH  /reservations/:id                  (modifica, cambio stato, assegna tavolo)
 DELETE /reservations/:id
@@ -659,4 +659,4 @@ Autorizzata dal successivo «finisci tutto» dopo la richiesta e la precisazione
 - Gli ingressi restano consultabili se cambiano gli orari; ai servizi archiviati non si aggiungono nuovi ospiti. Per accomodare si rivalidano gli orari correnti. Retention rimuove il cognome dagli ingressi vecchi e preserva i conteggi.
 - UI: filtro zona nella gestione tavoli, configurazione combinazioni nello stesso pannello, lista d’attesa accessibile dall’agenda. Compatibilità è un suggerimento; nessun salto o assegnazione automatica della fila.
 
-**Esito M5S:** software locale verificato: 97 test backend e sette scenari browser, con gate completo in PROGRESS. Nessuna piantina Pro o console agenzia anticipata.
+**Esito M5S:** software locale verificato; ultimo ricontrollo: 100 test backend e sette scenari browser, con gate completo in PROGRESS. Nessuna piantina Pro o console agenzia anticipata.

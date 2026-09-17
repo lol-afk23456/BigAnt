@@ -2,7 +2,7 @@
 
 Sette blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con criteri di accettazione verificabili da comando.
 
-**Stato al 17 settembre 2026:** M0–M3 e consolidamento M3C completati, con verifiche in [PROGRESS.md](PROGRESS.md). M4 completata; M5 locale con cancello automatico verde, prove live/fisiche pendenti. M5S sala/attesa completata e verificata dopo il cancello automatico locale M5. M6 da attivare. Le checkbox dei criteri originali restano requisiti: lo stato corrente è questa sintesi e i cancelli documentati, non una spunta implicita su ogni funzione futura.
+**Stato al 17 settembre 2026:** M0–M3 e consolidamento M3C completati, con verifiche in [PROGRESS.md](PROGRESS.md). M4 completata; M5 locale con cancello automatico verde, prove live/fisiche pendenti. M5S sala/attesa completata e verificata dopo il cancello automatico locale M5. M6 da attivare. Le checkbox indicano criteri verificati: il ricontrollo del 17 settembre conferma il cancello locale. Il requisito M5 sui telefoni fisici e i criteri M6 restano aperti.
 
 **Regola:** nessuna missione inizia prima che la precedente abbia il cancello verde. Se una missione non entra in una sessione, fermati a un punto coerente (test verdi, commit pulito), aggiorna `PROGRESS.md` e riprendi da lì.
 
@@ -24,11 +24,11 @@ Sette blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con 
 - `docs/PROGRESS.md` e `docs/BACKLOG.md` inizializzati
 
 **Criteri di accettazione**
-- [ ] `pnpm typecheck && pnpm lint && pnpm test && pnpm build` tutti verdi
-- [ ] `pnpm seed` crea due tenant con dati completi e distinti
-- [ ] `tenant-isolation.test.ts`: per ogni modello, una query con token del tenant A non restituisce mai righe del tenant B
-- [ ] Una query scritta di proposito senza contesto tenant **fallisce**; nel contesto il filtro tenant è imposto anche se omesso dal chiamante
-- [ ] Login funziona, token scade, refresh funziona, 6° tentativo di login bloccato
+- [x] `pnpm typecheck && pnpm lint && pnpm test && pnpm build` tutti verdi
+- [x] `pnpm seed` crea due tenant con dati completi e distinti
+- [x] `tenant-isolation.test.ts`: per ogni modello, una query con token del tenant A non restituisce mai righe del tenant B
+- [x] Una query scritta di proposito senza contesto tenant **fallisce**; nel contesto il filtro tenant è imposto anche se omesso dal chiamante
+- [x] Login funziona, token scade, refresh funziona, 6° tentativo di login bloccato
 
 **Non fare.** Nessuna interfaccia, nessuna logica di prenotazione, nessun menu.
 
@@ -47,11 +47,11 @@ Sette blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con 
 - Endpoint: `GET /public/:slug/availability`, `POST /public/:slug/reservations`, `GET|POST /public/reservations/:cancelToken`, più CRUD autenticato
 
 **Criteri di accettazione**
-- [ ] Test dei casi limite, tutti verdi: cambio ora legale (26 ottobre, 29 marzo), prenotazione a cavallo di due servizi, gruppo più grande di ogni tavolo, servizio oltre la mezzanotte, blackout parziale, locale chiuso
-- [ ] Test di concorrenza: 20 richieste parallele sull'ultima fascia → esattamente una riesce
-- [ ] Test del ritmo: con `max_covers_per_slot = 12`, la 13ª persona sulla stessa fascia riceve `PACING_LIMIT`
-- [ ] Nessuna disponibilità → risposta con le 2 date alternative più vicine, non un errore
-- [ ] `availability.ts` non importa Prisma né fa chiamate di rete
+- [x] Test dei casi limite, tutti verdi: cambio ora legale (26 ottobre, 29 marzo), prenotazione a cavallo di due servizi, gruppo più grande di ogni tavolo, servizio oltre la mezzanotte, blackout parziale, locale chiuso
+- [x] Test di concorrenza: 20 richieste parallele sull'ultima fascia → esattamente una riesce
+- [x] Test del ritmo: con `max_covers_per_slot = 12`, la 13ª persona sulla stessa fascia riceve `PACING_LIMIT`
+- [x] Nessuna disponibilità → risposta con le 2 date alternative più vicine, non un errore
+- [x] `availability.ts` non importa Prisma né fa chiamate di rete
 
 **Non fare.** Nessuna pagina, nessuna email. Solo motore e API.
 
@@ -71,11 +71,11 @@ Sette blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con 
 - Stringhe in `it` ed `en`
 
 **Criteri di accettazione**
-- [ ] E2E Playwright: un visitatore prenota, riceve la conferma a schermo, apre il link di disdetta e annulla
-- [ ] E2E: lo staff accede, vede la prenotazione appena creata, la conferma, assegna un tavolo
-- [ ] Nessuna disponibilità → vengono proposte due date alternative
-- [ ] Verificato a 375px di larghezza
-- [ ] Nessuna stringa italiana hardcoded nei componenti
+- [x] E2E Playwright: un visitatore prenota, riceve la conferma a schermo, apre il link di disdetta e annulla
+- [x] E2E: lo staff accede, vede la prenotazione appena creata, la conferma, assegna un tavolo
+- [x] Nessuna disponibilità → vengono proposte due date alternative
+- [x] Verificato a 375px di larghezza
+- [x] Nessuna stringa italiana hardcoded nei componenti
 
 **Non fare.** Nessuna email o SMS reale: log del payload, invio arriva in M5.
 
@@ -96,10 +96,10 @@ Sette blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con 
 - Multilingua it/en con selettore
 
 **Criteri di accettazione**
-- [ ] E2E: lo staff crea categoria e piatto con foto, la pagina pubblica lo mostra
-- [ ] Un piatto segnato esaurito appare in grigio con etichetta, non sparisce
-- [ ] Lighthouse mobile sulla pagina menu: performance ≥ 90, LCP < 2s
-- [ ] Il cambio lingua non ricarica dati sbagliati
+- [x] E2E: lo staff crea categoria e piatto con foto, la pagina pubblica lo mostra
+- [x] Un piatto segnato esaurito appare in grigio con etichetta, non sparisce
+- [x] Lighthouse mobile sulla pagina menu: performance ≥ 90, LCP < 2s
+- [x] Il cambio lingua non ricarica dati sbagliati
 
 ---
 

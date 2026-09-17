@@ -1,6 +1,6 @@
 # BigAnt Book — servizi esterni e piano di attivazione
 
-**Aggiornamento:** 16 settembre 2026 · **Destinatari:** Riccardo e soci · **Stato:** piano da attuare, nessun acquisto o servizio attivato.
+**Aggiornamento tecnico:** 17 settembre 2026 · **Destinatari:** Riccardo e soci · **Stato:** software locale verificato, collegamenti reali da attivare. Prezzi e condizioni riportati dalla ricerca precedente vanno riconfermati al preventivo; questo aggiornamento non è una nuova verifica commerciale.
 
 Questo documento raccoglie soltanto ciò che serve per collegare BigAnt a email, SMS, hosting e servizi operativi. Le indicazioni sui fornitori sono proposte tecniche: la verifica documentale non sostituisce la verifica dell’account, della configurazione e del contratto prima dell’attivazione.
 
@@ -34,7 +34,7 @@ GitHub conserva il codice. I soci possono clonarlo e avviarlo; un link utilizzab
 | **Email transazionali** | Attesa, conferma, disdetta e promemoria via email | **Scaleway TEM Essential**, candidato da validare | M5 | Adattatore TEM implementato in M5, invii demo |
 | **Casella per le risposte** | Ricevere domande dei clienti e comunicazioni di supporto | Casella esistente del locale per Reply-To; casella BigAnt per assistenza | M5 / attivazione | Recapiti da indicare |
 | **SMS** | Promemoria e comunicazioni previste dalla SPEC | Fornitore sostituibile; Twilio IE1 da verificare prima di scegliere | M5 | Scelta non chiusa |
-| **Worker e coda** | Eseguire promemoria e tentativi anche dopo un riavvio | Partire valutando una coda su PostgreSQL; Redis se necessario | M5 | Coda PostgreSQL/worker M5 implementati, nessun account aggiuntivo oggi |
+| **Worker e coda** | Eseguire promemoria e tentativi anche dopo un riavvio | Outbox PostgreSQL e worker dedicato già implementati | M5 | Nessun account aggiuntivo oggi |
 | **Web Push** | Avvisare il titolare sul telefono | Web Push standard con chiavi VAPID | M5 | Codice M5 implementato, recapito/dispositivi reali da verificare |
 | **Google e card QR/NFC** | Aprire il flusso feedback del locale | Place ID reale per locale e card contenenti il link BigAnt | M4 | Dati demo; nessuna sincronizzazione Google prevista |
 | **Monitoraggio e alert** | Avvisare quando il servizio non risponde e diagnosticare errori | Controlli da un punto EU distinto dal server; errori e log filtrati in EU | M6 | Responsabile e soluzione da scegliere |
@@ -153,12 +153,23 @@ Le credenziali reali vanno inserite nel gestore dei segreti dell’ambiente o ne
 
 ## 11. Lavoro di integrazione e ordine di attivazione
 
-1. **Preparazione locale:** adattatori di notifica, template IT/EN e test con trasporto finto; completare i requisiti delle missioni pertinenti.
-2. **Affidabilità:** correggere con una nuova migrazione la deduplicazione dei messaggi. La migrazione M5 sostituisce la chiave prenotazione/tipo con evento stabile e chiave di consegna per evento/canale/destinatario, registrata prima dell’invio.
-3. **Worker:** coda persistente, pianificazione ogni cinque minuti, tentativi controllati, tetto SMS e gestione delle risposte incerte del provider. Un timeout dopo l’invio non deve causare un reinvio cieco.
-4. **Ambiente remoto:** account verificati, HTTPS, database/foto persistenti, segreti, configurazione dei proxy e limiti di richieste adeguati. Verificare i log del proxy, inclusi token nei link di disdetta.
-5. **Recapito di prova:** email prima, poi SMS e push con destinatari autorizzati; provare errori e fallback oltre al caso riuscito.
-6. **Uso reale:** privacy, retention/export/anonimizzazione, accessi reali, backup ripristinato, alert e cancello M6 documentati.
+1. **Preparazione locale — completata:** adattatori di notifica, template IT/EN, pannelli e test con trasporto simulato.
+2. **Affidabilità — completata localmente:** migrazione M5 applicata, evento/canale/destinatario unici, messaggio registrato prima dell’invio. La revisione del 17 settembre copre anche promemoria spostati, scaduti e fallback obsoleti.
+3. **Worker — completato localmente:** coda persistente, pianificazione ogni cinque minuti, tentativi controllati, tetto SMS e risposte incerte senza reinvio cieco.
+4. **Ambiente di collaudo — da preparare:** account verificati, HTTPS, database/foto persistenti, segreti, configurazione dei proxy e limiti di richieste adeguati. Verificare i log del proxy, inclusi token nei link di disdetta. Usare dati inventati: serve a chiudere le prove reali M5, non attesta ancora la produzione M6.
+5. **Recapito e telefoni — da provare:** email prima, poi SMS e push con destinatari autorizzati; errori e fallback oltre al caso riuscito. Installazione e ricezione su Android e iPhone fisici, con evidenze annotate.
+6. **Uso reale M6 — da completare:** testi privacy e contratti validati, accessi reali e recupero account, backup database/foto ripristinato, alert e cancello M6 documentati.
+
+### Cosa sblocca il prossimo passaggio
+
+| Passaggio | Informazione o verifica necessaria | Evidenza prima di proseguire |
+| --- | --- | --- |
+| Definire la configurazione di collaudo | Dominio disponibile, budget mensile, intestatario e volumi iniziali | Proposta concreta con costi e regione per ogni componente |
+| Collegare i servizi | Accessi agli account scelti e DNS, verifica EU | HTTPS funzionante, segreti fuori Git, dati e log nelle regioni approvate |
+| Chiudere M5 sui dispositivi | iPhone, Android e destinatari di prova | Installazione e ricezione reali; consenso negato/revoca gestiti |
+| Accogliere il primo locale | Dati reali del locale, testi e accessi completati | Ripristino riuscito, alert provato, prenotazione/conferma/feedback del pilot |
+
+La console agenzia resta B09 dopo il pilot. Il prossimo passaggio punta alla prova operativa delle funzioni già costruite.
 
 La configurazione attuale comprende DATABASE_URL, JWT_SECRET, HOST, PORT e MENU_IMAGE_DIR; API_INTERNAL_URL è letto dalla configurazione web. Le variabili degli adattatori sono in .env.example. Le procedure di recapito/rimbalzo richiedono ancora i fornitori reali, senza inserirvi valori segreti.
 
