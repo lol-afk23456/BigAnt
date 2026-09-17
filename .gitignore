@@ -12,3 +12,4 @@ test-results/
 .DS_Store
 .pnpm-store/
 tmp/pdfs/
+output/pdf/BigAnt_Book_Guida_Tester.pdf
