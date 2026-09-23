@@ -1,5 +1,5 @@
 'use client';
-import { createContext,useContext,useEffect,useState,type ReactNode } from 'react';
+import { createContext,useContext,useEffect,useId,useRef,useState,type ReactNode } from 'react';
 import { uiMessages,type Language,type UiKey } from '@bigant/i18n';
 const LanguageContext=createContext<{language:Language;setLanguage:(l:Language)=>void}>({language:'it',setLanguage:()=>{}});
 export function LanguageProvider({children}:{children:ReactNode}){const [language,setLanguage]=useState<Language>('it');useEffect(()=>{document.documentElement.lang=language;},[language]);return <LanguageContext.Provider value={{language,setLanguage}}>{children}</LanguageContext.Provider>;}
@@ -10,7 +10,13 @@ export function ErrorNotice({message,onRetry}:{message:string;onRetry?:()=>void}
 export function Loading(){const {t}=useCopy();return <div className="loading" role="status"><span className="spinner"/>{t('loading')}</div>;}
 export function Status({value}:{value:'pending'|'confirmed'|'seated'|'completed'|'cancelled'|'no_show'}){const {t}=useCopy();return <span className={`status status-${value}`}><span aria-hidden="true">•</span>{t(`status_${value}`)}</span>;}
 export function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:ReactNode}){
- const {t}=useCopy();
- useEffect(()=>{const previous=document.activeElement as HTMLElement|null;const dialog=document.querySelector<HTMLDialogElement>('dialog[open]');const first=dialog?.querySelector<HTMLElement>('button,input,select,textarea');first?.focus();return()=>previous?.focus();},[]);
- return <div className="modal-backdrop" onKeyDown={event=>{if(event.key==='Escape')onClose();if(event.key==='Tab'){const focusable=event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled]),input:not([disabled]),select,textarea,a[href]');const first=focusable[0],last=focusable[focusable.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}}}><dialog open className="modal" aria-modal="true" aria-label={title}><div className="section-heading"><h2>{title}</h2><button type="button" className="icon-button" onClick={onClose} aria-label={t('close')}>×</button></div>{children}</dialog></div>;
+ const {t}=useCopy();const ref=useRef<HTMLDialogElement>(null);const headingId=useId();
+ useEffect(()=>{
+  const dialog=ref.current;const previous=document.activeElement instanceof HTMLElement?document.activeElement:null;
+  const overflow=document.body.style.overflow;document.body.style.overflow='hidden';
+  // Il dialog nativo rende inerte lo sfondo e gestisce anche i campi nei details chiusi.
+  dialog?.showModal();
+  return()=>{dialog?.close();document.body.style.overflow=overflow;if(previous?.isConnected)previous.focus({preventScroll:true});};
+ },[]);
+ return <dialog ref={ref} className="modal" aria-modal="true" aria-labelledby={headingId} onCancel={event=>{event.preventDefault();onClose();}}><div className="section-heading"><h2 id={headingId}>{title}</h2><button type="button" className="icon-button" onClick={onClose} aria-label={t('close')}>×</button></div>{children}</dialog>;
 }

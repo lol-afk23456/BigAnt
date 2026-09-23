@@ -1,6 +1,6 @@
 import { beforeAll,beforeEach,afterEach,afterAll,expect,test } from 'vitest';
 import { randomUUID } from 'node:crypto';
-import { mkdtemp,rm } from 'node:fs/promises';
+import { mkdtemp,readFile,rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from '../apps/api/node_modules/sharp/lib/index.js';
@@ -58,6 +58,18 @@ test('upload limitato a 5 MB e autenticato; API pubblica limitata',async()=>{
  expect((await app.inject({...options,headers:{...headers(),'content-type':'image/jpeg'},payload:Buffer.alloc(5*1024*1024+1)})).statusCode).toBe(400);
  for(let n=0;n<30;n++)expect((await app.inject({url:`/public/${slugs[0]}/menu`})).statusCode).toBe(200);expect((await app.inject({url:`/public/${slugs[0]}/menu`})).statusCode).toBe(429);
 });
+test('budget foto separato: due caricamenti da 29 immagini, JSON e upload ancora limitati',async()=>{
+ const id=await dish(await category());const bytes=await sharp({create:{width:320,height:240,channels:3,background:'#ff914d'}}).jpeg().toBuffer();
+ const options={method:'POST' as const,url:`/menu/items/${id}/image`,headers:{...headers(),'content-type':'image/jpeg'},payload:bytes};
+ let url='';for(let n=0;n<5;n++){const result=await app.inject(options);expect(result.statusCode).toBe(200);url=(result.json().image_url as string).replace('/api','');}
+ expect((await app.inject(options)).statusCode).toBe(429);
+ // Lo stesso IP carica 29 foto, poi cambia lingua e le ricarica. Il conteggio
+ // aggregato per i media resta finito: la richiesta 121 è rifiutata.
+ for(let n=0;n<120;n++)expect((await app.inject({url})).statusCode).toBe(200);
+ expect((await app.inject({url})).statusCode).toBe(429);
+ for(let n=0;n<30;n++)expect((await app.inject({url:`/public/${slugs[0]}/menu`})).statusCode).toBe(200);
+ expect((await app.inject({url:`/public/${slugs[0]}/menu`})).statusCode).toBe(429);
+});
 test('occhio separato da esaurito: risposta pubblica cambia subito e resta isolata',async()=>{
  const categoryA=await category(),item=await dish(categoryA);await dish(await category(1),1);
  expect((await app.inject({method:'PATCH',url:`/menu/items/${item}`,headers:headers(),payload:{is_visible:false,is_featured:true,sort_order:9}})).statusCode).toBe(200);
@@ -76,4 +88,25 @@ test('quattro template, colore e copertina isolati; impostazioni riservate al ti
  const bytes=await sharp({create:{width:320,height:240,channels:3,background:'#444444'}}).png().toBuffer();
  const response=await app.inject({method:'POST',url:'/menu/cover',headers:{...headers(),'content-type':'image/png'},payload:bytes});expect(response.statusCode).toBe(200);const url=response.json().menu_cover_url as string;expect((await app.inject({url:url.replace('/api','')})).statusCode).toBe(200);expect((await app.inject({url:url.replace('/api','').replace(slugs[0]!,slugs[1]!)})).statusCode).toBe(404);
  expect((await app.inject({method:'PATCH',url:'/menu/settings',headers:headers(),payload:{...data,menu_cover_url:null}})).statusCode).toBe(200);expect((await app.inject({url:url.replace('/api','')})).statusCode).toBe(404);
+});
+test('copertine panoramiche: varianti leggere, compatibilità delle foto esistenti e revoca pubblica',async()=>{
+ const bytes=await sharp({create:{width:1200,height:900,channels:3,background:'#82471f'}}).jpeg().toBuffer();
+ const upload=await app.inject({method:'POST',url:'/menu/cover',headers:{...headers(),'content-type':'image/jpeg'},payload:bytes});expect(upload.statusCode).toBe(200);
+ const originalUrl=upload.json().menu_cover_url as string;const originalFile=originalUrl.split('/').pop()!;const originalPath=join(directory,ids[0]!,originalFile);const originalBytes=await readFile(originalPath);
+ const variants=[320,640,768,960];
+ for(const width of variants){
+  const url=originalUrl.replace('/api','').replace('-640.webp',`-cover-${width}.webp`);const response=await app.inject({url});expect(response.statusCode).toBe(200);
+  const metadata=await sharp(response.rawPayload).metadata();expect(metadata.width).toBe(width);expect(metadata.height).toBe(Math.round(width*9/16));expect(metadata.exif).toBeUndefined();
+  expect((await app.inject({url:url.replace(slugs[0]!,slugs[1]!)})).statusCode).toBe(404);
+ }
+ // Un upload precedente non ha derivate: le richieste simultanee possono
+ // crearle senza sovrascrivere la foto originale o cambiare l'URL salvato.
+ const legacyFile=originalFile.replace('-640.webp','-cover-768.webp');await rm(join(directory,ids[0]!,legacyFile));
+ const derivedUrl=originalUrl.replace('/api','').replace('-640.webp','-cover-768.webp');
+ const responses=await Promise.all([app.inject({url:derivedUrl}),app.inject({url:derivedUrl})]);for(const response of responses)expect(response.statusCode).toBe(200);
+ expect(await readFile(originalPath)).toEqual(originalBytes);expect((await app.inject({url:'/menu/settings',headers:headers()})).json().menu_cover_url).toBe(originalUrl);
+ await app.inject({method:'PATCH',url:'/menu/settings',headers:headers(),payload:{menu_template:'essential',menu_primary_color:'#ff914d',menu_cover_url:null}});
+ expect((await app.inject({url:derivedUrl})).statusCode).toBe(404);
+ const item=await dish(await category());const dishUpload=await app.inject({method:'POST',url:`/menu/items/${item}/image`,headers:{...headers(),'content-type':'image/jpeg'},payload:bytes});
+ expect((await app.inject({url:dishUpload.json().image_url.replace('/api','').replace('-640.webp','-cover-640.webp')})).statusCode).toBe(404);
 });

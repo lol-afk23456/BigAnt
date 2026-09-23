@@ -12,7 +12,8 @@ import { withStaff } from './staff.js';
 const MAX_PHOTO=5*1024*1024;
 const mimeFormats:Record<string,string>={'image/jpeg':'jpeg','image/png':'png','image/webp':'webp'};
 const widths=[320,640,960] as const;
-const imageParam=slugParam.extend({file:z.string().regex(/^[a-f0-9-]{36}-(320|640|960)\.webp$/)});
+const coverWidths=[320,640,768,960] as const;
+const imageParam=slugParam.extend({file:z.string().regex(/^[a-f0-9-]{36}-(?:(?:320|640|960)|cover-(?:320|640|768|960))\.webp$/)});
 export function menuRoutes(app:FastifyInstance, imageDirectory=process.env.MENU_IMAGE_DIR??fileURLToPath(new URL('../../../.local/menu-images/',import.meta.url))){
  const config={rateLimit:false as const};
  async function tenantId(slug:string){const tenant=await resolveTenant(slug);if(!tenant||tenant.status!=='active')throw new DomainError('NOT_FOUND',404);return tenant.id;}
@@ -25,12 +26,25 @@ export function menuRoutes(app:FastifyInstance, imageDirectory=process.env.MENU_
    return {settings:{...settings,menu_template:menuSettingsInput.shape.menu_template.parse(settings.menu_template)},language,tenant:{name:tenant.name,slug:tenant.slug,address:tenant.address},categories:categories.map(c=>({id:c.id,name:language==='en'?c.name_en:c.name_it,items:c.items.map(i=>({id:i.id,name:language==='en'?i.name_en:i.name_it,description:language==='en'?i.description_en:i.description_it,price_cents:i.price_cents,image_url:i.image_url,allergens:i.allergens,dietary:i.dietary,is_available:i.is_available,is_featured:i.is_featured}))}))} satisfies PublicMenu;
   });
  });
- app.get('/public/:slug/menu-images/:file',{config:{rateLimit:{max:30,timeWindow:'1 minute',groupId:'menu-media'}}},async(request,reply)=>{
+ // Un menu con foto e il successivo cambio lingua devono poter caricare le
+ // immagini. Il budget media è distinto dai 30 accessi/minuto ai dati JSON.
+ app.get('/public/:slug/menu-images/:file',{config:{rateLimit:{max:120,timeWindow:'1 minute',groupId:'menu-media'}}},async(request,reply)=>{
   const {slug,file}=imageParam.parse(request.params);const tenant=await tenantId(slug);
-  const base=file.replace(/-(320|640|960)\.webp$/,'-640.webp');
+  const cover=file.includes('-cover-');const base=file.replace(/-(?:cover-)?(320|640|768|960)\.webp$/,'-640.webp');
   return withTenant(tenant,async()=>{
-   if(!await db.menuItem.findFirst({where:{image_url:`/api/public/${slug}/menu-images/${base}`,is_visible:true,category:{active:true}},select:{id:true}})&&!await db.tenantSettings.findFirst({where:{menu_cover_url:`/api/public/${slug}/menu-images/${base}`},select:{tenant_id:true}}))throw new DomainError('NOT_FOUND',404);
-   let bytes:Buffer;try{bytes=await readFile(join(imageDirectory,tenant,file));}catch{throw new DomainError('NOT_FOUND',404);}
+   const currentCover=await db.tenantSettings.findFirst({where:{menu_cover_url:`/api/public/${slug}/menu-images/${base}`},select:{tenant_id:true}});
+   if(!currentCover&&(cover||!await db.menuItem.findFirst({where:{image_url:`/api/public/${slug}/menu-images/${base}`,is_visible:true,category:{active:true}},select:{id:true}})))throw new DomainError('NOT_FOUND',404);
+   let bytes:Buffer;try{bytes=await readFile(join(imageDirectory,tenant,file));}catch{
+    if(!cover)throw new DomainError('NOT_FOUND',404);
+    // Le copertine già salvate ricevono una derivata: la foto del locale e il
+    // suo URL originale restano intatti. Una sola generazione per variante.
+    try{
+     const source=await readFile(join(imageDirectory,tenant,base.replace('-640.webp','-960.webp')));
+     const width=Number(file.match(/cover-(\d+)\.webp$/)![1]);
+     bytes=await coverPhoto(source,width);
+     try{await writeFile(join(imageDirectory,tenant,file),bytes,{flag:'wx'});}catch(error){if((error as NodeJS.ErrnoException).code!=='EEXIST')throw error;}
+    }catch{throw new DomainError('NOT_FOUND',404);}
+   }
    return reply.type('image/webp').header('X-Content-Type-Options','nosniff').send(bytes);
   });
  });
@@ -93,23 +107,30 @@ export function menuRoutes(app:FastifyInstance, imageDirectory=process.env.MENU_
   images.addContentTypeParser(Object.keys(mimeFormats),{parseAs:'buffer',bodyLimit:MAX_PHOTO},(_request,body,done)=>done(null,body));
   images.post('/menu/cover',{bodyLimit:MAX_PHOTO,config:{rateLimit:{max:5,timeWindow:'1 minute'}}},request=>withStaff(images,request,async claims=>{
    if(claims.role!=='owner')throw new DomainError('FORBIDDEN',403);
-   return savePhoto(request,claims.tenant_id,url=>reservationTransaction(claims.tenant_id,async tx=>{await tx.tenantSettings.update({where:{tenant_id:claims.tenant_id},data:{menu_cover_url:url}});await tx.auditLog.create({data:{tenant_id:claims.tenant_id,staff_user_id:claims.sub,action:'menu.cover.update',entity_type:'TenantSettings',entity_id:claims.tenant_id}});return {menu_cover_url:url};}));
+   return savePhoto(request,claims.tenant_id,url=>reservationTransaction(claims.tenant_id,async tx=>{await tx.tenantSettings.update({where:{tenant_id:claims.tenant_id},data:{menu_cover_url:url}});await tx.auditLog.create({data:{tenant_id:claims.tenant_id,staff_user_id:claims.sub,action:'menu.cover.update',entity_type:'TenantSettings',entity_id:claims.tenant_id}});return {menu_cover_url:url};}),true);
   }));
   images.post('/menu/items/:id/image',{bodyLimit:MAX_PHOTO,config:{rateLimit:{max:5,timeWindow:'1 minute'}}},request=>withStaff(images,request,async claims=>{
    const {id}=idParam.parse(request.params);if(!await db.menuItem.findUnique({where:{id}}))throw new DomainError('NOT_FOUND',404);
    return savePhoto(request,claims.tenant_id,url=>reservationTransaction(claims.tenant_id,async tx=>{if(!await tx.menuItem.findUnique({where:{id}}))throw new DomainError('NOT_FOUND',404);return tx.menuItem.update({where:{id},data:{image_url:url}});}));
   }));
  });
- async function savePhoto<T>(request:FastifyRequest,tenantId:string,save:(url:string)=>Promise<T>):Promise<T>{
+ async function savePhoto<T>(request:FastifyRequest,tenantId:string,save:(url:string)=>Promise<T>,cover=false):Promise<T>{
    const mime=(request.headers['content-type']??'').split(';')[0]!;const bytes=request.body;
    if(!Buffer.isBuffer(bytes)||!bytes.length||bytes.length>MAX_PHOTO||!mimeFormats[mime])throw new DomainError('INVALID_IMAGE',400);
    let variants:Buffer[];
-   try{const source=sharp(bytes,{limitInputPixels:25000000,failOn:'warning'});const metadata=await source.metadata();if(metadata.format!==mimeFormats[mime]||(metadata.pages??1)>1)throw new Error('INVALID_FORMAT');variants=[];for(const width of widths)variants.push(await source.clone().rotate().resize(width,Math.round(width*0.75),{fit:'cover'}).webp({quality:78,effort:4}).toBuffer());}catch{throw new DomainError('INVALID_IMAGE',400);}
-   const key=randomUUID();const directory=join(imageDirectory,tenantId);await mkdir(directory,{recursive:true});const paths=widths.map(width=>join(directory,`${key}-${width}.webp`));
+   try{const source=sharp(bytes,{limitInputPixels:25000000,failOn:'warning'});const metadata=await source.metadata();if(metadata.format!==mimeFormats[mime]||(metadata.pages??1)>1)throw new Error('INVALID_FORMAT');variants=[];for(const width of widths)variants.push(await source.clone().rotate().resize(width,Math.round(width*0.75),{fit:'cover'}).webp({quality:78,effort:4}).toBuffer());if(cover)for(const width of coverWidths)variants.push(await coverPhoto(bytes,width));}catch{throw new DomainError('INVALID_IMAGE',400);}
+   const key=randomUUID();const directory=join(imageDirectory,tenantId);await mkdir(directory,{recursive:true});const paths=[...widths.map(width=>join(directory,`${key}-${width}.webp`)),...(cover?coverWidths.map(width=>join(directory,`${key}-cover-${width}.webp`)):[])];
    try{
     for(const [n,path] of paths.entries())await writeFile(path,variants[n]!,{flag:'wx'});
     const tenant=await db.tenant.findFirstOrThrow({select:{slug:true}});
     return await save(`/api/public/${tenant.slug}/menu-images/${key}-640.webp`);
    }catch(error){await Promise.all(paths.map(path=>rm(path,{force:true})));throw error;}
  }
+}
+
+// La copertina viene mostrata in formato panoramico: non scaricare anche i
+// pixel del ritaglio 4:3 usato dalle foto dei piatti. 768px copre i telefoni
+// ad alta densità senza il salto prematuro alla variante da 960px.
+async function coverPhoto(bytes:Buffer,width:number){
+ return sharp(bytes,{limitInputPixels:25000000,failOn:'warning'}).rotate().resize(width,Math.round(width*9/16),{fit:'cover'}).webp({quality:72,effort:5}).toBuffer();
 }

@@ -1,7 +1,7 @@
 import { expect,test } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 test('recensioni a 375px: scelte equivalenti, privato, card, limite e gestione staff',async({page,context})=>{
- await page.goto('/r/trattoria-santa-lucia/staff?view=cards');await page.getByLabel('Password',{exact:true}).fill('bigant2026');await page.getByRole('button',{name:/Accedi al pannello/}).click();await expect(page.getByRole('heading',{name:'Un tocco, una voce.'})).toBeVisible();
+ await page.goto('/r/trattoria-santa-lucia/staff?view=cards');await page.getByLabel('Password',{exact:true}).fill('bigant2026');await page.getByRole('button',{name:/Accedi al pannello/}).click();await expect(page.getByRole('heading',{name:'Card NFC e link recensioni.'})).toBeVisible();
  await page.getByRole('button',{name:'Nuova card',exact:false}).click();const dialog=page.getByRole('dialog');await dialog.getByLabel('Nome della card').fill('Card browser recensioni');await dialog.getByRole('button',{name:'Salva modifiche'}).click();await expect(dialog).not.toBeVisible();
  const card=page.locator('.nfc-card').filter({has:page.getByRole('heading',{name:'Card browser recensioni',exact:true})});const url=await card.getByLabel('Link della card').inputValue();expect(url).toMatch(/\/r\/trattoria-santa-lucia\/feedback\?card=[a-f0-9]{64}$/);
  const guest=await context.newPage();await guest.goto(url);await expect(guest.locator('.feedback-option')).toHaveCount(2);await expect(guest.getByRole('radio')).toHaveCount(0);
