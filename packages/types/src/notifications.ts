@@ -18,4 +18,5 @@ export interface NotificationSettings {sms_enabled:boolean;sms_monthly_cap:numbe
 export interface NotificationOverview {mode:'demo'|'live';sms_used:number;sms_cap:number;sms_fallbacks:number;queued:number;failed:number;uncertain:number;simulated:number;accepted:number;push_configured:boolean}
 export interface DeliveryRecord {id:string;channel:'email'|'sms'|'push';event_name:string;status:'queued'|'processing'|'sent'|'failed'|'uncertain'|'simulated'|'skipped';attempts:number;created_at:string;fallback:boolean}
 export interface CustomerRecord {id:string;full_name:string;phone_e164:string|null;email:string|null;notes:string;marketing_consent:boolean;marketing_consent_at:string|null;total_visits:number;no_show_count:number;last_visit_at:string|null;anonymized_at:string|null}
+export interface CustomerReservationHistory {items:Array<{id:string;reserved_at:string;party_size:number;status:'pending'|'confirmed'|'seated'|'completed'|'no_show'|'cancelled';source:'direct'|'phone'|'staff'}>;has_more:boolean}
 export interface PrivacyVenue {name:string;slug:string;address:string|null;phone:string|null;contact_email:string|null;retention_months:number;demo:boolean}

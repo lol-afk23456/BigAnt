@@ -61,7 +61,7 @@ export interface BookingReceipt {id:string;status:z.infer<typeof reservationStat
 export interface CancellationDetails {reserved_at:string;party_size:number;status:z.infer<typeof reservationStatus>;can_cancel:boolean;cancellation_deadline:string;tenant:{name:string;slug:string;phone:string|null;timezone:string}}
 export interface StaffProfile {id:string;full_name:string;role:'owner'|'staff';tenant:{id:string;name:string;slug:string;timezone:string;locale_default:'it'|'en'}}
 export interface TableRecord extends TableInput {id:string}
-export interface ReservationRecord extends BookingReceipt {duration_min:number;table_id:string|null;notes:string;internal_notes:string;source:'direct'|'phone'|'staff';customer:{id:string;full_name:string;phone_e164:string|null;email:string|null};table:TableRecord|null;table_group_id:string|null;table_group_name:string|null;assignedTables:Array<{table_id:string;table_name:string}>}
+export interface ReservationRecord extends BookingReceipt {duration_min:number;table_id:string|null;notes:string;internal_notes:string;source:'direct'|'phone'|'staff';customer:{id:string;full_name:string;phone_e164:string|null;email:string|null;notes:string;total_visits:number;no_show_count:number;last_visit_at:string|null};table:TableRecord|null;table_group_id:string|null;table_group_name:string|null;assignedTables:Array<{table_id:string;table_name:string}>}
 
 export * from './menu';
 export * from './reviews';

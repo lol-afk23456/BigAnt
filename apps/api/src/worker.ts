@@ -3,9 +3,10 @@ config({path:new URL('../../../.env',import.meta.url),quiet:true});
 import { disconnectDatabase } from '@bigant/database';
 import { notificationRuntime } from './notifications/config.js';
 import { workerTick } from './notifications/worker.js';
-const runtime=notificationRuntime();
+import { serverClock } from './clock.js';
+const runtime=notificationRuntime();const now=serverClock(process.env);
 let running=false;
-async function tick(){if(running)return;running=true;try{await workerTick(runtime);}catch{process.stderr.write('WORKER_TICK_FAILED\n');process.exitCode=1;}finally{running=false;}}
+async function tick(){if(running)return;running=true;try{await workerTick(runtime,now());}catch{process.stderr.write('WORKER_TICK_FAILED\n');process.exitCode=1;}finally{running=false;}}
 await tick();
 if(process.argv.includes('--watch')){
  const timer=setInterval(()=>{void tick();},5*60000);

@@ -12,7 +12,9 @@ import { csvCell,calendarPeriod } from '../packages/core/src/index';
 import { publicBookingInput } from '../packages/types/src/index';
 
 let ids:string[]=[],tokens:string[]=[],owners:string[]=[],app:ReturnType<typeof buildApp>;
+// Il clock applicativo è fisso e indipendente dall’orologio del database.
 const now=new Date('2026-09-21T10:00:00Z');
+const at=(hours:number)=>new Date(now.getTime()+hours*3600000);
 let runtime:NotificationRuntime;let password_hash:string;
 beforeAll(async()=>{const tenants=await fixtures();password_hash=(await admin.staffUser.findFirstOrThrow({where:{tenant_id:tenants[0]!.id,role:'owner'}})).password_hash;});
 beforeEach(async()=>{
@@ -32,16 +34,30 @@ afterAll(async()=>{await admin.$disconnect();await disconnectDatabase();});
 const headers=(n=0)=>({authorization:`Bearer ${tokens[n]}`});
 async function booking(n=0,index=0){
  const customer=await admin.customer.create({data:{tenant_id:ids[n]!,full_name:`Ospite ${index}`,email:`ospite${n}-${index}@m5.test`,phone_e164:`+39333${n}2345${String(index).padStart(2,'0')}`}});
- const reservation=await admin.reservation.create({data:{tenant_id:ids[n]!,customer_id:customer.id,reserved_at:new Date('2026-09-21T12:00:00Z'),party_size:2,duration_min:90,status:'confirmed',source:'direct',cancel_token:randomBytes(32).toString('hex')}});
+ const reservation=await admin.reservation.create({data:{tenant_id:ids[n]!,customer_id:customer.id,reserved_at:at(2),party_size:2,duration_min:90,status:'confirmed',source:'direct',cancel_token:randomBytes(32).toString('hex')}});
  return {customer,reservation};
 }
 test('doppio scheduler e due worker paralleli producono una sola consegna del promemoria',async()=>{
  const {reservation}=await booking();let calls=0;
  runtime.channels.sms={send:async(_message,key)=>{calls++;expect((await admin.notificationLog.findUniqueOrThrow({where:{id:key}})).status).toBe('processing');return {status:'sent',providerId:'test-accepted'};}};
  await Promise.all([scheduleReminders(ids[0]!,now),scheduleReminders(ids[0]!,now)]);
+ expect((await admin.notificationLog.findFirstOrThrow({where:{reservation_id:reservation.id}})).due_at).toEqual(now);
  await Promise.all([dispatch(ids[0]!,runtime,now),dispatch(ids[0]!,runtime,now)]);
  await dispatch(ids[0]!,runtime,now);
  expect(calls).toBe(1);expect(await admin.notificationLog.count({where:{reservation_id:reservation.id}})).toBe(1);
+});
+test('scadenza esplicita della coda conservata sui duplicati e indipendente dal clock del database',async()=>{
+ const {reservation,customer}=await booking();const dueAt=new Date(now.getTime()+15*60000);let calls=0;
+ await reservationTransaction(ids[0]!,async tx=>{
+  const options={reservationId:reservation.id,reservedAt:reservation.reserved_at,now};
+  await enqueue(tx,ids[0]!,'scheduled-test','reminder','email',customer.email!,{...options,dueAt});
+  await enqueue(tx,ids[0]!,'scheduled-test','reminder','email',customer.email!,options);
+ });
+ const log=await admin.notificationLog.findFirstOrThrow({where:{event_key:'scheduled-test'}});
+ expect(log.created_at).toEqual(now);expect(log.due_at).toEqual(dueAt);
+ runtime.channels.email={send:async()=>{calls++;return {status:'sent',providerId:'scheduled-accepted'};}};
+ expect(await dispatch(ids[0]!,runtime,now)).toBe(0);expect(calls).toBe(0);
+ expect(await dispatch(ids[0]!,runtime,dueAt)).toBe(1);expect(calls).toBe(1);
 });
 test('tetto SMS atomico in concorrenza, email di fallback e segnalazione nel pannello',async()=>{
  await booking(0,1);await booking(0,2);let sms=0,email=0;
@@ -54,7 +70,7 @@ test('tetto SMS atomico in concorrenza, email di fallback e segnalazione nel pan
 });
 test.each(['cap','disabled'] as const)('promemoria spostato: il fallback %s non riattiva il vecchio evento',async reason=>{
  const {reservation}=await booking();await scheduleReminders(ids[0]!,now);
- await admin.reservation.update({where:{id:reservation.id},data:{reserved_at:new Date('2026-09-22T12:00:00Z')}});
+ await admin.reservation.update({where:{id:reservation.id},data:{reserved_at:at(26)}});
  await admin.tenantSettings.update({where:{tenant_id:ids[0]!},data:reason==='cap'?{sms_monthly_cap:0}:{sms_enabled:false}});
  let calls=0;const channel={send:async()=>{calls++;return {status:'sent' as const,providerId:'unexpected'};}};
  runtime.channels.sms=channel;runtime.channels.email=channel;
@@ -66,12 +82,12 @@ test.each(['cap','disabled'] as const)('promemoria spostato: il fallback %s non 
 test('un promemoria rimasto in coda oltre l’orario della prenotazione non viene inviato',async()=>{
  await booking();await scheduleReminders(ids[0]!,now);let calls=0;
  runtime.channels.sms={send:async()=>{calls++;return {status:'sent',providerId:'unexpected'};}};
- await dispatch(ids[0]!,runtime,new Date('2026-09-21T12:00:01Z'));
+ await dispatch(ids[0]!,runtime,new Date(at(2).getTime()+1000));
  expect(calls).toBe(0);
  expect((await admin.notificationLog.findFirstOrThrow({where:{tenant_id:ids[0]!}})).status).toBe('skipped');
 });
 test('attesa e conferma sono eventi diversi; fallback non duplica l’email di conferma',async()=>{
- const payload={full_name:'Ospite telefono',phone:'3331234567',email:'ospite@m5.test',party_size:2,reserved_at:'2026-09-21T12:00:00Z',locale:'en'};
+ const payload={full_name:'Ospite telefono',phone:'3331234567',email:'ospite@m5.test',party_size:2,reserved_at:at(2).toISOString(),locale:'en'};
  const created=await app.inject({method:'POST',url:'/reservations',headers:headers(),payload});expect(created.statusCode).toBe(201);const id=created.json<{id:string}>().id;
  expect((await admin.notificationLog.findFirstOrThrow({where:{reservation_id:id}})).event_name).toBe('pending');
  const patch=await app.inject({method:'PATCH',url:`/reservations/${id}`,headers:headers(),payload:{status:'confirmed'}});expect(patch.statusCode).toBe(200);
@@ -84,7 +100,7 @@ test('attesa e conferma sono eventi diversi; fallback non duplica l’email di c
 });
 test('timeout e riavvio durante un invio diventano incerti senza reinvio cieco',async()=>{
  const {reservation,customer}=await booking();let calls=0;
- await reservationTransaction(ids[0]!,tx=>enqueue(tx,ids[0]!,'uncertain-test','reminder','email',customer.email!,{reservationId:reservation.id,reservedAt:reservation.reserved_at}));
+ await reservationTransaction(ids[0]!,tx=>enqueue(tx,ids[0]!,'uncertain-test','reminder','email',customer.email!,{reservationId:reservation.id,reservedAt:reservation.reserved_at,now}));
  runtime.channels.email={send:async()=>{calls++;throw new DeliveryError('uncertain','PROVIDER_TIMEOUT');}};
  await dispatch(ids[0]!,runtime,now);await dispatch(ids[0]!,runtime,new Date(now.getTime()+30*60000));expect(calls).toBe(1);
  expect((await admin.notificationLog.findFirstOrThrow({where:{event_key:'uncertain-test'}})).status).toBe('uncertain');
@@ -95,14 +111,14 @@ test('rifiuto 429 riprovato con lo stesso ID; disdetta rende obsoleto il promemo
  const {reservation}=await booking();await admin.tenantSettings.update({where:{tenant_id:ids[0]!},data:{sms_enabled:false}});await scheduleReminders(ids[0]!,now);
  const keys:string[]=[];runtime.channels.email={send:async(_message,key)=>{keys.push(key);if(keys.length===1)throw new DeliveryError('retry','PROVIDER_THROTTLED');return {status:'sent',providerId:'test'};}};
  await dispatch(ids[0]!,runtime,now);await dispatch(ids[0]!,runtime,new Date(now.getTime()+5*60000));expect(keys).toHaveLength(2);expect(keys[0]).toBe(keys[1]);
- await admin.reservation.update({where:{id:reservation.id},data:{reserved_at:new Date('2026-09-21T13:00:00Z')}});await scheduleReminders(ids[0]!,now);
- await reservationTransaction(ids[0]!,async tx=>{const row=await tx.reservation.update({where:{id:reservation.id},data:{status:'cancelled'}});await reservationChanged(tx,ids[0]!,row,'confirmed','customer');});
+ await admin.reservation.update({where:{id:reservation.id},data:{reserved_at:at(3)}});await scheduleReminders(ids[0]!,now);
+ await reservationTransaction(ids[0]!,async tx=>{const row=await tx.reservation.update({where:{id:reservation.id},data:{status:'cancelled'}});await reservationChanged(tx,ids[0]!,row,'confirmed','customer',now);});
  await dispatch(ids[0]!,runtime,now);expect(keys.length).toBe(3); // Una sola email staff per la disdetta, nessun nuovo promemoria.
  expect(await admin.notificationLog.count({where:{reservation_id:reservation.id,event_name:'reminder',status:'skipped'}})).toBe(1);
 });
 test('privacy obbligatoria, marketing separato e informativa dedicata; nessun consenso inventato dallo staff',async()=>{
  const tenant=await admin.tenant.findUniqueOrThrow({where:{id:ids[0]!}});
- const data={full_name:'Ospite pubblico',phone:'3331234567',email:'ospite@m5.test',party_size:2,reserved_at:'2026-09-21T12:00:00Z',form_token:'signed-token'};
+ const data={full_name:'Ospite pubblico',phone:'3331234567',email:'ospite@m5.test',party_size:2,reserved_at:at(2).toISOString(),form_token:'signed-token'};
  expect(publicBookingInput.safeParse(data).success).toBe(false);expect(publicBookingInput.parse({...data,privacy_accepted:true}).marketing_consent).toBe(false);
  const privacy=await app.inject({url:`/public/${tenant.slug}/privacy`});expect(privacy.statusCode).toBe(200);expect(privacy.json()).toMatchObject({name:tenant.name,retention_months:24});expect(privacy.body).not.toContain('owner0');
  const form=await app.inject({url:`/public/${tenant.slug}`});
@@ -124,6 +140,24 @@ test('export CSV senza formule o dati sanitari, audit e isolamento di ogni perco
  expect((await app.inject({url:'/customers?q=personal',headers:headers()})).statusCode).toBe(400);
  for(const url of ['/notifications','/notifications/settings','/notifications/summary','/push/config','/customers'])expect((await app.inject({url})).statusCode).toBe(401);
  expect(csvCell('"ciao,\nmondo"')).toBe('"""ciao,\nmondo"""');
+});
+test('storico ospite limitato e riservato allo staff del locale, senza token o note',async()=>{
+ const {customer,reservation}=await booking();const other=await booking(1);
+ await admin.reservation.createMany({data:Array.from({length:21},(_,index)=>({tenant_id:ids[0]!,customer_id:customer.id,reserved_at:at(26+index*24),party_size:2,duration_min:90,status:'completed' as const,source:'staff' as const,cancel_token:randomBytes(32).toString('hex'),notes:'Nota riservata'}))});
+ const url=`/customers/${customer.id}/reservations`;
+ expect((await app.inject({url})).statusCode).toBe(401);
+ expect((await app.inject({url:`/customers/${other.customer.id}/reservations`,headers:headers()})).statusCode).toBe(404);
+ const response=await app.inject({url,headers:headers()});expect(response.statusCode).toBe(200);
+ const history=response.json<{items:Array<{id:string;reserved_at:string}>;has_more:boolean}>();
+ expect(history.items).toHaveLength(20);expect(history.has_more).toBe(true);
+ expect(history.items.map(row=>row.reserved_at)).toEqual(history.items.map(row=>row.reserved_at).sort().reverse());
+ expect(history.items.map(row=>row.id)).not.toContain(reservation.id);
+ expect(Object.keys(history.items[0]!).sort()).toEqual(['id','party_size','reserved_at','source','status']);
+ expect(response.body).not.toContain('Nota riservata');expect(response.body).not.toContain(reservation.cancel_token);
+ await admin.staffUser.update({where:{id:owners[0]!},data:{role:'staff'}});
+ const tenant=await admin.tenant.findUniqueOrThrow({where:{id:ids[0]!}});
+ const staffLogin=await app.inject({method:'POST',url:'/auth/login',payload:{slug:tenant.slug,email:'owner0@m5.test',password:'bigant2026'}});
+ expect((await app.inject({url,headers:{authorization:`Bearer ${staffLogin.json<{access_token:string}>().access_token}`}})).statusCode).toBe(200);
 });
 test('anonimizzazione idempotente conserva storico e conteggi, rimuove testo libero e messaggi in coda',async()=>{
  const {customer,reservation}=await booking();await admin.customer.update({where:{id:customer.id},data:{allergies:'Allergia',notes:'Nota',total_visits:3,marketing_consent:true,marketing_consent_at:now}});

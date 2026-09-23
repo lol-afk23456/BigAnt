@@ -15,7 +15,7 @@ export async function scheduleReminders(tenantId:string,now:Date) {
   for(const row of rows){
    if(row.customer.anonymized_at)continue;
    const sms=settings.sms_enabled&&['pro','full'].includes(tenant.plan)&&!!row.customer.phone_e164;
-   await enqueue(tx,tenantId,`${row.id}:reminder:${row.reserved_at.toISOString()}`,'reminder',sms?'sms':'email',(sms?row.customer.phone_e164:row.customer.email)??'',{reservationId:row.id,locale:row.locale,reservedAt:row.reserved_at});
+   await enqueue(tx,tenantId,`${row.id}:reminder:${row.reserved_at.toISOString()}`,'reminder',sms?'sms':'email',(sms?row.customer.phone_e164:row.customer.email)??'',{reservationId:row.id,locale:row.locale,reservedAt:row.reserved_at,now});
   }
  });
 }
@@ -72,7 +72,7 @@ export async function dispatch(tenantId:string,runtime:NotificationRuntime,now:D
     const used=await tx.notificationLog.count({where:{channel:'sms',status:{in:['processing','sent','uncertain','simulated']},attempted_at:{gte:month.start,lt:month.end}}});
     if(!settings.sms_enabled||!['pro','full'].includes(tenant.plan)||used>=settings.sms_monthly_cap){
      if(reservation.customer.email){
-      await enqueue(tx,tenantId,log.event_key,log.event_name as EventName,'email',reservation.customer.email,{reservationId:reservation.id,locale:reservation.locale,reservedAt:reservation.reserved_at,fallback:true});
+      await enqueue(tx,tenantId,log.event_key,log.event_name as EventName,'email',reservation.customer.email,{reservationId:reservation.id,locale:reservation.locale,reservedAt:reservation.reserved_at,fallback:true,now});
       // Se l’email dell’evento esiste già, viene riusata senza una seconda consegna.
       await tx.notificationLog.updateMany({where:{event_key:log.event_key,channel:'email'},data:{fallback:true}});
      }

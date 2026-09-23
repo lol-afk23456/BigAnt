@@ -35,7 +35,7 @@ export function reviewRoutes(app:FastifyInstance,now:()=>Date){
    }
    // Il lock DB rende il limite della card valido anche con richieste parallele.
    const review=await tx.review.create({data:{tenant_id:id,nfc_card_id:card?.id??null,channel:data.channel,rating:data.channel==='private'?data.rating:null,comment:data.channel==='private'?data.comment||null:null,created_at:now()}});
-   if(data.channel==='private')await reviewCreated(tx,id,review.id);
+   if(data.channel==='private')await reviewCreated(tx,id,review.id,review.created_at);
    reply.code(201);
    return {id:review.id,channel:review.channel,...(data.channel==='google_redirect'?{redirect_url:googleReviewUrl(tenant.google_place_id!),google_demo:tenant.google_place_id!.startsWith('test-place-')}:{})};
   });

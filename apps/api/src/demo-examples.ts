@@ -62,7 +62,7 @@ export async function populateDemoExamples(now = new Date()) {
           const chosenGroup = example.party === 6 ? group : null;
           const reservation = await tx.reservation.create({ data: { tenant_id: tenant.id, customer_id: customer.id, reserved_at: new Date(slot.starts_at), party_size: example.party, duration_min: input.settings.turn_duration_min, status: settings.auto_confirm ? 'confirmed' : 'pending', source: 'staff', table_id: chosenGroup ? null : slot.table_id ?? null, table_group_id: chosenGroup?.id ?? null, table_group_name: chosenGroup?.name ?? null, notes: example.notes, internal_notes: 'DEMO GUIDATA · Dati inventati. Questa prenotazione usa le normali regole di disponibilità.', cancel_token: randomBytes(32).toString('hex') }, include: { customer: true } });
           if (chosenGroup) await snapshotGroup(tx, tenant.id, reservation.id, chosenGroup);
-          await reservationCreated(tx, tenant.id, reservation);
+          await reservationCreated(tx, tenant.id, reservation, now);
           bookings.push({ name: customer.full_name, date, time: slot.time, party: example.party, status: reservation.status, table: chosenGroup?.name ?? input.tables.find(t => t.id === reservation.table_id)?.name ?? 'Da assegnare' });
           booked = true;
         }

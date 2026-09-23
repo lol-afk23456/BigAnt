@@ -76,6 +76,13 @@ export function privacyRoutes(app:FastifyInstance,now:()=>Date) {
  app.get('/customers/:id',{config},request=>withStaff(app,request,async()=>{
   const row=await db.customer.findUnique({where:{id:idParam.parse(request.params).id},select:fields});if(!row)throw new DomainError('NOT_FOUND',404);return row;
  }));
+ app.get('/customers/:id/reservations',{config},request=>withStaff(app,request,async()=>{
+  const {id}=idParam.parse(request.params);
+  if(!await db.customer.findUnique({where:{id},select:{id:true}}))throw new DomainError('NOT_FOUND',404);
+  // Riepilogo operativo: niente token di disdetta, recapiti o testo libero.
+  const rows=await db.reservation.findMany({where:{customer_id:id},select:{id:true,reserved_at:true,party_size:true,status:true,source:true},orderBy:[{reserved_at:'desc'},{id:'desc'}],take:21});
+  return {items:rows.slice(0,20),has_more:rows.length>20};
+ }));
  app.patch('/customers/:id',{config},request=>withStaff(app,request,async claims=>{
   const {id}=idParam.parse(request.params);const data=customerPatch.parse(request.body);
   return reservationTransaction(claims.tenant_id,async tx=>{

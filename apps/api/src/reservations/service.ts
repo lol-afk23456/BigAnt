@@ -56,7 +56,7 @@ export async function createReservation(tenantId:string, data:BookingInput|Staff
     const customer=await tx.customer.upsert({where:{tenant_id_phone_e164:{tenant_id:tenantId,phone_e164:phone}},create:{tenant_id:tenantId,full_name:data.full_name,phone_e164:phone,email:data.email,...consent},update:{...(staffId?{full_name:data.full_name,email:data.email}:{}),...consent}});
     const created=await tx.reservation.create({data:{tenant_id:tenantId,customer_id:customer.id,table_id:group?null:requested??slot.table_id??null,table_group_id:group?.id??null,table_group_name:group?.name??null,reserved_at:instant,duration_min:settings.turn_duration_min,party_size:data.party_size,status:settings.auto_confirm?'confirmed':'pending',source:staffId&&'source' in data?data.source:'direct',notes:data.notes,locale:data.locale,privacy_accepted_at:!staffId&&data.privacy_accepted?now:null,cancel_token:randomBytes(32).toString('hex')},include:{customer:true,table:true,assignedTables:true}});
     if(group){await snapshotGroup(tx,tenantId,created.id,group);created.assignedTables=await tx.reservationTable.findMany({where:{reservation_id:created.id}});}
-    await reservationCreated(tx,tenantId,created);return created;
+    await reservationCreated(tx,tenantId,created,now);return created;
   });
 }
 export async function patchReservation(tenantId:string,id:string,data:ReservationPatch,now:Date,staffId:string) {
@@ -95,7 +95,7 @@ export async function patchReservation(tenantId:string,id:string,data:Reservatio
     if(data.status==='completed') await tx.customer.update({where:{id:current.customer_id},data:{total_visits:{increment:1},last_visit_at:current.reserved_at}});
     if(data.status==='no_show') await tx.customer.update({where:{id:current.customer_id},data:{no_show_count:{increment:1}}});
     if(data.status==='cancelled') await tx.auditLog.create({data:{tenant_id:tenantId,staff_user_id:staffId,action:'reservation.cancel',entity_type:'Reservation',entity_id:id}});
-    await reservationChanged(tx,tenantId,updated,current.status,'staff');
+    await reservationChanged(tx,tenantId,updated,current.status,'staff',now);
     return updated;
   });
 }
@@ -119,7 +119,7 @@ export async function cancelPublic(tenantId:string,id:string,now:Date) {
     if(now.getTime()>current.reserved_at.getTime()-settings.cancellation_deadline_hours*3600000) throw new DomainError('CANCELLATION_CLOSED');
     assertTransition(current.status,'cancelled');
     const updated=await tx.reservation.update({where:{id},data:{status:'cancelled',cancelled_by:'customer'}});
-    await reservationChanged(tx,tenantId,updated,current.status,'customer');
+    await reservationChanged(tx,tenantId,updated,current.status,'customer',now);
     return {status:'cancelled' as const};
   });
 }
