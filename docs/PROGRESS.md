@@ -11,7 +11,7 @@
 - Menu: quattro template scuri, colore/copertina, allergeni, IT/EN, occhio separato da esaurito.
 - Recensioni M4: due scelte pubbliche prima del voto, feedback anonimo, card e lettura/note interne. Cancello finale verde.
 - Sala/attesa M5S: zone riusate, combinazioni manuali con occupazione di tutti i componenti e snapshot; FIFO e accomodamento atomico senza recapiti inventati. Vedi [comportamento](SALA_E_ATTESA.md).
-- Ambiente locale Mac; dati demo persistenti. Servizi esterni dell'app e account reali non attivati. GitHub contiene la consegna precedente; la review M5R e il suo PDF non sono stati pubblicati.
+- Ambiente locale Mac; dati demo persistenti. Servizi esterni dell'app e account reali non attivati. Pubblicazione GitHub della review M5R richiesta il 23 settembre: dettagli nel blocco finale. Il PDF resta escluso da Git.
 - Ultimo cancello M5R: **110/110 backend, 9/9 browser**, build/typecheck/lint verdi. Lighthouse locale **100/100, LCP 762 ms** con foto sintetiche e **100/100, LCP 1304 ms** con la copertina reale conservata, stesso profilo mobile rallentato. La CI remota non è stata rieseguita per questa review.
 - Demo guidata: aggiunti tre casi per locale il 23 settembre alle 19:00 e tre ingressi in attesa per locale; esempi precedenti conservati. Confronto completo invariato per le 238 prenotazioni, 107 clienti, 42 tavoli e 42 piatti preesistenti; ora 244 prenotazioni. [Dati](DATI_DEMO.md), [nuovo collaudo](COLLAUDO_COLLABORATORI_2026-09.md), [produzione](MESSA_IN_PRODUZIONE.md).
 - Documenti operativi: [indice](README.md), [decisioni](DECISIONS.md), [prova locale](PROVA_LOCALE.md), [servizi esterni](SERVIZI_ESTERNI.md).
@@ -439,3 +439,11 @@ Entrambi i benchmark usano 750/250 Kbps, latenza 150 ms e CPU 4×: soglie manten
 **Punto di arresto:** M5R completata localmente; app pronta alla prova dei collaboratori. Nessun push della review o del PDF. Per il pilot restano M5 sui dispositivi, M6 e i punti di MESSA_IN_PRODUZIONE, inclusa l'idempotenza della creazione dopo risposta persa (P13/B16). Nessuna console agenzia, lista online, piantina Pro o pagamenti introdotti. La prossima attività utile è raccogliere i riscontri C01-C12 e chiudere i difetti emersi prima della configurazione live.
 
 Codice della review registrato nei commit locali `69992ab` (API/notifiche/storico) e `8ad1ed1` (interfaccia/menu e verifiche); documentazione consegnata in un commit separato. Nessun file `.env`, database, immagine caricata o PDF aggiunto al repository.
+
+## Distribuzione della review M5R su GitHub - 23 settembre 2026
+
+Successiva richiesta esplicita: «pusha su github». Autorizzata la pubblicazione della review su `https://github.com/lol-afk23456/BigAnt.git`, ramo `main`; resta valido il vincolo di non pubblicare il PDF. Questa richiesta aggiorna il precedente confine locale di M5R, senza autorizzare un deploy o invii reali.
+
+Preparazione: checkout pulito, fetch del remoto e nessuna divergenza (tre commit locali nuovi rispetto a `origin/main`). Pubblicazione ordinaria fast-forward da `master` locale a `main`, senza force push. Frontend, backend, test e documenti inclusi; PDF, `.env`, database, foto caricate e runtime locali esclusi. Guida Markdown aggiornata per identificare la versione da provare; il PDF locale resta l'edizione consegnata prima del push.
+
+Il cancello locale resta quello M5R sopra (110 backend, nove browser, tipi/lint/build verdi): nessuna modifica applicativa in questo blocco e nessuna ripetizione superflua. GitHub Actions esegue le verifiche normalmente sul push; il suo stato va controllato sulla run del commit pubblicato e non è dedotto dall'esito locale. Nessun criterio M5 fisico/M6 chiuso da questa distribuzione.

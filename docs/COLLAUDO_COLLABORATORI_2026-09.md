@@ -8,7 +8,7 @@ Una piattaforma, due locali dimostrativi: pagine pubbliche e pannello sono dedic
 
 ### Prima di iniziare
 
-- Usa la versione della review sul Mac di Riccardo. Questa edizione non è ancora stata pubblicata su GitHub: un clone di main può contenere la consegna precedente. Chiedi al referente quale versione provare.
+- Usa una versione che includa la review del 23 settembre (commit applicativo `8ad1ed1` o successivo). Per clonare o aggiornare il repository segui [GUIDA_TESTER.md](GUIDA_TESTER.md); annota il commit effettivamente provato.
 - Apri [BigAnt locale](http://localhost:3000). Sul Mac di Riccardo avvia con doppio clic su **Avvia BigAnt.command** e lascia aperto il terminale. Il launcher usa Node e pnpm già predisposti.
 - Per aggiungere esempi, apri un secondo terminale nella cartella BigAnt. Sul Mac originale esegui prima `export PATH="$PWD/.local/runtime/bin:$PWD/.local/tooling/node_modules/.bin:$PATH"`, poi `pnpm demo:examples`. Annota giorno e servizio stampati; le prove precedenti restano.
 - Usa una finestra normale per lo staff e una in incognito per il cliente. Per due staff contemporanei servono profili browser separati.
@@ -172,7 +172,7 @@ La review migliora la demo. Non completa automaticamente M5 su telefoni o M6. Co
 
 ### Riferimenti
 
-- [Repository BigAnt](https://github.com/lol-afk23456/BigAnt): clone e consegna precedente; la nuova review va distribuita solo dopo il collaudo.
+- [Repository BigAnt](https://github.com/lol-afk23456/BigAnt): codice frontend/backend e guida Markdown per il collaudo locale; usa il ramo `main` aggiornato.
 - `docs/GUIDA_TESTER.md`: installazione Mac/Linux e percorso Windows da collaudare.
 - `docs/PROGRESS.md`: versione e comandi effettivamente verificati.
 - `docs/REVIEW_PRODOTTO_SUPERB.md`: confronto su fonti ufficiali e priorità.
