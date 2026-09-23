@@ -13,3 +13,5 @@ test-results/
 .pnpm-store/
 tmp/pdfs/
 output/pdf/BigAnt_Book_Guida_Tester.pdf
+
+output/pdf/BigAnt_Book_Collaudo_2026-09.pdf

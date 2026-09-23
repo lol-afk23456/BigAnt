@@ -1,6 +1,6 @@
 # Protocollo di test BigAnt Book
 
-Versione 17 settembre 2026. Per Riccardo e soci; usare dati inventati. Questo protocollo verifica i flussi e rende i difetti riproducibili. Il cancello locale e l’accettazione in produzione sono due verifiche con evidenze diverse.
+Protocollo esteso del 17 settembre; nuova prova guidata della review del 23 settembre in [COLLAUDO_COLLABORATORI_2026-09](COLLAUDO_COLLABORATORI_2026-09.md). Per Riccardo e soci; usare dati inventati. Questo protocollo verifica i flussi e rende i difetti riproducibili. Il cancello locale e l’accettazione in produzione sono due verifiche con evidenze diverse.
 
 ## Preparazione — 5 minuti
 
@@ -47,9 +47,9 @@ In incognito crea una prenotazione PROVA-B al [Lido](http://localhost:3000/r/lid
 
 ### T05 — telefonata e stati della prenotazione
 
-Da Nuova prenotazione crea PROVA-C con contatti distinti e fascia libera. Modifica note/coperti entro una capienza valida. Prova poi un numero incompatibile con il tavolo o uno spostamento su fascia chiusa/occupata. Su una prenotazione dedicata percorri Conferma, Al tavolo, Completa; su un’altra usa Assente solo quando la prova rappresenta un ospite che non arriva.
+Da Nuova prenotazione crea PROVA-C con contatti distinti e fascia libera. Modifica note/coperti entro una capienza valida. Prova poi un numero incompatibile con il tavolo o uno spostamento su fascia chiusa/occupata. Su una prenotazione dedicata percorri Conferma, Accomoda, Libera tavolo; su un’altra usa Assente solo quando la prova rappresenta un ospite che non arriva.
 
-**Atteso:** modifiche valide salvate; quelle incompatibili rifiutate senza alterare i dati precedenti. Dopo Completa il tavolo si libera e la visita viene conteggiata una volta; una transizione non ammessa non procede. Per una simulazione realistica esegui gli stati di arrivo durante il servizio, senza confonderli con appuntamenti futuri.
+**Atteso:** modifiche valide salvate; quelle incompatibili rifiutate senza alterare i dati precedenti. Dopo Libera tavolo il tavolo si libera e la visita viene conteggiata una volta; una transizione non ammessa non procede. Per una simulazione realistica esegui gli stati di arrivo durante il servizio, senza confonderli con appuntamenti futuri.
 
 ### T06 — chiuso/pieno e alternative invitanti
 
@@ -61,7 +61,7 @@ Fotografa le impostazioni iniziali. Aggiungi una chiusura completa per oggi; apr
 
 In Tavoli apri la combinazione demo; in agenda apri Gruppo Esposito e annota fascia e componenti. Durante il test tenta una nuova prenotazione manuale su uno dei componenti nella stessa finestra di occupazione, usando un contatto diverso; ripeti sull’altro. Completa il gruppo in una prova di servizio, poi riprova una fascia compatibile. Se l’app filtra già il tavolo occupato, il filtro corretto è l’esito UI atteso; la forzatura dell’API è verificata automaticamente.
 
-**Atteso:** entrambi i tavoli occupati dal gruppo; nessuna doppia assegnazione. Completa libera entrambi. Il cliente pubblico di sei persone non viene automaticamente assegnato a questa unione quando nessun singolo tavolo può contenerlo. Le combinazioni sono una scelta dell’operatore. Ripristina eventuali tavoli/gruppi di prova disattivati.
+**Atteso:** entrambi i tavoli occupati dal gruppo; nessuna doppia assegnazione. Libera tavolo libera entrambi. Il cliente pubblico di sei persone non viene automaticamente assegnato a questa unione quando nessun singolo tavolo può contenerlo. Le combinazioni sono una scelta dell’operatore. Ripristina eventuali tavoli/gruppi di prova disattivati.
 
 ### T08 — attesa, ordine e decisione operatore
 

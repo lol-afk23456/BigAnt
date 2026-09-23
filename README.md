@@ -1,6 +1,6 @@
 # BigAnt Book
 
-Prototipo multi-tenant per prenotazioni, menu e feedback di ristoranti e lidi. Next.js + Fastify + PostgreSQL 16, TypeScript, Prisma, pnpm/Turborepo. Interfaccia scura con accenti arancioni, italiano e inglese. Stato dei cancelli e decisioni: [PROGRESS](docs/PROGRESS.md).
+Prototipo multi-tenant per prenotazioni, menu e feedback di ristoranti e lidi. Next.js + Fastify + PostgreSQL 16, TypeScript, Prisma, pnpm/Turborepo. Interfaccia scura con accenti arancioni, italiano e inglese. Stato dei cancelli e decisioni: [PROGRESS](docs/PROGRESS.md). Nuova [prova collaboratori](docs/COLLAUDO_COLLABORATORI_2026-09.md) e [review prodotto/Superb](docs/REVIEW_PRODOTTO_SUPERB.md) del 23 settembre.
 
 ## Avvio sul Mac
 

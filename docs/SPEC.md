@@ -38,7 +38,7 @@ Da rileggere prima di ogni sessione di lavoro.
 | Code queue | Outbox PostgreSQL M5 con claim/lock del tenant, worker dedicato; senza Redis |
 | Email | Adattatore TEM fr-par M5 implementato; candidato da verificare prima dell’attivazione |
 | SMS | Fornitore sostituibile da verificare, candidato Twilio IE1 non ancora approvato per residenza EU |
-| Storage immagini | M3: filesystem persistente e tre varianti WebP; storage EU remoto da scegliere in M6 |
+| Storage immagini | M3: filesystem persistente; piatti in tre varianti WebP, copertine panoramiche 320/640/768/960 px; storage EU remoto da scegliere in M6 |
 | Hosting | Da scegliere dopo la prova locale e la verifica EU; candidati nel report servizi |
 | Errori | Monitoraggio/log EU da verificare; Sentry SaaS EU non approvato con il vincolo attuale |
 | Test | Vitest (unit), Playwright (e2e sui 3 flussi pubblici) |
@@ -432,7 +432,7 @@ I Place ID seed `test-place-*` sono dimostrativi: il clic viene registrato, la d
 | GET | `/public/:slug/feedback?card=` | scelta dei canali prima del voto; card facoltativa |
 | POST | `/public/:slug/reviews` | invio voto/recensione |
 
-Rate limit: 30 req/min per IP sugli endpoint di lettura, 5 req/min sulle POST.
+Rate limit: 30 req/min per IP sugli endpoint di lettura JSON, 5 req/min sulle POST. Le foto menu hanno un budget separato di 120 req/min per IP: ogni pagina carica più immagini e un secondo caricamento non deve esaurire il budget JSON. Il limite protegge anche le derivate; visibilità, riferimento e tenant sono verificati prima della consegna.
 Anti-bot sul POST prenotazione: honeypot field + verifica tempo di compilazione minimo (un bot compila in <2s). Niente CAPTCHA nell'MVP.
 
 ### Autenticate — JWT, tenant dal token
@@ -450,6 +450,7 @@ DELETE /reservations/:id
 
 GET    /customers                       (solo cursore; ricerca POST /customers/search nel corpo)
 GET    /customers/:id
+GET    /customers/:id/reservations        (ultime 20, solo stato/data/coperti/origine, staff del tenant)
 PATCH  /customers/:id
 DELETE /customers/:id                     (GDPR — audit obbligatorio)
 GET    /customers/export                  (CSV — audit obbligatorio)
@@ -561,7 +562,7 @@ Fuori codice ma prima del primo cliente pagante: atto di nomina a responsabile a
 - Mobile-first, colonna singola, un solo CTA primario visibile senza scroll.
 - Il verbo del bottone resta coerente: "Prenota il tavolo" → toast "Prenotato".
 - Target di tocco ≥ 44×44px.
-- Menu: render lato server, immagini in WebP con `srcset`, LCP < 2s su 3G simulata.
+- Menu: documento HTML generato lato server dal Route Handler Next, senza runtime React nel browser; lettura e cambio lingua funzionano anche senza JavaScript. Unica fonte degli stili in `apps/web/public/bigant.css`, importata anche dall’app React. `menu-live.js` aggiorna il documento quando cambia il menu. Immagini WebP con `srcset`, LCP < 2s su 3G simulata.
 - Piatti esauriti: mostrati in grigio con etichetta. Il comando occhio controlla separatamente la visibilità; un piatto nascosto non compare nel pubblico.
 - **Nessuna registrazione richiesta**, mai.
 - Nessuna disponibilità → non un errore: proporre le 2 date più vicine con posto.

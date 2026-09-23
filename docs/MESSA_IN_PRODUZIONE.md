@@ -32,9 +32,13 @@ Gli adattatori email/SMS/push esistono. Oggi producono invii simulati. I test au
 | P11 · bloccante | Prima CI GitHub avviata con la distribuzione; esito in PROGRESS. Nessun collaudo dell'ambiente di produzione | Cancello sul commit da rilasciare, collaudo end-to-end remoto, separazione DB test/produzione, controllo dipendenze e segreti | Tutti i comandi verdi; versioni/commit e risultati registrati; rollback provato nel collaudo |
 | P12 · chiusura MVP | Nessuna prova completa documentata con un locale indipendente dai soci | Primo ristoratore, prenotazione vera, conferma dal telefono e feedback da card durante un servizio | Esito SPEC §13 scritto in PROGRESS, senza conservare dati personali nelle evidenze |
 
+**P13 - Prima del pilot, creazione idempotente:** due invii separati della stessa prenotazione possono creare due righe quando la prima risposta si perde dopo il commit. Il lock di disponibilità protegge capienza e tavoli, non identifica lo stesso tentativo. Implementare una chiave stabile e replay sicuro della ricevuta, con scadenza e confronto payload; verificare risposta persa/retry, tenant differenti e notifiche senza duplicati. Vedi B16. Il frontend evita doppi clic durante l'invio, ma questo non chiude il caso di rete.
+
 P07 comprende una decisione da chiudere con il provider: il codice attuale registra l’accettazione della richiesta e non ha webhook di recapito/rimbalzo. Per il pilot occorre almeno una riconciliazione documentata; l’automazione degli esiti richiede ulteriore sviluppo. Analogamente, P04 non impone di costruire subito la console agenzia: il provisioning iniziale può essere amministrativo, con controlli e audit. La console rimane B09.
 
 **Evidenza P10, consegna GitHub del 17 settembre:** la copertina attualmente caricata nella demo Mac (variante 960 WebP circa 120 KB) ha prodotto performance 82/100, LCP 3626 ms, di cui 3138 ms di download, con il profilo mobile previsto. È una prova diversa dal precedente 91/100/LCP 1319 ms con immagini sintetiche. Le foto esistenti sono conservate; budget/varianti delle immagini vanno migliorati e ricollaudati prima del lancio. Esiti dei runner Linux in PROGRESS: non considerare un test funzionale verde una certificazione delle prestazioni.
+
+**Aggiornamento P10, review locale del 23 settembre:** documento menu HTML senza runtime React e nuove derivate delle copertine, originali conservati. Stesso profilo e stessa foto reale: **100/100, LCP 1304 ms**, TBT/CLS 0. Cancello E2E sintetico: **100/100, LCP 762 ms**; nove flussi verdi. Miglioramento verificato sul Mac; nessuna nuova misura remota/Linux o su telefoni fisici, nessun deploy. Quote, pulizia, capacità e backup restano da completare.
 
 ## Servizi effettivamente necessari
 

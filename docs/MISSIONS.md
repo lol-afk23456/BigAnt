@@ -211,6 +211,20 @@ Prima dell’attivazione M6, dopo il cancello automatico locale M5. Richiesta de
 
 **Confine:** nessun account acquistato, invio live, deploy o console agenzia; criteri M5 fisici e M6 ancora aperti.
 
+## M5R — revisione prodotto e collaudo collaboratori, 23 settembre
+
+Richiesta esplicita: review generale, confronto con Superb, miglioramento copy/UX/UI e nuova guida di prova. Intervento sulle funzioni esistenti; le estensioni di prodotto emerse dal confronto restano nel BACKLOG.
+
+**Da fare:** recupero errori prenotazione senza perdere scelte/contatti; ricevuta coerente e stato aggiornabile; agenda aggiornata automaticamente, azioni durante servizio, scheda ospite con storico essenziale; dialog e leggibilità mobile; menu leggero con immagini reali e aggiornamento affidabile; confronto motivato e nuova guida ai collaboratori.
+
+**Criteri:**
+- [x] Cancello generale verde, senza abbassare le soglie Lighthouse.
+- [x] Verifiche mirate su retry rete/conflitto, tastiera dialog, storico isolato e aggiornamento menu/agenda.
+- [x] Ispezione desktop/375 px e benchmark sulla copertina reale conservata.
+- [x] Nuovo documento tester, PDF verificato e conservato solo sul Mac; produzione e funzioni future distinte dai risultati locali.
+
+**Confine:** nessun acquisto, pubblicazione remota o invio reale; M5 fisica e M6 restano aperte. L’obiettivo è una demo più solida e verificabile, non la replica completa di Superb.
+
 ## M6 — Messa in produzione
 
 **Obiettivo.** Un locale vero, in EU, con i backup attivi.

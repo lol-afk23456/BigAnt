@@ -19,6 +19,9 @@ Registro al 17 settembre 2026. Fonte: richieste dell’utente e risoluzioni tecn
 | D13 | Notifiche locali senza invii reali | Outbox PostgreSQL; modalità demo registra simulated. Credenziali e verifiche EU prima di live |
 | D14 | Dati demo comprensibili e protocollo richiesti il 17 settembre | Nomi/feedback originali aggiornati solo se intatti; casi guidati aggiunti esplicitamente senza reset. Analisi produzione distinta dall’attivazione dei servizi |
 | D15 | Pubblicare il progetto su lol-afk23456/BigAnt e consegnare un PDF ai tester | Richiesta del 17 settembre: codice, storia Git, seed e documenti sul ramo main; nessun database, segreto o runtime. Precisazione successiva: PDF soltanto locale, escluso dai file correnti del repository. Il repository indicato è pubblico; nessun deploy o invito implicito |
+| D16 | Review generale richiesta, con Superb come riferimento e nuova guida ai collaboratori | Consolidare funzioni attuali, documentare lacune senza promettere parità; nuovi moduli in backlog. Nessun deploy o invio live implicito. |
+| D17 | Agenda30s e azioni operative, storico ospite essenziale, recupero errori e dialog nativi | Persistono scelta/data/contatti; focus e undo accessibili. Nessuna duplicazione del motore di prenotazione. |
+| D18 | Copertine derivate leggere e limite media distinto | Originali conservati; JSON30/min, media120/min, upload5/min. Prestazioni misurate sulla stessa foto reale, soglie invariate. |
 
 ## Interpretazioni tecniche già risolte
 

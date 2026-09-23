@@ -13,10 +13,15 @@
 | B07 | M5S, completato | Sale tramite zone e combinazioni di tavoli configurate dal ristoratore; assegnazione semplice con controllo occupazione |
 | B08 | M5S, completato | Lista d’attesa per servizio: cognome, coperti, ordine di arrivo e compatibilità con tavoli liberi |
 | B09 | Dopo il pilot MVP, agenzia | Console amministrativa BigAnt: onboarding locali, piano/stato, configurazione servizi e consumi; identità amministrativa distinta, permessi e audit obbligatori |
+| B13 | Dopo la prova del primo ristorante, da prioritizzare | Lista d'attesa online per date esaurite, distinta dalla fila fisica B08: richiesta del cliente, contatto e offerta di un posto quando disponibile; nessuna prenotazione implicita né sovrascrittura della fila del servizio |
+| B14 | Dopo la prova del primo ristorante, da prioritizzare | Chiusure di tavolo/zona alle sole prenotazioni online, mantenendo la gestione manuale; permesso distinto da `active`, con stessi controlli di occupazione, capienza e ritmo |
+| B15 | Dopo la prova del primo ristorante, da prioritizzare | Modifica autonoma di data/coperti da parte del cliente tramite collegamento sicuro; conservazione dell'appuntamento originale se il nuovo posto non è più disponibile, rivalidazione atomica e notifiche idempotenti |
 
 Il controllo del 17 settembre è tradotto in punti P01–P12 in [MESSA_IN_PRODUZIONE](MESSA_IN_PRODUZIONE.md), con distinzione fra codice, configurazione e prove. Nessuna attivazione M6 viene dichiarata dal completamento dei dati demo/documenti M5C.
 
 ## Dettagli e vincoli
+
+- B13–B15 nascono dalla review del 23 settembre in [REVIEW_PRODOTTO_SUPERB](REVIEW_PRODOTTO_SUPERB.md). Sono proposte da validare con il primo locale, non funzioni implementate o condizioni aggiuntive per completare questa review. B13 non sostituisce la fila fisica: prima dello sviluppo definire contatti minimi, scadenza dell'offerta e assenza di automatismi che promettano un tavolo. B14 non può aggirare i vincoli del motore. B15 è una proposta di miglioramento BigAnt: la ricerca non dimostra la sua presenza come funzione autonoma in Superb. Piantina Pro e acconti restano nelle voci di fase 2 già presenti, senza duplicati.
 
 - Richiesta agenzia del 17 settembre: il multi-tenant esiste, la console dell’agenzia ancora no. La prima versione deve gestire attivazione/sospensione, configurazioni mancanti e consumi senza concedere accesso implicito ai dati degli ospiti. Eventuali interventi nei locali richiedono autorizzazione, scope esplicito e audit. Il lavoro M5/sala continua; nessuna console amministrativa anticipata in questo blocco.
 
@@ -39,3 +44,9 @@ Il controllo del 17 settembre è tradotto in punti P01–P12 in [MESSA_IN_PRODUZ
 - B05, evidenza del 17 settembre durante la consegna GitHub: il benchmark della copertina attualmente caricata sul Mac ha dato 82/100 e LCP 3626 ms sul profilo 750/250 Kbps, 150 ms, CPU 4×. Il download della variante 960 WebP da circa 120 KB assorbe 3138 ms. Il precedente 91/100 su immagini sintetiche non prova questo caso. Definire un budget per le copertine/foto e verificare qualità, varianti e download con foto realistiche; non rimuovere o alterare le foto dell'operatore per far passare il test. Anche il primo benchmark del runner Linux è fallito: dettagli/report nel blocco consegna di PROGRESS.
 
 - M3C: script di aggiornamento menu servito come asset esterno. M6: verificare la CSP del deploy e prestazioni/cache su immagini reali e infrastruttura remota.
+
+- B05, aggiornamento M5R del 23 settembre: documento menu senza runtime React, derivate 320/640/768/960 e limiti media separati. Benchmark sul Mac con la stessa copertina originale conservata: 100/100, LCP 1304 ms, TBT/CLS 0; E2E sintetico 100/100, LCP 762 ms, soglie invariate. Il problema misurato localmente è risolto; restano misure remote, storage/backup, quote e proxy prima del pilot. Review non pubblicata e CI Linux non rieseguita.
+
+- B16 · Prima del pilot: idempotenza della creazione prenotazione per risposta persa dopo commit. Il lock evita overbooking ma non riconosce due tentativi della stessa richiesta; richiede chiave stabile tenant/form, verifica del payload, replay sicuro della ricevuta e test della risposta persa. Niente retry automatico cieco nel frattempo.
+- B17 · UX successiva: form pubblico aperto oltre due ore. Il token anti-bot scade e oggi restituisce INVALID_INPUT: rinnovare il token preservando il draft e distinguere la scadenza dagli altri errori.
+- B18 · UX successiva: conservare la lingua fra ingressi, prenotazione e menu SSR con una preferenza non sensibile e coerente con URL/accessibilità; oggi il selettore va ripetuto cambiando pagina.

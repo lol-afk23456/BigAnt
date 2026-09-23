@@ -1,8 +1,8 @@
 # Avanzamento BigAnt Book
 
-## Stato al 17 settembre 2026
+## Stato al 23 settembre 2026
 
-**M0–M4 e consolidamento M3C completati.** M3 include i quattro template e il comando occhio approvati dall’utente. M5 implementata localmente, cancello automatico verde; M5S sala/attesa completata e verificata. M5C dati guidati/documenti verificata localmente. Invii/dispositivi reali e M6 non attivi.
+**M0–M4 e consolidamento M3C completati.** M3 include i quattro template e il comando occhio approvati dall’utente. M5 implementata localmente, cancello automatico verde; M5S sala/attesa e M5C dati guidati/documenti verificate. M5R review prodotto completata sul Mac con nuova guida collaboratori. Invii/dispositivi reali e M6 non attivi.
 
 ## Stato corrente della demo
 
@@ -11,9 +11,9 @@
 - Menu: quattro template scuri, colore/copertina, allergeni, IT/EN, occhio separato da esaurito.
 - Recensioni M4: due scelte pubbliche prima del voto, feedback anonimo, card e lettura/note interne. Cancello finale verde.
 - Sala/attesa M5S: zone riusate, combinazioni manuali con occupazione di tutti i componenti e snapshot; FIFO e accomodamento atomico senza recapiti inventati. Vedi [comportamento](SALA_E_ATTESA.md).
-- Ambiente locale Mac; dati demo persistenti. Servizi esterni dell'app e account reali non attivati. Distribuzione GitHub autorizzata dall'utente: stato nel blocco finale.
-- Ultimo ricontrollo M5C: **104/104 backend, 7/7 browser**, build/typecheck/lint verdi. Lighthouse locale **91/100, LCP 1319 ms**, immagini sintetiche e Chrome mobile simulato; dettagli nel blocco finale.
-- Demo guidata: tre prenotazioni DEMO per locale il 17 settembre alle 19:00, due combinazioni e sei ingressi in attesa. Prenotazioni/tavoli/menu preesistenti conservati; [dati](DATI_DEMO.md), [protocollo](PROTOCOLLO_TEST.md), [produzione](MESSA_IN_PRODUZIONE.md).
+- Ambiente locale Mac; dati demo persistenti. Servizi esterni dell'app e account reali non attivati. GitHub contiene la consegna precedente; la review M5R e il suo PDF non sono stati pubblicati.
+- Ultimo cancello M5R: **110/110 backend, 9/9 browser**, build/typecheck/lint verdi. Lighthouse locale **100/100, LCP 762 ms** con foto sintetiche e **100/100, LCP 1304 ms** con la copertina reale conservata, stesso profilo mobile rallentato. La CI remota non è stata rieseguita per questa review.
+- Demo guidata: aggiunti tre casi per locale il 23 settembre alle 19:00 e tre ingressi in attesa per locale; esempi precedenti conservati. Confronto completo invariato per le 238 prenotazioni, 107 clienti, 42 tavoli e 42 piatti preesistenti; ora 244 prenotazioni. [Dati](DATI_DEMO.md), [nuovo collaudo](COLLAUDO_COLLABORATORI_2026-09.md), [produzione](MESSA_IN_PRODUZIONE.md).
 - Documenti operativi: [indice](README.md), [decisioni](DECISIONS.md), [prova locale](PROVA_LOCALE.md), [servizi esterni](SERVIZI_ESTERNI.md).
 
 Le sezioni seguenti sono lo storico dei blocchi: riferimenti a una pagina vuota o a missioni non ancora avviate descrivono quel momento, non lo stato attuale.
@@ -393,3 +393,49 @@ Web/API temporanei su 3300/3301: home, prenotazione, entrambi i menu e staff HTT
 ### Precisazione successiva: PDF soltanto locale
 
 L'utente ha chiesto «non mettere questo pdf su github» dopo il primo caricamento. Conservato `output/pdf/BigAnt_Book_Guida_Tester.pdf` sul Mac; rimosso dall'indice Git e aggiunto a `.gitignore` perché non venga reincluso. Tolti i collegamenti al PDF da README/indice; la guida Markdown ai tester resta nel repository. La rimozione corrente non cancella il PDF dai commit precedenti già pubblicati: non eseguita una riscrittura forzata della storia senza una richiesta esplicita che copra tale operazione.
+
+## M5R - review prodotto, 23 settembre 2026
+
+Obiettivo attivo: revisione generale, confronto con fonti ufficiali Superb, copy/UX/UI e nuova guida ai collaboratori. Perimetro e cancello in MISSIONS M5R; nessun acquisto, invio live o nuova pubblicazione GitHub.
+
+### Primo blocco implementato
+
+- Prenotazione progressiva conservata: nome locale evidente, richiesta manuale distinta dalla conferma, draft contatti/consensi mantenuto su cambio fascia e 409, retry sul giorno scelto, input bloccati durante invio, ricevuta basata sul server e copia link con alternativa. Disdetta con aggiornamento stato, termine e link malformato comprensibili.
+- Agenda con polling30s/ritorno tab, aggiornamento manuale e dati precedenti conservati durante rilettura; contatori come filtri, richieste/note visibili, Accomoda/Libera tavolo, collegamento alla fila. Mobile più compatto. Dialog nativi con focus, Escape e ritorno; durante undo il resto del pannello è inerte e il pulsante Annulla riceve focus.
+- Scheda ospite: visite/no-show/ultima visita e storico recente protetto da autenticazione/tenant. Endpoint limitato a20righe e campi operativi, senza token/recapiti/testi liberi; test isolamento, proiezione e ruolo staff. Consenso non inventato; anonimizzazione esistente conservata.
+- Menu: derivate panoramiche 320/640/768/960px, originali conservati e derivazione delle foto legacy. Limiti separati JSON30/media120/upload5. Aggiornamento senza SubtleCrypto in LAN, race API/HTML corretta senza snapshot incoerente. Copy esaurito non promette reset automatico.
+- Clock outbox coerente con API/worker: due_at e created_at espliciti; passaggio del clock da tutti gli eventi, promemoria e fallback. Il precedente test fissato al21settembre falliva quando now() del DB superava il clock del test. La prova resta fissata nel passato e ora copre anche scadenza futura/duplicato senza anticiparla.
+- Confronto documentato in REVIEW_PRODOTTO_SUPERB; B13-B15 distinguono lista online, chiusure solo online e rischedulazione autonoma dalla fila/sala attuale. B16/P13 evidenzia la creazione duplicata dopo risposta persa: nessuna promessa che il lock di disponibilità la risolva. B17 token form scaduto e B18 lingua tra pagine rimandati.
+- Nuova guida COLLAUDO_COLLABORATORI_2026-09, casiC01-C12; PDF locale di6pagine generato, tutte renderizzate e controllate. Non tracciato e non pubblicato. Nessuna pretesa di collaudo già eseguito dai collaboratori.
+
+### Stato verifiche intermedio
+
+Typecheck/lint iniziali verdi. Suite backend completa108/108 in11file,51,91s, dopo correzione clock. Build preliminare verde. Primo passaggio browser ha individuato locator da aggiornare ai nuovi testi, un test che puntava anche all'annunciatore Next, e verifiche undo eseguite prima del rebuild relativo: corretti/in integrazione. Prestazione menu95/100 ma LCP2417ms su foto sintetica, ancora oltre soglia: provider locale e sole immagini leggere non bastano. In corso documento menu HTML senza idratazione React per rimuovere la causa del ritardo. Non dichiarare il cancello chiuso finché build ed E2E finali non passano.
+
+Demo web/API fermati temporaneamente per il cancello; PostgreSQL e dati originali conservati. Riavvio, screenshot e misura della copertina reale ancora da completare.
+
+### Chiusura del blocco e cancello finale
+
+Il menu pubblico ora è un documento HTML generato da un Route Handler Next, con escaping centralizzato e colore validato: nessun runtime React da attendere per leggere i piatti. Usa il foglio condiviso `public/bigant.css`, importato anche dalle schermate interattive, e il solo script di aggiornamento. Lingua e navigazione alle categorie funzionano senza JavaScript; con JavaScript gli aggiornamenti mantengono focus e posizione per quanto possibile. Test specifici coprono escaping e la race fra risposta API e documento HTML. Nessuna nuova dipendenza o migrazione.
+
+| Comando / verifica finale | Esito |
+| --- | --- |
+| `pnpm typecheck` | Verde, incluso il controllo TypeScript root |
+| `pnpm lint` | Verde, zero warning; controllo mirato ripetuto dopo l'ultimo locator E2E |
+| `pnpm test` | 110/110 in 12 file, 71,09 s; inclusi 26 test di isolamento tenant |
+| `pnpm test:e2e` | 9/9, 2,3 minuti; retry 503/409, stati, dialog/undo, menu, privacy, feedback e sala |
+| `pnpm build` | Verde, 1 minuto 14 secondi; impronta coerente al riavvio |
+| Lighthouse nel cancello E2E | 100/100, LCP 762 ms, TBT 0, CLS 0; immagini sintetiche |
+| Lighthouse con foto reale già caricata | 100/100, LCP 1304 ms, TBT 0, CLS 0; originale conservato, variante panoramica più leggera |
+| Ispezione Chrome desktop e 375 px | Prenotazione, agenda, menu reale, dettagli prenotazione/ospite, tavoli e impostazioni; nessun overflow orizzontale o errore browser nei percorsi controllati |
+| Conservazione dati | Hash di tutte le righe precedenti identici: 238 prenotazioni, 107 clienti, 42 tavoli, 42 piatti; sei nuove prenotazioni demo per oggi |
+| Riavvio `pnpm local` | Web/API/worker demo attivi, cinque migrazioni applicate, nessuna pendente; DB originale conservato |
+| Guida collaboratori e PDF | C01-C12; sei pagine renderizzate e ispezionate, quattro link; PDF ignorato da Git e conservato soltanto sul Mac |
+
+Entrambi i benchmark usano 750/250 Kbps, latenza 150 ms e CPU 4×: soglie mantenute (≥90, LCP<2 s). La misura con foto reale migliora il precedente 82/100 e 3626 ms, ma non dimostra prestazioni di hosting o telefoni fisici. Report, screenshot e confronti locali sono in `.local/review-20260923/`, esclusa da Git. Nessuna email, SMS o push reale inviata.
+
+**Decisioni finali:** mantenere un unico motore di sala e disponibilità; ridurre il carico del menu senza rimuovere foto o aggiornamenti; usare dialog nativi per focus/tastiera; rendere coerente il clock dell'outbox invece di spostare la data dei test. La guida chiarisce che una visita simulata su una data futura viene conteggiata dopo Libera tavolo e che gli stati di notifica non sono tutti presenti nella demo normale.
+
+**Punto di arresto:** M5R completata localmente; app pronta alla prova dei collaboratori. Nessun push della review o del PDF. Per il pilot restano M5 sui dispositivi, M6 e i punti di MESSA_IN_PRODUZIONE, inclusa l'idempotenza della creazione dopo risposta persa (P13/B16). Nessuna console agenzia, lista online, piantina Pro o pagamenti introdotti. La prossima attività utile è raccogliere i riscontri C01-C12 e chiudere i difetti emersi prima della configurazione live.
+
+Codice della review registrato nei commit locali `69992ab` (API/notifiche/storico) e `8ad1ed1` (interfaccia/menu e verifiche); documentazione consegnata in un commit separato. Nessun file `.env`, database, immagine caricata o PDF aggiunto al repository.
