@@ -18,6 +18,7 @@ const queries = {
   StaffSession: () => db.staffSession.findMany(), PushSubscription: () => db.pushSubscription.findMany(),
   TableGroup:()=>db.tableGroup.findMany(),TableGroupMember:()=>db.tableGroupMember.findMany(),ReservationTable:()=>db.reservationTable.findMany(),WaitlistEntry:()=>db.waitlistEntry.findMany(),
 };
+const platformQueries={PlatformAdmin:()=>db.platformAdmin.findMany(),PlatformSession:()=>db.platformSession.findMany(),PlatformAccount:()=>db.platformAccount.findMany(),PlatformAudit:()=>db.platformAudit.findMany(),PlatformAccessLink:()=>db.platformAccessLink.findMany()};
 beforeAll(async () => { const tenants = await fixtures(); a = tenants[0]!.id; b = tenants[1]!.id;
  for(const tenant_id of [a,b]){const staff=await admin.staffUser.findFirstOrThrow({where:{tenant_id}});await admin.pushSubscription.create({data:{tenant_id,staff_user_id:staff.id,endpoint_hash:'isolation-demo',endpoint:'https://fcm.googleapis.com/demo-isolation',p256dh:'fixture',auth:'fixture',active:false}});}
 
@@ -33,7 +34,11 @@ beforeAll(async () => { const tenants = await fixtures(); a = tenants[0]!.id; b 
 afterAll(async () => { await admin.waitlistEntry.deleteMany({where:{id:{in:roomFixtures.waiting}}});await admin.reservationTable.deleteMany({where:{id:{in:roomFixtures.assignments}}});await admin.tableGroupMember.deleteMany({where:{group_id:{in:roomFixtures.groups}}});await admin.tableGroup.deleteMany({where:{id:{in:roomFixtures.groups}}});await admin.pushSubscription.deleteMany({where:{tenant_id:{in:[a,b]},endpoint_hash:'isolation-demo'}}); await admin.$disconnect(); await disconnectDatabase(); });
 
 test('ogni modello dello schema è coperto', () => {
-  expect(Object.keys(queries).sort()).toEqual(Prisma.dmmf.datamodel.models.map(m => m.name).sort());
+  expect([...Object.keys(queries),...Object.keys(platformQueries)].sort()).toEqual(Prisma.dmmf.datamodel.models.map(m => m.name).sort());
+});
+for(const [model,query] of Object.entries(platformQueries))test(`${model}: accesso vietato anche con contesto tenant valido`,async()=>{
+ await expect(query()).rejects.toBeInstanceOf(TenantScopeError);
+ for(const tenant of [a,b])await expect(withTenant(tenant,async()=>await query())).rejects.toBeInstanceOf(TenantScopeError);
 });
 for (const [model, query] of Object.entries(queries)) {
   test(`${model}: token A e B isolati, query senza contesto fallisce`, async () => {

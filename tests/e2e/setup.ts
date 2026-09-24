@@ -2,6 +2,7 @@ import { config } from 'dotenv';
 import { execFileSync } from 'node:child_process';
 import { PrismaClient } from '@prisma/client';
 import { seedDemo,demos } from '../../packages/database/src/fixtures';
+import argon2 from '../../packages/database/node_modules/argon2/argon2.cjs';
 config({quiet:true});
 export default async function setup(){
  const url=process.env.TEST_DATABASE_URL!;
@@ -9,6 +10,8 @@ export default async function setup(){
  execFileSync('pnpm',['db:migrate'],{env:{...process.env,DATABASE_URL:url},stdio:'pipe'});
  const db=new PrismaClient({datasourceUrl:url});
  try{
+  await db.tenant.deleteMany({where:{slug:'console-e2e-venue'}});
+  await db.platformAdmin.upsert({where:{email:'e2e-admin@bigant.test'},create:{email:'e2e-admin@bigant.test',full_name:'Admin E2E',password_hash:await argon2.hash('console-e2e-password-2026')},update:{active:true,password_hash:await argon2.hash('console-e2e-password-2026')}});
   await db.tenant.deleteMany({where:{slug:{in:demos.map(d=>d.slug)}}});
   const tenants=await seedDemo(db);
   // Copre anche il locale senza profilo Google, solo nel database E2E.
@@ -19,5 +22,9 @@ export default async function setup(){
   const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   await db.blackoutDate.create({data:{tenant_id:tenants[0]!.id,date:new Date(`${today}T00:00:00Z`),reason:'Chiusura scenario E2E'}});
  }finally{await db.$disconnect();}
- return async()=>{const cleanup=new PrismaClient({datasourceUrl:url});try{await cleanup.tenant.deleteMany({where:{slug:{in:demos.map(d=>d.slug)}}});}finally{await cleanup.$disconnect();}};
+ return async()=>{const cleanup=new PrismaClient({datasourceUrl:url});try{
+  await cleanup.tenant.deleteMany({where:{slug:{in:[...demos.map(d=>d.slug),'console-e2e-venue']}}});
+  const a=await cleanup.platformAdmin.findUnique({where:{email:'e2e-admin@bigant.test'}});
+  if(a){await cleanup.platformAccessLink.deleteMany({where:{admin_id:a.id}});await cleanup.platformAudit.deleteMany({where:{admin_id:a.id}});await cleanup.platformAdmin.delete({where:{id:a.id}});}
+ }finally{await cleanup.$disconnect();}};
 }

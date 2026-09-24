@@ -52,6 +52,20 @@ test('refresh concorrente: un solo utilizzo; scadenza dopo 30 giorni', async () 
     expect((await app.inject({method:'POST',url:'/auth/refresh',cookies:{[rotated.name]:rotated.value}})).statusCode).toBe(401);
   } finally { await app.close(); }
 });
+test('limite refresh per sessione verificata: la rotazione non lo aggira e un altro locale non viene bloccato',async()=>{
+ const app=loggedApp();
+ try{
+  for(let n=0;n<6;n++)expect((await app.inject({method:'POST',url:'/auth/refresh'})).statusCode).toBe(n===5?429:401);
+  const first=await login(app);let cookie=first.cookies[0]!;
+  for(let n=0;n<5;n++){
+   const response=await app.inject({method:'POST',url:'/auth/refresh',cookies:{[cookie.name]:cookie.value}});
+   expect(response.statusCode).toBe(200);cookie=response.cookies[0]!;
+  }
+  expect((await app.inject({method:'POST',url:'/auth/refresh',cookies:{[cookie.name]:cookie.value}})).statusCode).toBe(429);
+  const second=await login(app,true);const other=second.cookies[0]!;
+  expect((await app.inject({method:'POST',url:'/auth/refresh',cookies:{[other.name]:other.value}})).statusCode).toBe(200);
+ }finally{await app.close();}
+});
 test('credenziali tenant errato, JWT manomesso e token di tipo errato rifiutati', async () => {
  const app=loggedApp();
  try {

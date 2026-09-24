@@ -12,7 +12,7 @@
 | B06 | M6 | Fornitori verificati EU, account/dominio, backup ripristinato, alert e primo locale reale |
 | B07 | M5S, completato | Sale tramite zone e combinazioni di tavoli configurate dal ristoratore; assegnazione semplice con controllo occupazione |
 | B08 | M5S, completato | Lista d’attesa per servizio: cognome, coperti, ordine di arrivo e compatibilità con tavoli liberi |
-| B09 | Dopo il pilot MVP, agenzia | Console amministrativa BigAnt: onboarding locali, piano/stato, configurazione servizi e consumi; identità amministrativa distinta, permessi e audit obbligatori |
+| B09 | M5A, completata localmente il 24 settembre | Console amministrativa BigAnt: onboarding locali, piano/stato, configurazione servizi e consumi; identità amministrativa distinta, permessi e audit obbligatori |
 | B13 | Dopo la prova del primo ristorante, da prioritizzare | Lista d'attesa online per date esaurite, distinta dalla fila fisica B08: richiesta del cliente, contatto e offerta di un posto quando disponibile; nessuna prenotazione implicita né sovrascrittura della fila del servizio |
 | B14 | Dopo la prova del primo ristorante, da prioritizzare | Chiusure di tavolo/zona alle sole prenotazioni online, mantenendo la gestione manuale; permesso distinto da `active`, con stessi controlli di occupazione, capienza e ritmo |
 | B15 | Dopo la prova del primo ristorante, da prioritizzare | Modifica autonoma di data/coperti da parte del cliente tramite collegamento sicuro; conservazione dell'appuntamento originale se il nuovo posto non è più disponibile, rivalidazione atomica e notifiche idempotenti |
@@ -23,7 +23,7 @@ Il controllo del 17 settembre è tradotto in punti P01–P12 in [MESSA_IN_PRODUZ
 
 - B13–B15 nascono dalla review del 23 settembre in [REVIEW_PRODOTTO_SUPERB](REVIEW_PRODOTTO_SUPERB.md). Sono proposte da validare con il primo locale, non funzioni implementate o condizioni aggiuntive per completare questa review. B13 non sostituisce la fila fisica: prima dello sviluppo definire contatti minimi, scadenza dell'offerta e assenza di automatismi che promettano un tavolo. B14 non può aggirare i vincoli del motore. B15 è una proposta di miglioramento BigAnt: la ricerca non dimostra la sua presenza come funzione autonoma in Superb. Piantina Pro e acconti restano nelle voci di fase 2 già presenti, senza duplicati.
 
-- Richiesta agenzia del 17 settembre: il multi-tenant esiste, la console dell’agenzia ancora no. La prima versione deve gestire attivazione/sospensione, configurazioni mancanti e consumi senza concedere accesso implicito ai dati degli ospiti. Eventuali interventi nei locali richiedono autorizzazione, scope esplicito e audit. Il lavoro M5/sala continua; nessuna console amministrativa anticipata in questo blocco.
+- Richiesta agenzia del 17 settembre, autorizzata allo sviluppo il 24 settembre: console realizzata in M5A con attivazione/sospensione, configurazioni mancanti e consumi. Identità separata, nessun accesso ai dati personali degli ospiti, nessuna impersonificazione. L'amministratore interviene soltanto su locale esplicito e con audit. Cancello e limiti in PROGRESS; guida in CONSOLE_AMMINISTRATORE.
 
 - M1 completata: motore, concorrenza, stati, telefono E.164 e API.
 - M2 completata: interfaccia e cancello finale verdi. Email e telefono obbligatori in input; colonne nullable per anonimizzazione M5.
@@ -36,7 +36,7 @@ Il controllo del 17 settembre è tradotto in punti P01–P12 in [MESSA_IN_PRODUZ
 - Estensione richiesta dall’utente il 17 settembre: gestione sala e lista d’attesa semplice dopo M4. La successiva precisazione chiede di evitare duplicazioni o peggioramenti: analisi in [SALA_E_ATTESA.md](SALA_E_ATTESA.md), nessun codice sala/prenotazioni cambiato in M4. La lista riguarda i servizi del locale, non i turni del personale. Il successivo «finisci tutto» consente di procedere con FIFO, compatibilità evidenziata e assegnazione manuale; M5S conclusa dopo il cancello automatico locale M5; dettagli e verifiche in PROGRESS. Piantina a blocchi disegnabile rinviata alle funzioni Pro future.
 
 - M5–M6: la scelta Resend della SPEC va rivista per il vincolo EU: i metadati/log restano USA anche scegliendo Irlanda. Verificare anche metadati Sentry, filiera SMS, CDN/log e backup; dettagli in SERVIZI_ESTERNI.md.
-- M6: onboarding di tenant reali e scelta locale al login oltre i due demo; recovery password e processo di gestione account da definire. Attualmente il pannello di prova propone i soli due tenant seed.
+- M5A: onboarding e recupero accessi dei gestori tramite link monouso emesso dall'amministratore; login dal percorso specifico `/r/<slug>/staff`. Il login generico conserva i due locali demo. M6: definire distribuzione sicura degli accessi amministrativi, secondo fattore/SSO e recupero account amministratore prima di ampliare il team.
 - M6: dimensionare query disponibilità sullo storico reale e infrastruttura in base ai volumi prima del lancio; ora i dati attivi del tenant vengono letti per rivalidare sotto lock.
 
 - M6: immagini menu locali da trasferire a storage persistente EU; includere foto nei backup, pulizia file orfani e controllo limite disco. Aggiornamento pubblico periodico: dimensionare rate limit/proxy per richieste SSR aggregate prima del deploy.

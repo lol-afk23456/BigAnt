@@ -219,7 +219,9 @@ La [guida alla produzione](https://github.com/lol-afk23456/BigAnt/blob/main/docs
 
 ### Funzioni che non ci sono oggi
 
-Console agenzia per gestire tutti i clienti, piantina della sala a blocchi Pro, pagamenti/acconti, ordinazioni, cassa/POS, sincronizzazione TheFork, fidelity, multi-sede, app nativa e assistente vocale/AI. Non sono necessarie per la prova locale di questa consegna.
+Piantina della sala a blocchi Pro, pagamenti/acconti, ordinazioni, cassa/POS, sincronizzazione TheFork, fidelity, multi-sede, app nativa e assistente vocale/AI. Non sono necessarie per la prova locale di questa consegna.
+
+**Aggiornamento locale del 24 settembre:** aggiunta la [console amministratore](CONSOLE_AMMINISTRATORE.md) in `/admin`, con account separato per l'agenzia. Gestisce i locali clienti, piani, configurazioni e operatori. Titolare e personale continuano a usare il pannello del proprio locale; l'ospite prenota dal link pubblico. La guida dedicata spiega creazione del primo amministratore, attivazione dei gestori e prova delle funzioni. Questo aggiornamento non rigenera né pubblica il precedente PDF.
 
 GitHub permette ai soci di provare il progetto in locale. Per una prova comune via link occorre un ambiente remoto di collaudo separato, con HTTPS e dati inventati; non basta lasciare acceso il Mac di un socio.
 

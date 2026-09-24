@@ -68,3 +68,4 @@ export * from './reviews';
 export * from './notifications';
 
 export * from './rooms';
+export * from './console';

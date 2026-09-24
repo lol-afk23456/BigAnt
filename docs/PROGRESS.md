@@ -1,10 +1,40 @@
 # Avanzamento BigAnt Book
 
+## Pubblicazione console M5A — 24 settembre 2026
+
+Richiesta successiva dell'utente: «pusha sul repo». Autorizzata la pubblicazione della console su `origin/main`, con push ordinario da `master` locale e conservazione del commit precedente sui documenti locali. Fetch eseguito: nessuna divergenza con il remoto. Codice, migrazione, test e guide inclusi; PDF, credenziali, `.env`, database e runtime locali restano esclusi. Nessun deploy o invio reale autorizzato da questa pubblicazione.
+
+Il cancello applicativo resta quello M5A sotto: 122 test backend, 10 scenari browser, typecheck/lint/build verdi. In questo blocco cambiano solo questa registrazione e la numerazione della sezione console in SPEC; non è necessario ripetere il cancello. I normali controlli GitHub Actions restano attivi; il loro esito remoto va verificato sul commit pubblicato e non si deduce dalle verifiche locali.
+
+## M5A — console amministratore, 24 settembre 2026 — completata localmente
+
+Richiesta esplicita dell'utente: sviluppare la console amministrativa per gestire i locali clienti. Realizzati identità/sessioni separate, onboarding transazionale con link monouso, anagrafica, piano/canone/scadenze/note, configurazione servizi, operatori e revoca accessi, consumi aggregati, checklist e audit. Nuova migrazione additiva; il client tenant rifiuta tutti i modelli Platform e la console non restituisce dati personali degli ospiti. UI IT/EN in `/admin`, attivazione in `/attiva-accesso`, guida `CONSOLE_AMMINISTRATORE.md` e comandi di bootstrap.
+
+Prima verifica: 121 test backend verdi, build/tipi/lint verdi; flusso console completo passato nel browser e screenshot desktop/375px ispezionati. La migrazione additiva è applicata alla demo: impronte di tutte le 20 tabelle precedenti identiche, inclusi 244 prenotazioni, 107 ospiti, 42 tavoli e 42 piatti. Creato amministratore locale con password casuale in `.local/admin-access.txt`, non versionata.
+
+Il collaudo aggiuntivo ha rilevato un 429 sul refresh del gestore dopo più accessi nello stesso minuto: il limite precedente era condiviso per IP. Corretto mantenendo cinque richieste/minuto per sessione JWT verificata, anche attraverso rotazioni, e un limite IP distinto per richieste non autenticate; nuovo test di regressione. Il login staff ora prende anche il lock del locale e rivalida ruolo, password e stato prima di creare la sessione, per serializzarsi con la sospensione/recupero accessi della console. Correzioni verificate nel cancello finale seguente. Nessun invio esterno o pubblicazione.
+
+| Verifica finale M5A | Esito |
+| --- | --- |
+| `pnpm typecheck` | Verde, incluso controllo root/test |
+| `pnpm lint` | Verde, nessun warning |
+| `pnpm test` | 122/122 in 13 file; 31 di isolamento tenant, 6 console, 7 autenticazione |
+| `pnpm build` | Verde, artefatti correnti e riusati dal launcher |
+| `pnpm test:e2e` | 10/10, 2,5 minuti; nessuna soglia o protezione disabilitata |
+| Lighthouse menu | 100/100, LCP 1329 ms; stesso benchmark sintetico previsto |
+| Demo originale | Login console, due locali, servizi e riepilogo verificati in Chrome desktop/375px; nessun errore JavaScript né overflow, logout riuscito |
+| Conservazione dati | Tutte le impronte delle 20 tabelle precedenti identiche anche dopo il riavvio e il seed |
+| Accesso amministratore locale | `admin@bigant.test`, password casuale in `.local/admin-access.txt`, permessi 0600 ed esclusione Git verificati |
+
+Demo web/API/worker nuovamente attivi su 3000/3001, PostgreSQL originale su 55432, sei migrazioni applicate e nessuna pendente. Console: `http://localhost:3000/admin`. Screenshot della demo originale e report Lighthouse in `.local/console-review-20260924/`, esclusi da Git. Guida nuova `CONSOLE_AMMINISTRATORE.md`; README, guida tester, SPEC, MISSIONS, BACKLOG e punti di produzione allineati. Il precedente PDF resta invariato e locale.
+
+**Confine consegnato:** amministrazione dei locali e accessi, senza consultazione degli ospiti dalla console o impersonificazione. Piani/canoni/scadenze sono registrazioni commerciali, senza addebiti, fatture o rinnovi automatici. M5 fisica/M6, account amministrativi definitivi, hosting EU/HTTPS, backup e fornitori reali restano da completare. Nessun push o deploy richiesto/eseguito in questa attività.
+
 ## Stato al 23 settembre 2026
 
 **M0–M4 e consolidamento M3C completati.** M3 include i quattro template e il comando occhio approvati dall’utente. M5 implementata localmente, cancello automatico verde; M5S sala/attesa e M5C dati guidati/documenti verificate. M5R review prodotto completata sul Mac con nuova guida collaboratori. Invii/dispositivi reali e M6 non attivi.
 
-## Stato corrente della demo
+## Riepilogo della demo M5R, prima dell'estensione M5A
 
 - M0–M4 e M3C (consolidamento richiesto dall’utente) conclusi. M5 locale verificata, requisito fisico/live ancora pendente; M5S conclusa.
 - Cliente: prenotazione progressiva, consensi, privacy e disdetta; staff: agenda, stati, tavoli/combinazioni, attesa per servizio, impostazioni, menu, Clienti e Notifiche.

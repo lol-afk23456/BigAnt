@@ -38,6 +38,8 @@ Il seed aggiorna anche nomi e feedback originali mai modificati. `pnpm demo:exam
 
 ## Sviluppo e verifiche
 
+La console amministratore è in `/admin`, separata dal pannello del locale. Dopo le migrazioni, `pnpm admin:demo` crea l'accesso locale e salva la password casuale in `.local/admin-access.txt`, escluso da Git. Per account nominativi e istruzioni di gestione clienti/gestori: [Guida console amministratore](docs/CONSOLE_AMMINISTRATORE.md). I dati già presenti nei locali vengono conservati.
+
 In alternativa al launcher, prepara `.env` da `.env.example`, genera un `JWT_SECRET` casuale e avvia `pnpm db:local` in un terminale. Nel secondo:
 
 ```sh

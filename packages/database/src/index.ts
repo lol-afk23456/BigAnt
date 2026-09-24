@@ -28,6 +28,7 @@ export const db = client.$extends({
     async $allOperations({ model, operation, args, query }) {
       const tenantId = context.getStore();
       if (!tenantId) throw new TenantScopeError('TENANT_REQUIRED');
+      if (model?.startsWith('Platform')) throw new TenantScopeError('PLATFORM_ACCESS_FORBIDDEN');
       if (!model) {
         if (advisoryLock.getStore() && operation === '$queryRaw') return query(args);
         throw new TenantScopeError('RAW_QUERY_FORBIDDEN');

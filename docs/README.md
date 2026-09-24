@@ -4,6 +4,7 @@ I documenti correnti sono qui. `files/` conserva gli originali ricevuti e non gu
 
 | Documento | Uso |
 | --- | --- |
+| [CONSOLE_AMMINISTRATORE.md](CONSOLE_AMMINISTRATORE.md) | Accesso agenzia, onboarding locali, gestori, piani e scadenze, servizi, sospensioni e registro attività |
 | [COLLAUDO_COLLABORATORI_2026-09.md](COLLAUDO_COLLABORATORI_2026-09.md) | Nuova prova della review del 23 settembre, casi C01-C12 e registro esiti |
 | [REVIEW_PRODOTTO_SUPERB.md](REVIEW_PRODOTTO_SUPERB.md) | Confronto su fonti ufficiali, miglioramenti e priorità |
 | [GUIDA_TESTER.md](GUIDA_TESTER.md) | Funzioni attuali, repository GitHub, clone/avvio da un nuovo computer e prima prova; PDF consegnato separatamente sul Mac |

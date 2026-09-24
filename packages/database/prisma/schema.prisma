@@ -2,6 +2,61 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Piano amministrativo separato: nessuna relazione navigabile dal client tenant.
+model PlatformAdmin {
+  id String @id @default(uuid(7)) @db.Uuid
+  email String @unique @db.Citext
+  full_name String
+  password_hash String
+  active Boolean @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model PlatformSession {
+  id String @id @default(uuid(7)) @db.Uuid
+  admin_id String @db.Uuid
+  token_hash String @unique
+  expires_at DateTime @db.Timestamptz(6)
+  revoked_at DateTime? @db.Timestamptz(6)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  @@index([admin_id, expires_at])
+}
+
+model PlatformAccount {
+  tenant_id String @id @db.Uuid
+  contact_name String @default("")
+  contact_email String? @db.Citext
+  monthly_fee_cents Int @default(0)
+  trial_ends_at DateTime? @db.Date
+  renewal_at DateTime? @db.Date
+  notes String @default("")
+  updated_at DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model PlatformAudit {
+  id String @id @default(uuid(7)) @db.Uuid
+  admin_id String @db.Uuid
+  tenant_id String? @db.Uuid
+  action String
+  metadata Json @default("{}") @db.JsonB
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  @@index([tenant_id, created_at])
+  @@index([admin_id, created_at])
+}
+
+model PlatformAccessLink {
+  id String @id @default(uuid(7)) @db.Uuid
+  tenant_id String @db.Uuid
+  staff_user_id String @db.Uuid
+  admin_id String @db.Uuid
+  token_hash String @unique
+  expires_at DateTime @db.Timestamptz(6)
+  used_at DateTime? @db.Timestamptz(6)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  @@index([tenant_id, staff_user_id])
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")

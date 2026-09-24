@@ -16,9 +16,11 @@ import helmet from '@fastify/helmet';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import argon2 from 'argon2';
 import { SignJWT, jwtVerify } from 'jose';
-import { db, withTenant, resolveTenant } from '@bigant/database';
+import { db, withTenant, resolveTenant, reservationTransaction } from '@bigant/database';
 import { loginInput, staffClaims, type StaffClaims } from '@bigant/types';
 import { errorBody } from '@bigant/i18n';
+import { ConsoleError } from '@bigant/database/console';
+import { consoleRoutes } from './console.js';
 
 const ACCESS_SECONDS = 15 * 60;
 const REFRESH_SECONDS = 30 * 24 * 60 * 60;
@@ -64,7 +66,7 @@ export function buildApp(options: { secret: string; now?: () => Date; menuImageD
       global: true, max: 30, timeWindow: '1 minute',
     });
     app.setErrorHandler((error, request, reply) => {
-      if (error instanceof DomainError) return reply.code(error.statusCode).send(errorBody(error.code, request.headers['accept-language']));
+      if (error instanceof DomainError || error instanceof ConsoleError) return reply.code(error.statusCode).send(errorBody(error.code, request.headers['accept-language']));
       if (error instanceof ZodError) return reply.code(400).send(errorBody('INVALID_INPUT', request.headers['accept-language']));
       const status = (error as { statusCode?: number }).statusCode;
       const code = status === 429 ? 'RATE_LIMITED' : status && status >= 400 && status < 500 ? 'INVALID_INPUT' : 'INTERNAL_ERROR';
@@ -80,6 +82,7 @@ export function buildApp(options: { secret: string; now?: () => Date; menuImageD
     reviewRoutes(app, now);
     privacyRoutes(app,now);
     notificationRoutes(app,options.notifications??notificationRuntime(),now);
+    consoleRoutes(app,now,(options.notifications??notificationRuntime()).mode);
     app.addHook('onResponse',async request=>{if(['POST','PATCH','DELETE'].includes(request.method)&&(/^(\/reservations|\/public\/[^/]+\/(reservations|reviews)|\/public\/reservations\/)/.test(request.url)))options.wakeNotifications?.();});
     app.get('/health', async () => ({ status: 'ok' }));
     app.post('/auth/login', {
@@ -96,9 +99,12 @@ export function buildApp(options: { secret: string; now?: () => Date; menuImageD
       const valid = await argon2.verify(user?.password_hash ?? await dummyHash, password);
       if (!user || !valid) return reply.code(401).send(errorBody('INVALID_CREDENTIALS', request.headers['accept-language']));
       return withTenant(user.tenant_id, async () => {
-        const issued = await db.$transaction(async tx => {
+        const issued = await reservationTransaction(user.tenant_id,async tx => {
+          // Serializza il login con sospensioni, cambi ruolo e recupero password.
+          const current=await tx.staffUser.findFirst({where:{id:user.id,status:'active',password_hash:user.password_hash,tenant:{status:'active'}}});
+          if(!current)throw new DomainError('UNAUTHORIZED',401);
           const session = await tx.staffSession.create({ data: { tenant_id: user.tenant_id, staff_user_id: user.id, refresh_hash: randomBytes(32).toString('hex'), expires_at: new Date(now().getTime() + REFRESH_SECONDS * 1000) } });
-          const result = await tokens({ sub: user.id, tenant_id: user.tenant_id, sid: session.id, role: user.role });
+          const result = await tokens({ sub: user.id, tenant_id: user.tenant_id, sid: session.id, role: current.role });
           await tx.staffSession.update({ where: { id: session.id }, data: { refresh_hash: digest(result.refresh) } });
           await tx.staffUser.update({ where: { id: user.id }, data: { last_login_at: now() } });
           return result;
@@ -107,7 +113,13 @@ export function buildApp(options: { secret: string; now?: () => Date; menuImageD
         return { access_token: issued.access_token, token_type: 'Bearer', expires_in: ACCESS_SECONDS };
       });
     });
-    app.post('/auth/refresh', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async (request, reply) => {
+    app.post('/auth/refresh', { config: { rateLimit: { max: 5, timeWindow: '1 minute',hook:'preHandler',keyGenerator:async request=>{
+      // Le sessioni valide hanno budget separati anche dietro lo stesso proxy.
+      // La rotazione del token non azzera il limite; input non autenticati restano per IP.
+      const token=request.cookies[cookieName];
+      if(token)try{return `session:${(await verify(token,'refresh')).sid}`;}catch{/* Token non valido: limite anonimo. */}
+      return `anonymous:${request.ip}`;
+    } } } }, async (request, reply) => {
       const token = request.cookies[cookieName];
       try {
         if (!token) throw new Error('MISSING_COOKIE');

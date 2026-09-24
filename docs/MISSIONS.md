@@ -225,6 +225,21 @@ Richiesta esplicita: review generale, confronto con Superb, miglioramento copy/U
 
 **Confine:** nessun acquisto, pubblicazione remota o invio reale; M5 fisica e M6 restano aperte. L’obiettivo è una demo più solida e verificabile, non la replica completa di Superb.
 
+## M5A — Console amministrativa BigAnt, richiesta il 24 settembre
+
+L’utente autorizza ora B09: gestione dei locali clienti con identità amministrativa separata.
+
+**Da fare:** accesso amministratore separato, elenco/ricerca locali, onboarding con titolare, stato e piano, condizioni commerciali e scadenze, configurazione servizi, gestione operatori e recupero accessi, consumi aggregati, checklist di attivazione e audit. Nessuna consultazione dei dati personali degli ospiti dalla console; nessuna impersonificazione. Canoni registrati per gestione commerciale, senza addebiti automatici.
+
+**Criteri:**
+- [x] Sessioni amministrative separate e revocabili; utenti dei locali esclusi dalla console.
+- [x] Creazione locale transazionale, gestione stato/accessi e audit verificati.
+- [x] Dati commerciali riservati alla console; isolamento tenant invariato.
+- [x] Consumi reali aggregati e distinzione invii simulati, accettati e falliti.
+- [x] Interfaccia IT/EN, desktop e 375 px; guide e cancello generale aggiornati.
+
+**Esito locale:** 122 test backend, 10 scenari browser, typecheck/lint/build verdi. Lighthouse menu 100/100, LCP 1329 ms. Migrazione additiva applicata conservando tutte le righe precedenti; credenziali amministratore locali casuali e guida dedicate. Nessuna pubblicazione remota o attivazione dei pagamenti/invii reali. Rapporto in PROGRESS.
+
 ## M6 — Messa in produzione
 
 **Obiettivo.** Un locale vero, in EU, con i backup attivi.

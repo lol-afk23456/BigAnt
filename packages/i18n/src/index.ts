@@ -1,5 +1,9 @@
 export const messages = {
   it: {
+    ADMIN_CREDENTIALS: 'Email o password amministratore non corrette.',
+    ADMIN_CONFLICT: 'Questo indirizzo o identificativo è già utilizzato. Controlla i dati.',
+    LAST_OWNER: 'Mantieni almeno un titolare attivo. Aggiungi prima un altro titolare.',
+    ACCESS_EXPIRED: 'Il link è scaduto o è già stato utilizzato. Richiedine uno nuovo al tuo referente.',
     CARD_COOLDOWN: 'Questa card ha già ricevuto un invio negli ultimi dieci minuti. Puoi tornare con calma più tardi.',
     INVALID_IMAGE: 'Scegli una foto JPEG, PNG o WebP valida fino a 5 MB e riprova.',
     CATEGORY_NOT_EMPTY: 'Sposta o rimuovi i piatti prima di eliminare questa categoria.',
@@ -18,6 +22,10 @@ export const messages = {
     INTERNAL_ERROR: 'Operazione non riuscita. Riprova più tardi.',
   },
   en: {
+    ADMIN_CREDENTIALS: 'Incorrect administrator email or password.',
+    ADMIN_CONFLICT: 'This email or identifier is already in use. Check the details.',
+    LAST_OWNER: 'Keep at least one active owner. Add another owner first.',
+    ACCESS_EXPIRED: 'This link has expired or has already been used. Ask your contact for a new one.',
     CARD_COOLDOWN: 'This card has already received a submission in the last ten minutes. You can come back later at your own pace.',
     INVALID_IMAGE: 'Choose a valid JPEG, PNG or WebP photo up to 5 MB and try again.',
     CATEGORY_NOT_EMPTY: 'Move or remove the dishes before deleting this category.',
@@ -45,3 +53,4 @@ export * from './ui';
 
 export * from './menu';
 export * from './notifications';
+export * from './console';

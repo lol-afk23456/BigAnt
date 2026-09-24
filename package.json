@@ -19,6 +19,8 @@
     "local": "node scripts/local.mjs",
     "demo:reset": "tsx packages/database/src/reset-demo.ts",
     "demo:examples": "tsx scripts/demo-examples.ts",
+    "admin:create": "tsx packages/database/src/admin.ts",
+    "admin:demo": "tsx packages/database/src/admin.ts --demo",
     "worker:once": "tsx apps/api/src/worker.ts",
     "worker:watch": "tsx apps/api/src/worker.ts --watch",
     "test:menu-performance": "node scripts/menu-performance.mjs"

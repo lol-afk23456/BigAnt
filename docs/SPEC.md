@@ -663,3 +663,15 @@ Autorizzata dal successivo «finisci tutto» dopo la richiesta e la precisazione
 - UI: filtro zona nella gestione tavoli, configurazione combinazioni nello stesso pannello, lista d’attesa accessibile dall’agenda. Compatibilità è un suggerimento; nessun salto o assegnazione automatica della fila.
 
 **Esito M5S:** software locale verificato; ultimo ricontrollo: 100 test backend e sette scenari browser, con gate completo in PROGRESS. Nessuna piantina Pro o console agenzia anticipata.
+
+## 17. Console amministrativa — estensione M5A, 24 settembre 2026
+
+Richiesta esplicita di gestione dei clienti commerciali (locali). `/admin` usa identità `PlatformAdmin` e sessioni opache separate dagli account `StaffUser`; ogni richiesta verifica sessione, scadenza e abilitazione. Cookie Secure/HttpOnly/SameSite Strict, durata massima otto ore, header di protezione per le mutazioni, login limitato e password Argon2. Il cambio password revoca tutte le sessioni amministrative.
+
+Il normale data layer tenant continua a imporre `tenant_id` e nega i cinque modelli Platform. Il modulo amministrativo non esporta Prisma: apre lo scope solo dopo verifica della sessione; ogni scrittura su un locale richiede un ID esplicito e registra l'audit nella stessa transazione. Non ci sono relazioni Prisma navigabili da Tenant/StaffUser verso Platform; i vincoli SQL conservano l'integrità referenziale. La console espone dati del locale, account degli operatori e aggregati, mai righe o testi liberi degli ospiti/prenotazioni. Nessuna impersonificazione.
+
+Funzioni: ricerca/paginazione/filtri dei locali, onboarding con titolare, profilo, stato, piano, canone intero in centesimi, referente, note, fine prova e rinnovo, configurazione prenotazioni e notifiche, gestione operatori e link di attivazione, consumi e checklist. I canoni e le date sono informazioni commerciali: nessun pagamento o automatismo di rinnovo/sospensione. La panoramica distingue invii simulati e reali e non presenta i canoni come incassi.
+
+L'onboarding crea locale, settings, owner, scheda commerciale e link in modo atomico. Non imposta orari/tavoli fittizi. Il link consente di impostare una password entro 24 ore, una volta sola; nel database è conservato solo il digest. Nuovi link invalidano quelli precedenti; attivazione, sospensione e modifiche agli operatori si serializzano sul lock del locale. Non si può eliminare l'ultimo titolare attivo. Sospeso/Cessato revocano accessi e bloccano i servizi del locale senza cancellarne i dati. La cessazione è uno stato commerciale, non una richiesta di cancellazione dei dati.
+
+UI italiana/inglese, desktop e mobile; conferma con motivazione per lo stato e cinque secondi di annullamento per stato/revoca sessioni. Manuale: [CONSOLE_AMMINISTRATORE](CONSOLE_AMMINISTRATORE.md). M6 resta necessario per hosting EU, HTTPS, backup, fornitori, recapito reale e prova con un locale reale.
