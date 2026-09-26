@@ -6,6 +6,7 @@ process.env.TEST_DATABASE_URL=database;
 const testDay=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 export default defineConfig({
  timeout:120000,expect:{timeout:10000},testDir:'./tests/e2e',testMatch:'**/*.spec.ts',globalSetup:'./tests/e2e/setup.ts',workers:1,
+ reporter:[['list'],['json',{outputFile:'test-results/e2e-report.json'}]],
  use:{actionTimeout:15000,channel:process.platform==='darwin'?'chrome':undefined,baseURL:'http://localhost:3100',viewport:{width:375,height:812},timezoneId:'America/New_York',trace:'retain-on-failure',screenshot:'only-on-failure'},
  webServer:[
   {command:'node apps/api/dist/server.js',url:'http://127.0.0.1:3001/health',reuseExistingServer:false,timeout:60000,env:{NODE_ENV:'test',BIGANT_TEST_CLOCK:`${testDay}T10:00:00Z`,NOTIFICATION_MODE:'demo',PUBLIC_ORIGIN:'http://localhost:3100',DATABASE_URL:database,JWT_SECRET:'e2e-test-secret-with-at-least-32-characters',PORT:'3001',HOST:'127.0.0.1',MENU_IMAGE_DIR:process.cwd()+'/.local/menu-images-e2e'}},

@@ -40,8 +40,10 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
-          name: menu-lighthouse
-          path: test-results/menu-lighthouse.json
+          name: browser-diagnostics
+          path: |
+            test-results/menu-lighthouse*
+            test-results/e2e-report.json
           retention-days: 7
