@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { menuMessages,uiMessages,type Language,type MenuKey } from '@bigant/i18n';
 import type { PublicMenu,PublicMenuItem } from '@bigant/types';
+import { menuStyles } from './menu-styles';
 
 // Unico confine di escaping per testo e attributi del documento. Il menu usa
 // solo HTML nativo: React nel browser non aggiungerebbe interazioni utili.
@@ -13,7 +14,7 @@ export function renderMenuDocument({slug,language,menu}:{slug:string;language:La
  const t=menuMessages[language],ui=uiMessages[language];
  const title=menu?`${t.menu} · ${menu.tenant.name}`:`${t.menu} · ${ui.brand}`;
  const cover=menu?.settings.menu_cover_url;
- const head=`<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(title)}</title><meta name="description" content="${escapeHtml(t.menuIntro)}">${menu?'':'<meta name="robots" content="noindex">'}${cover?`<link rel="preload" as="image" href="${escapeHtml(cover.replace('-640.webp','-cover-640.webp'))}" imagesrcset="${escapeHtml(imageSet(cover,true))}" imagesizes="${coverSizes}" fetchpriority="high">`:''}<link rel="icon" href="/icons/icon-192.png"><link rel="apple-touch-icon" href="/icons/icon-192.png"><link rel="stylesheet" href="/bigant.css">${menu?(['it','en'] as const).map(locale=>`<link rel="alternate" hreflang="${locale}" href="/r/${escapeHtml(slug)}/menu?lang=${locale}">`).join(''):''}</head>`;
+ const head=`<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(title)}</title><meta name="description" content="${escapeHtml(t.menuIntro)}">${menu?'':'<meta name="robots" content="noindex">'}${cover?`<link rel="preload" as="image" href="${escapeHtml(cover.replace('-640.webp','-cover-640.webp'))}" imagesrcset="${escapeHtml(imageSet(cover,true))}" imagesizes="${coverSizes}" fetchpriority="high">`:''}<link rel="icon" href="/icons/icon-192.png"><link rel="apple-touch-icon" href="/icons/icon-192.png"><style>${menuStyles}</style>${menu?(['it','en'] as const).map(locale=>`<link rel="alternate" hreflang="${locale}" href="/r/${escapeHtml(slug)}/menu?lang=${locale}">`).join(''):''}</head>`;
  if(!menu)return `<!DOCTYPE html><html lang="${language}">${head}<body><main class="menu-public" lang="${language}"><div class="panel menu-empty"><h1>${escapeHtml(t.menu)}</h1><p role="alert">${escapeHtml(t.menuUnavailable)}</p><a class="button primary" href="?lang=${language}">${escapeHtml(ui.retry)}</a></div></main></body></html>`;
  const color=/^#[0-9a-fA-F]{6}$/.test(menu.settings.menu_primary_color)?menu.settings.menu_primary_color:'#ff914d';
  const rgb=[1,3,5].map(n=>parseInt(color.slice(n,n+2),16)/255).map(v=>v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4);

@@ -11,11 +11,15 @@ test('il documento menu tratta nomi, descrizioni e attributi come testo, senza s
  expect(html.match(/<script\b/g)).toHaveLength(1);expect(html).toContain('<script src="/menu-live.js" defer></script>');
  expect(html).toContain('12,50');expect(html).toContain('Vegano');expect(html).toContain('Cereali contenenti glutine');
  expect(html).not.toContain('/_next/static');expect(html).not.toContain('self.__next_f');
+ // Il primo rendering del QR non deve aspettare il foglio di stile del pannello.
+ expect(html).not.toContain('rel="stylesheet"');expect(html).toContain('<style>');
+ expect(html).toContain('.menu-cover{');expect(html).toContain('.menu-template-pub');
 });
 
 test('il documento di errore conserva lingua, azione di riprova e metadati senza dipendere da JavaScript',()=>{
  const html=renderMenuDocument({slug:'test-menu',language:'en',menu:null});
  expect(html).toContain('<html lang="en">');expect(html).toContain('role="alert"');
  expect(html).toContain('href="?lang=en"');expect(html).toContain('content="noindex"');
- expect(html).toContain('href="/bigant.css"');expect(html).not.toContain('<script');
+ expect(html).toContain('<style>');expect(html).toContain('.menu-empty{');
+ expect(html).not.toContain('rel="stylesheet"');expect(html).not.toContain('<script');
 });
