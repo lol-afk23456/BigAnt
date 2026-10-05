@@ -1,5 +1,32 @@
 # Avanzamento BigAnt Book
 
+## Collaudo da clone e guida cliente - 5 ottobre 2026
+
+L'utente chiede se il progetto sia testabile, il controllo del repository e un documento per il cliente, precisando che clonerà il codice. Verificato `Desktop/BigAnt`, remoto `https://github.com/lol-afk23456/BigAnt.git`: al fetch iniziale `HEAD` e `origin/main` coincidono con `1b2cdae`, senza modifiche o divergenza. Il run pubblico di quel commit, [36263170202](https://github.com/lol-afk23456/BigAnt/actions/runs/36263170202), risulta completato con successo. Il progetto Fidelity è rimasto senza commit/remoto e senza modifiche.
+
+**Prova autonoma:** clone reale di `main` in una cartella temporanea, installazione `pnpm install --frozen-lockfile`, nessuna copia di `.env`, database, immagini, runtime o credenziali applicative dalla demo originale. Node 22.23.2 e pnpm 10.32.1 già disponibili sono gli unici strumenti riusati. Ambiente: macOS Intel 13.6.3, Chrome 154. Il cliente non ha ancora indicato il suo sistema operativo; la guida distingue le piattaforme predisposte da quelle effettivamente provate.
+
+**Correzione trovata:** `scripts/local-db.mjs` usava `URL.pathname`, che lascia `%20` nei percorsi con spazi. Sostituito con `fileURLToPath`. Il clone è stato spostato in `/private/tmp/BigAnt collaudo 20261005`, vi è stata applicata soltanto questa correzione e il launcher ha creato il database nella sua vera `.local/postgres`. Avvio completo riuscito: migrazioni, seed, build, web/API/worker. Login titolare, `pnpm admin:demo`, login con la password generata nel clone e sei pagine pubbliche dei due locali verificati. Database originale non avviato né modificato.
+
+| Controllo sul clone | Esito |
+| --- | --- |
+| Installazione fissata dal lockfile e `pnpm local` | Riusciti, incluso percorso con spazi |
+| `pnpm typecheck` | Verde, compresi i test root |
+| `pnpm lint` | Verde; import esplicito di URL conservato dopo la correzione |
+| `pnpm test` | 122/122 in 13 file, database `bigant_test` del clone |
+| `pnpm build` | Verde, eseguita dal primo avvio del launcher |
+| Prima suite browser | 9/10 verdi; il menu supera i controlli funzionali ma fallisce il benchmark finale |
+| Ricontrollo mirato menu | 1/1 verde, stessa sorgente e soglia; nessun test saltato |
+| Lighthouse del ricontrollo | 97/100, LCP 1097 ms; soglia invariata >=90 e <2000 ms |
+
+Il primo benchmark misurava 62/100 e LCP 6260 ms. HTML e immagini terminavano entro 734 ms; trace con Paint a circa 1,4 s e task GPU lunghi fino alla presentazione a 6,26 s. Lighthouse segnalava CPU lenta e `pmset` indicava CPU Speed Limit 63. Queste evidenze documentano condizioni locali diverse dal 26 settembre, senza attribuire con certezza il problema al solo carico o a Chrome. Ripetuto soltanto lo scenario fallito, senza altre suite parallele e senza modifiche CSS, browser o soglie: superato. Non descriviamo la prima esecuzione come 10/10 verde. I report di entrambe le esecuzioni e i log sono in `.local/client-review-20261005/`, esclusi da Git.
+
+**Consegna:** `docs/COLLAUDO_CLIENTE_2026-10.md` e PDF locale di nove pagine, con clone/avvio, ruoli e accessi, prove T01-T11, caso tavoli 2/4/4, console facoltativa, limiti e scheda risultati. Tutte le pagine renderizzate e ispezionate, sette link verificati; nessuna password amministrativa nel documento. Il PDF è escluso da Git. Corrette le guide che presentavano ancora la console come futura e i riferimenti obsoleti all'ultimo cancello; SPEC allineata agli stili pubblici incorporati nel menu.
+
+**Pronto per:** collaudo funzionale locale con dati inventati e prerequisiti indicati. Il seed conferma automaticamente Santa Lucia e manualmente Lido; `auto_assign_tables=false` in entrambi, da attivare per le prove dei tavoli. Restano B16/P13 (duplicati dopo risposta persa), B17 (form aperto oltre due ore), M5 su dispositivi reali e M6: HTTPS/hosting, fornitori, recapito, backup/ripristino, monitoraggio e configurazione definitiva. Nessuna integrazione automatica con gestionali esterni. Non dichiarata prontezza per la produzione.
+
+La precedente richiesta dell'utente di pubblicare dopo verifica e risoluzione autorizza il push di questa correzione e della documentazione sul repository BigAnt. Il PDF rimane un allegato locale separato; nessun deploy o invio al cliente.
+
 ## Verifica contesto e CI della console — 26 settembre 2026
 
 L'utente segnala che la richiesta della console è stata scritta nel task con cartella iniziale `Documents/ChatGPT/Fidelity` e chiede di verificare e risolvere eventuali errori. Destinazione effettiva ricontrollata: `Desktop/BigAnt`, remoto `https://github.com/lol-afk23456/BigAnt.git`, console nel commit `2184776` su `main`. Fidelity non ha commit né remoto. La possibilità di indicare un'altra cartella nei comandi spiega il lavoro fra task; andava comunicata esplicitamente. Non è emersa una pubblicazione nel repository sbagliato.

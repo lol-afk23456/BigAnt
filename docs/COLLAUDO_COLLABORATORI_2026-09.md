@@ -4,6 +4,8 @@
 
 **Obiettivo:** verificare che un ospite sappia prenotare e che un ristoratore sappia gestire il servizio senza spiegazioni. Dedica 30-40 minuti al percorso principale, poi 20 minuti ai controlli aggiuntivi. Il tempo è indicativo; annota quanto impieghi davvero.
 
+Questa guida conserva il percorso della review del 23 settembre. Per lo stato corrente e le verifiche successive consulta [PROGRESS](PROGRESS.md); per il titolare che clona il progetto usa il [collaudo cliente](COLLAUDO_CLIENTE_2026-10.md).
+
 Una piattaforma, due locali dimostrativi: pagine pubbliche e pannello sono dedicati al singolo locale. Tema scuro, accenti arancioni, italiano e inglese.
 
 ### Prima di iniziare
@@ -166,9 +168,9 @@ Il collaudo collaboratori riesce quando i casi applicabili passano, quelli non e
 
 ### Cosa manca per un locale vero
 
-Servono ancora ambiente EU e HTTPS, account individuali e recupero, backup di database/foto con ripristino provato, monitoraggio e allarmi, fornitori e recapito reale, privacy, collaudo su Android/iPhone e primo servizio con il ristoratore. Il retry dopo una risposta di creazione persa richiede una protezione specifica contro i duplicati.
+Servono ancora ambiente EU e HTTPS, account definitivi e collaudo delle procedure di accesso già implementate con M5A, backup di database/foto con ripristino provato, monitoraggio e allarmi, fornitori e recapito reale, privacy, collaudo su Android/iPhone e primo servizio con il ristoratore. Il retry dopo una risposta di creazione persa richiede una protezione specifica contro i duplicati.
 
-La review migliora la demo. Non completa automaticamente M5 su telefoni o M6. Console agenzia, lista d'attesa online, blocco tavoli solo per il canale online, cambio data autonomo del cliente, piantina Pro e pagamenti restano lavori successivi.
+La review migliora la demo. Non completa automaticamente M5 su telefoni o M6. La [console agenzia](CONSOLE_AMMINISTRATORE.md) è stata aggiunta successivamente con M5A, con accessi separati dal pannello del locale. Lista d'attesa online, blocco tavoli solo per il canale online, cambio data autonomo del cliente, piantina Pro e pagamenti restano lavori successivi.
 
 ### Riferimenti
 

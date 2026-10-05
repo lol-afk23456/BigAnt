@@ -1,7 +1,7 @@
 # BigAnt Book — Specifica tecnica operativa
 
-**Versione:** 3.1 — settembre 2026, allineata alle decisioni approvate
-**Stato:** M0–M3 e consolidamento M3C implementati e verificati; M4 implementata e verificata; M5 implementata localmente con cancello automatico verde, invii/dispositivi reali da provare; M5S sala/attesa completata e verificata; M6 da attivare. I requisiti dei moduli successivi descrivono il prodotto atteso, non funzionalità già attive. Vedi [indice documenti](README.md), [stato e verifiche](PROGRESS.md) e [decisioni](DECISIONS.md).
+**Versione:** 3.1 — riferimenti aggiornati il 5 ottobre 2026, allineata alle decisioni approvate
+**Stato:** M0–M3 e consolidamento M3C implementati e verificati; M4 implementata e verificata; M5 implementata localmente con cancello automatico verde, invii/dispositivi reali da provare; M5S sala/attesa, M5C dati demo, M5R revisione prodotto e M5A console amministratore implementate e verificate; M6 da attivare. I requisiti dei moduli successivi descrivono il prodotto atteso, non funzionalità già attive. Vedi [indice documenti](README.md), [stato e verifiche](PROGRESS.md) e [decisioni](DECISIONS.md).
 **Destinatario:** agente di sviluppo / sviluppatore
 **Documento correlato:** `BigAnt_Book_Sintesi.html` (strategia, mercato, modello di business)
 
@@ -562,7 +562,7 @@ Fuori codice ma prima del primo cliente pagante: atto di nomina a responsabile a
 - Mobile-first, colonna singola, un solo CTA primario visibile senza scroll.
 - Il verbo del bottone resta coerente: "Prenota il tavolo" → toast "Prenotato".
 - Target di tocco ≥ 44×44px.
-- Menu: documento HTML generato lato server dal Route Handler Next, senza runtime React nel browser; lettura e cambio lingua funzionano anche senza JavaScript. Unica fonte degli stili in `apps/web/public/bigant.css`, importata anche dall’app React. `menu-live.js` aggiorna il documento quando cambia il menu. Immagini WebP con `srcset`, LCP < 2s su 3G simulata.
+- Menu: documento HTML generato lato server dal Route Handler Next, senza runtime React nel browser; lettura e cambio lingua funzionano anche senza JavaScript. Gli stili pubblici in `apps/web/lib/menu-styles.ts` sono incorporati nel documento per evitare una richiesta CSS bloccante; `apps/web/public/bigant.css` contiene gli stili del pannello. `menu-live.js` aggiorna il documento quando cambia il menu. Immagini WebP con `srcset`, LCP < 2s su 3G simulata.
 - Piatti esauriti: mostrati in grigio con etichetta. Il comando occhio controlla separatamente la visibilità; un piatto nascosto non compare nel pubblico.
 - **Nessuna registrazione richiesta**, mai.
 - Nessuna disponibilità → non un errore: proporre le 2 date più vicine con posto.

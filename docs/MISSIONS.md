@@ -2,7 +2,7 @@
 
 Sette blocchi di lavoro autonomo. Ognuno è pensato per una sessione lunga, con criteri di accettazione verificabili da comando.
 
-**Stato al 17 settembre 2026:** M0–M3 e consolidamento M3C completati, con verifiche in [PROGRESS.md](PROGRESS.md). M4 completata; M5 locale con cancello automatico verde, prove live/fisiche pendenti. M5S sala/attesa completata e verificata dopo il cancello automatico locale M5. M6 da attivare. Le checkbox indicano criteri verificati: il ricontrollo del 17 settembre conferma il cancello locale. Il requisito M5 sui telefoni fisici e i criteri M6 restano aperti.
+**Stato aggiornato al 5 ottobre 2026:** M0–M3 e consolidamento M3C completati, con verifiche in [PROGRESS.md](PROGRESS.md). M4 completata; M5 locale con cancello automatico verde, prove live/fisiche pendenti. M5S sala/attesa, M5C dati demo, M5R review prodotto e M5A console amministratore completate localmente e verificate. M6 da attivare. Le checkbox indicano criteri verificati; gli esiti successivi, incluso il collaudo da clone, sono registrati in PROGRESS. Il requisito M5 sui telefoni fisici e i criteri M6 restano aperti.
 
 **Regola:** nessuna missione inizia prima che la precedente abbia il cancello verde. Se una missione non entra in una sessione, fermati a un punto coerente (test verdi, commit pulito), aggiorna `PROGRESS.md` e riprendi da lì.
 

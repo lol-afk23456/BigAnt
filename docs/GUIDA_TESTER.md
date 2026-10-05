@@ -2,7 +2,7 @@
 
 ## L'app oggi e la guida per i tester
 
-Versione del 17 settembre 2026. Per soci e tester. Interfaccia scura, accenti arancioni, italiano e inglese.
+Guida iniziale del 17 settembre 2026, con riferimenti aggiornati allo stato in [PROGRESS](PROGRESS.md). Per soci e tester. Per il titolare che clona il progetto: [collaudo cliente](COLLAUDO_CLIENTE_2026-10.md). Interfaccia scura, accenti arancioni, italiano e inglese.
 
 BigAnt Book riunisce **prenotazioni, menu digitale e feedback** per ristoranti, bar e lidi. Ogni locale ha pagine cliente e pannello staff dedicati; i dati sono separati per locale nella stessa applicazione.
 
@@ -200,7 +200,7 @@ Invia versione (`git rev-parse --short HEAD`), sistema/browser, locale, giorno/s
 
 ### Evidenze disponibili
 
-Ultimo cancello applicativo locale del 17 settembre: typecheck, lint, test e build verdi; **104 test backend**, inclusi 26 di isolamento tenant, e **7 scenari browser**. Queste evidenze descrivono il codice verificato sul Mac; non certificano la produzione o il funzionamento su tutti i sistemi dei tester.
+I cancelli applicativi locali e CI, inclusa la verifica del 26 settembre successiva alla console M5A, sono registrati in [PROGRESS](PROGRESS.md). Le evidenze si riferiscono alle versioni e agli ambienti indicati; non certificano la produzione o il funzionamento su tutti i sistemi dei tester.
 
 ### Collegare servizi esterni non basta
 
@@ -225,7 +225,7 @@ Piantina della sala a blocchi Pro, pagamenti/acconti, ordinazioni, cassa/POS, si
 
 GitHub permette ai soci di provare il progetto in locale. Per una prova comune via link occorre un ambiente remoto di collaudo separato, con HTTPS e dati inventati; non basta lasciare acceso il Mac di un socio.
 
-**Aggiornamento GitHub del 17 settembre:** tipi, lint, test backend e build verdi. Benchmark menu: 95/100, LCP 2,35 s; il limite sotto i 2 s resta aperto. Misure e lavori necessari sono registrati in PROGRESS.
+**Verifiche GitHub:** il precedente limite del benchmark menu del 17 settembre è stato risolto con la correzione CI del 26 settembre. Risultati, commit verificati e misure locali/remote sono registrati in [PROGRESS](PROGRESS.md); questa guida non rappresenta una nuova esecuzione dei test.
 
 <!-- page -->
 

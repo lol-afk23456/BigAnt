@@ -1,6 +1,6 @@
 # Prova BigAnt Book sul Mac — 40–45 minuti
 
-Per una prova con esiti registrabili usa [PROTOCOLLO_TEST](PROTOCOLLO_TEST.md). I casi DEMO nell’app sono spiegati in [DATI_DEMO](DATI_DEMO.md); per rinnovarli senza cancellare le prove, con database locale attivo: `pnpm seed` e `pnpm demo:examples`. La verifica completa di produzione è in [MESSA_IN_PRODUZIONE](MESSA_IN_PRODUZIONE.md).
+Per una prova con esiti registrabili usa [PROTOCOLLO_TEST](PROTOCOLLO_TEST.md); per il titolare che clona il progetto usa il [collaudo cliente](COLLAUDO_CLIENTE_2026-10.md). I casi DEMO nell’app sono spiegati in [DATI_DEMO](DATI_DEMO.md); per rinnovarli senza cancellare le prove, con database locale attivo: `pnpm seed` e `pnpm demo:examples`. Stato e verifiche correnti sono in [PROGRESS](PROGRESS.md); la verifica completa di produzione è in [MESSA_IN_PRODUZIONE](MESSA_IN_PRODUZIONE.md).
 
 ## Avvio
 
@@ -84,7 +84,7 @@ Il launcher avvia anche il worker ogni cinque minuti. La retention opera in picc
 1. In **Tavoli** usa **Filtra per zona**. Le zone sono quelle già presenti, non una seconda configurazione di sale. In **Combinazioni consentite** scegli due tavoli che il locale può realmente unire; assegna nome e capienza effettiva, entro la somma dei posti.
 2. In **Nuova prenotazione** scegli la combinazione e poi persone/data/fascia. Sono verificate anche capienza e ritmo. Nel dettaglio puoi assegnare una combinazione a una prenotazione esistente, correggendo coperti se necessario; vengono occupati tutti i componenti. Automatico cliente rimane sul singolo tavolo.
 3. Nell’agenda del giorno apri **Apri lista d’attesa**. Seleziona il servizio, inserisci cognome e coperti: nessun contatto richiesto, nessun tavolo occupato. Fila in ordine di arrivo; una soluzione compatibile viene evidenziata senza scavalcare automaticamente altri ospiti.
-4. Durante il servizio scegli **Accomoda**, controlla alternativa e orario proposti e conferma. Il sistema rivalida nello stesso lock e crea una prenotazione **Al tavolo**. Apri il dettaglio per vedere i tavoli fisici; **Completa** li libera. Per ospiti che se ne vanno usa **È andato via**, con undo di cinque secondi.
+4. Durante il servizio scegli **Accomoda**, controlla alternativa e orario proposti e conferma. Il sistema rivalida nello stesso lock e crea una prenotazione **Al tavolo**. Apri il dettaglio per vedere i tavoli fisici; **Libera tavolo** li libera. Per ospiti che se ne vanno usa **È andato via**, con undo di cinque secondi.
 5. **Mostra anche accomodati e usciti** conserva lo storico. Modifiche agli orari mantengono le vecchie liste; oltre mezzanotte il servizio appartiene al giorno d’inizio e compare anche il giorno seguente. Per una nuova struttura della combinazione crea un nuovo gruppo e disattiva il precedente: le prenotazioni già assegnate mantengono nome e componenti storici.
 
-Le alternative vengono aggiornate ogni trenta secondi e al ritorno nella scheda; **Aggiorna alternative** permette una verifica immediata. Nessuna assegnazione o SMS parte automaticamente. Piantina Pro e console agenzia restano future.
+Le alternative vengono aggiornate ogni trenta secondi e al ritorno nella scheda; **Aggiorna alternative** permette una verifica immediata. Nessuna assegnazione o SMS parte automaticamente. La piantina Pro resta futura. La [console amministratore](CONSOLE_AMMINISTRATORE.md) è disponibile con M5A e usa un accesso separato dell’agenzia; il titolare continua a usare il pannello del locale.

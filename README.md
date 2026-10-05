@@ -1,6 +1,6 @@
 # BigAnt Book
 
-Prototipo multi-tenant per prenotazioni, menu e feedback di ristoranti e lidi. Next.js + Fastify + PostgreSQL 16, TypeScript, Prisma, pnpm/Turborepo. Interfaccia scura con accenti arancioni, italiano e inglese. Stato dei cancelli e decisioni: [PROGRESS](docs/PROGRESS.md). Nuova [prova collaboratori](docs/COLLAUDO_COLLABORATORI_2026-09.md) e [review prodotto/Superb](docs/REVIEW_PRODOTTO_SUPERB.md) del 23 settembre.
+Prototipo multi-tenant per prenotazioni, menu e feedback di ristoranti e lidi. Next.js + Fastify + PostgreSQL 16, TypeScript, Prisma, pnpm/Turborepo. Interfaccia scura con accenti arancioni, italiano e inglese. Stato dei cancelli e decisioni: [PROGRESS](docs/PROGRESS.md). [Collaudo cliente da un nuovo clone](docs/COLLAUDO_CLIENTE_2026-10.md), [prova collaboratori](docs/COLLAUDO_COLLABORATORI_2026-09.md) e [review prodotto/Superb](docs/REVIEW_PRODOTTO_SUPERB.md) del 23 settembre.
 
 ## Avvio sul Mac
 
@@ -61,7 +61,7 @@ pnpm test:e2e
 
 Unit e integrazione usano PostgreSQL reale in `bigant_test`. Playwright ricrea i due tenant demo **solo nel database di test**, avvia API:3001 e web:3100 e verifica i percorsi browser a 375 px. Ferma il launcher prima degli E2E per liberare 3001; non eseguire Vitest e Playwright contemporaneamente sullo stesso DB.
 
-Su macOS Playwright usa Chrome installato (compatibile anche con questo Mac macOS 13). Su Linux/CI: `pnpm exec playwright install --with-deps chromium`. Screenshot in `test-results/visual`, trace e schermate di errore in `test-results`, esclusi da Git. GitHub Actions esegue i controlli a ogni push/PR; l'esito della prima esecuzione remota è registrato in [PROGRESS](docs/PROGRESS.md).
+Su macOS Playwright usa Chrome installato (compatibile anche con questo Mac macOS 13). Su Linux/CI: `pnpm exec playwright install --with-deps chromium`. Screenshot in `test-results/visual`, trace e schermate di errore in `test-results`, esclusi da Git. GitHub Actions esegue i controlli a ogni push/PR; gli esiti delle verifiche locali e remote sono registrati in [PROGRESS](docs/PROGRESS.md).
 
 `API_INTERNAL_URL` deve essere impostato **alla build** per la destinazione delle rewrite Next. Default locale: `http://127.0.0.1:3001`. Nessuna chiave segreta nel frontend. Il launcher locale fissa porte e loopback; non è un comando di deploy.
 
@@ -75,7 +75,7 @@ Migrazioni/seed e lookup minimali pre-contesto sono privilegiati. Il client Pris
 
 ## Perimetro e condivisione
 
-M0–M3 implementate: fondamenta, motore prenotazioni, cliente/staff, impostazioni/tavoli e menu digitale. Consolidamento M3C concluso e cancello verde. M4 recensioni conclusa; M5 notifiche/PWA/privacy verificata localmente con invii simulati, M5S sala/attesa conclusa. M5C aggiunge dati guidati e protocollo. Ultimo ricontrollo: 104 test backend e sette scenari browser, tipi/lint/build verdi. M6 produzione e verifica push fisiche restano da attivare. [Missioni](docs/MISSIONS.md), [specifica](docs/SPEC.md), [backlog](docs/BACKLOG.md). Gli originali ricevuti sono archiviati in `files/`; i documenti operativi correnti sono in `docs/`. [Indice documentazione](docs/README.md), [decisioni approvate](docs/DECISIONS.md).
+M0–M3 implementate: fondamenta, motore prenotazioni, cliente/staff, impostazioni/tavoli e menu digitale. Consolidamento M3C concluso e cancello verde. M4 recensioni conclusa; M5 notifiche/PWA/privacy verificata localmente con invii simulati, M5S sala/attesa conclusa. M5C aggiunge dati guidati e protocollo; M5R la review prodotto; M5A la console amministratore con accessi separati. Stato corrente e verifiche locali/CI, compreso il controllo del 26 settembre, sono in [PROGRESS](docs/PROGRESS.md). M6 produzione e verifica push fisiche restano da attivare. [Missioni](docs/MISSIONS.md), [specifica](docs/SPEC.md), [backlog](docs/BACKLOG.md). Gli originali ricevuti sono archiviati in `files/`; i documenti operativi correnti sono in `docs/`. [Indice documentazione](docs/README.md), [decisioni approvate](docs/DECISIONS.md).
 
 Il repository di destinazione autorizzato il 17 settembre è [BigAnt su GitHub](https://github.com/lol-afk23456/BigAnt); l'esito della pubblicazione è registrato in [PROGRESS](docs/PROGRESS.md). Il clone ricrea dati demo indipendenti sul computer di ciascun tester; per una prova comune via link serve un ambiente ospitato. `.env`, database, foto locali, runtime, dipendenze, artefatti di build/test e PDF della guida sono esclusi dai file correnti di Git. [Report servizi da collegare](docs/SERVIZI_ESTERNI.md).
 
@@ -103,4 +103,4 @@ Gli adattatori reali esistono, ma account/dominio, residenza EU, HTTPS e prove A
 
 In **Tavoli**, filtro per zone esistenti e combinazioni consentite configurate dal titolare. Form operatore e dettaglio possono assegnarle; tutti i componenti vengono occupati sotto lo stesso lock, con nome e tavoli storici conservati. Il cliente automatico continua sui singoli tavoli.
 
-Dall’agenda, **Apri lista d’attesa**: servizio, cognome/coperti, FIFO e suggerimenti compatibili. **Accomoda** rivalida e crea la prenotazione al tavolo senza contatti inventati; **Completa** libera i componenti. Nessun SMS automatico. [Comportamento e vincoli](docs/SALA_E_ATTESA.md), [prova locale](docs/PROVA_LOCALE.md).
+Dall’agenda, **Apri lista d’attesa**: servizio, cognome/coperti, FIFO e suggerimenti compatibili. **Accomoda** rivalida e crea la prenotazione al tavolo senza contatti inventati; **Libera tavolo** libera i componenti. Nessun SMS automatico. [Comportamento e vincoli](docs/SALA_E_ATTESA.md), [prova locale](docs/PROVA_LOCALE.md).
