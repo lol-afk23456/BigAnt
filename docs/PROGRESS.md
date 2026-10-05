@@ -1,5 +1,11 @@
 # Avanzamento BigAnt Book
 
+## Pubblicazione PDF collaudo cliente - 5 ottobre 2026
+
+L'utente modifica la precedente preferenza e chiede esplicitamente di pubblicare anche il documento del collaudo, oltre a un messaggio per il cliente che userà Codex come supporto. Incluso `output/pdf/BigAnt_Book_Guida_Collaudo_Cliente_2026-10.pdf`, rimuovendo soltanto la relativa esclusione Git; gli altri PDF restano locali. README e indice documenti collegano il file scaricabile e la guida testuale già versionata.
+
+Il PDF è lo stesso documento di nove pagine già renderizzato e controllato nel blocco precedente, senza rigenerazioni: SHA256 `e69088de131a991df954b9ab5a483db7ba7ece85b0b5426824a58127f6f29d9e`. Ricontrollati leggibilità del file, casi T01-T11, riferimenti e assenza di password amministrative; le sole credenziali incluse sono quelle demo già presenti nel repository. Nessuna modifica applicativa o nuova esecuzione delle suite, non necessaria per la sola pubblicazione documentale. La CI del precedente commit `9d729a0` risulta ancora in corso al controllo prima del push. Messaggio di accompagnamento preparato in chat, senza invii al cliente o ad altri destinatari.
+
 ## Collaudo da clone e guida cliente - 5 ottobre 2026
 
 L'utente chiede se il progetto sia testabile, il controllo del repository e un documento per il cliente, precisando che clonerà il codice. Verificato `Desktop/BigAnt`, remoto `https://github.com/lol-afk23456/BigAnt.git`: al fetch iniziale `HEAD` e `origin/main` coincidono con `1b2cdae`, senza modifiche o divergenza. Il run pubblico di quel commit, [36263170202](https://github.com/lol-afk23456/BigAnt/actions/runs/36263170202), risulta completato con successo. Il progetto Fidelity è rimasto senza commit/remoto e senza modifiche.
